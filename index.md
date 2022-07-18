@@ -1,39 +1,23 @@
-## Welcome to GitHub Pages 123
+## Ylide Protocol
 
-You can use the [editor on GitHub](https://github.com/ylide-io/sdk/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Ylide Protocol is a cross-chain wallet-to-wallet communications solution for Web3 projects.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+It consists of four main parts:
 
-### Markdown
+### Client SDK
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Ylide Client SDK is a "just-add-water" solution for integrating decentralised end-to-end encrypted communications right into your existing or new application. Right now <a href="https://github.com/ylide-io/sdk">we provide</a> Ylide Client SDK in TypeScript (JavaScript).
 
-```markdown
-Syntax highlighted code block
+### Prebuilt smart contacts
 
-# Header 1
+It's a core of our product. Smart contracts used for storing, transferring and managing messages on the blockchain. Contracts pre-deployed by Ylide can be used and seamlessly integrated. Or founders can create a customised solution on the top of it.
 
-## Header 2
+We will provide contracts for multiple mainstream blockchains with cross-chain facilitation. Right now, dedicated solution for EverScale <a href="https://github.com/ylide-io/everscale-contracts">is here</a>.
 
-### Header 3
+### Admin Tools
 
--   Bulleted
--   List
+It is a solution to forget about coding at all. Deploy, monitor, manage smart contracts and set custom monetisation parameters of your choice from the handy UI.
 
-1. Numbered
-2. List
+### Pre-build products.
 
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/ylide-io/sdk/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+To save even more time of the founders we provide open-source product templates for typical communication use cases, so you can focus on the customisation and skip the hardest part.
