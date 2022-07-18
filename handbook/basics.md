@@ -174,7 +174,7 @@ Now let's take a look at the detailed process of receiving messages from the Yli
 5. Next, depending on the security level chosen by the user, Ylide SDK either immediately decrypts the content of the message using the user's communication private key or asks him for the necessary passwords, after which the message is decrypted.
 6. The decrypted content is displayed to the user on the screen.
 
-##FAQ <a name="faq"></a>
+## <a name="faq"></a>**FAQ**
 
 **Q: The user entered the wrong Ylide password. What will happen?**
 
