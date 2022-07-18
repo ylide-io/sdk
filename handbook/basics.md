@@ -1,6 +1,6 @@
 # Basic concepts | Ylide
 
-### **Glossary**
+### <a name="glossary"></a>**Glossary**
 
 **Wallet keys** - a pair of private and public keys from the user's blockchain wallet. Using the private key of the wallet, the user signs her transactions in the blockchain network (and, accordingly, manages her funds). Traditionally, these are Ed25519 keys and can only be used to sign the data, not to encrypt it.
 
@@ -10,7 +10,7 @@
 
 **Session** - from the moment when the user opened the application until the moment when he closed it. An application can be called either a regular application for a computer/smartphone or a dApp running in a browser tab. In the former case, closing the tab is the end of the session.
 
-## **Initialization of communication keys**
+## <a name="keys-init"></a>**Initialization of communication keys**
 
 In classical key generation schemes, the private key is generated as a random set of bytes, and the public key is calculated based on the private key. This method is great for generating wallet keys but it is inconvenient for communication keys since:
 
@@ -34,7 +34,7 @@ Therefore, to make such an attack impossible, we decided to make the string dyna
 
 Now to steal your communication key, an attacker will have to first ask you to enter your Ylide password, and only then ask you for a signature. This drastically reduces the risk of an attack - when on an unfamiliar website you are suddenly asked to give your Ylide password - you will pay attention to this, think about it, and prevent the fraud.
 
-## **Storage of communication keys**
+## <a name="keys-storage"></a>**Storage of communication keys**
 
 As noted above, to gain access to the communication key, we need two components:
 
@@ -49,7 +49,7 @@ Then to confirm any message, it is enough for the user to specify only one passw
 
 Therefore, the Ylide SDK provides several scenarios with different levels of security, so that users can choose the most suitable option.
 
-### **1. Storing communication key in memory in clear text (for one session), and in local storage - in encrypted form**
+### <a name="keys-storage-local-session-decrypted"></a>**1. Storing communication key in memory in clear text (for one session), and in local storage - in encrypted form**
 
 When prompted for a Ylide password, the user is provided with an option to “remember for this session”. As a result, the user's password will be stored in the RAM until the end of the session. The communication key will be encrypted and stored in the local storage.
 
@@ -57,7 +57,7 @@ This will allow the user to read (decrypt) emails without entering any passwords
 
 To steal and decrypt the communication key, an attacker would need to hijack the user's device or browser and gain access to RAM, which is very difficult and has a low probability of attack.
 
-### **2. Storing communication key in the local storage in clear text (for several days)**
+### <a name="keys-storage-local-days-decrypted"></a>**2. Storing communication key in the local storage in clear text (for several days)**
 
 The user can choose “remember for 5 days” option. The user's password will be stored in the local storage, and even if the user closes the application or browser, he will not have to specify the password the next time he logs in. After a few days, the Ylide SDK will remove this password from storage and ask you to enter it again.
 
@@ -65,7 +65,7 @@ As in the previous version, this will allow you to read letters without password
 
 Similarly, to steal and decrypt the communication key, an attacker would need to access the memory of the user's device, and this is extremely high complexity and low probability of attack.
 
-### **3. Storing communication key in the local storage in encrypted form**
+### <a name="keys-storage-local-encrypted"></a>**3. Storing communication key in the local storage in encrypted form**
 
 The communication key will be stored in local storage, but encrypted with the Ylide password.
 
@@ -73,13 +73,13 @@ In this case, the user will have to additionally enter the Ylide password to rea
 
 To steal and decrypt the communication key, an attacker will need to gain access to the device's memory to get the encrypted communication key and then to the RAM to intercept the Ylide password. This is an extremely high difficulty and a very low chance of being attacked.
 
-### **4. Paranoid mode: don't store the communication key at all**
+### <a name="keys-storage-paranoid"></a>**4. Paranoid mode: don't store the communication key at all**
 
 For each read and send, the user will have to enter both the Ylide password and his wallet's password. The key will appear in the RAM only for a moment necessary to proceed with the message. After it is immediately erased from the RAM.
 
 In this case, to steal and decrypt the communication key, an attacker will need to gain access to the device's RAM and intercept both the encrypted communication key and Ylide password in the key derivation process at the right time. This is a phenomenally high difficulty and an extremely low attack probability.
 
-## **Cryptographic primitives**
+## <a name="crypto"></a>**Cryptographic primitives**
 
 Ylide SDK uses the x25519-xsalsa20-poly1305 algorithm to encrypt and decrypt messages using communication keys. This scheme involves access to the sender's private key as well as the recipient's public key. Using the Diffie-Hellman scheme, a one-time secret key is exchanged securely, with which the necessary information is encrypted. The recipient, using his private key and the sender's public key, can decrypt the received information.
 
@@ -89,7 +89,7 @@ Under this scheme, both the private and public keys take up 32 bytes. **Nonce**
 
 For all cryptographic primitives in the Ylide SDK, the **NaCl** library is used, namely its implementation [TweetNaCl](https://www.npmjs.com/package/tweetnacl). This library passed an independent security audit by Cure53 in 2017 and is considered reliable.
 
-## **Sending and reading messages**
+## <a name="sending-reading"></a>**Sending and reading messages**
 
 Sending: To send a message, Ylide SDK uses a two-step encryption system to save memory and transaction size, which are paid on blockchains. In the first stage, the Ylide SDK generates a one-time random symmetric key, the so-called “content password”, with which the content of the message is encrypted and uploaded to the blockchain.
 
@@ -117,7 +117,7 @@ The scheme described above is an evolution of the classic end-to-end encryption 
 
 An additional advantage of this scheme is that if the sender, after some time, wants to share the content of the message with another recipient (for example, a new subscriber to his paid mailing list), he will simply send the encrypted "content password" to this recipient. There is no need to upload the content to the blockchain once again.
 
-## **Register of public keys**
+## <a name="keys-registry"></a>**Register of public keys**
 
 One of the important elements of the scheme described above is the register of public communication keys of users. Since to send a message the sender needs to know the recipients' communication public key - this register (or registry) is necessary for communication. At the same time, the fact that the user's public key is available to everyone does not bear any risks. The public key is precisely called "public" because it can be transferred to an unlimited circle of people. It is impossible to restore a private key based on a public one.
 
@@ -141,7 +141,7 @@ The only scenario in which this will cause inconvenience: if a user has lost his
 
 In future versions, we plan to add a mechanism for checking the public key on upload to the “communication public key” ⇒ “wallet address” link (or pair), which will remove the drawback described above. However, even now it does not bear any risks.
 
-## **The architecture of smart contracts and interaction with the blockchain**
+## <a name="smart-contracts"></a>**The architecture of smart contracts and interaction with the blockchain**
 
 > The architecture of smart contracts may differ depending on the technologies and tools available in each particular blockchain. This block describes the architecture for EVM and EVM-compatible blockchains.
 
@@ -174,7 +174,7 @@ Now let's take a look at the detailed process of receiving messages from the Yli
 5. Next, depending on the security level chosen by the user, Ylide SDK either immediately decrypts the content of the message using the user's communication private key or asks him for the necessary passwords, after which the message is decrypted.
 6. The decrypted content is displayed to the user on the screen.
 
-##FAQ
+##FAQ <a name="faq"></a>
 
 **Q: The user entered the wrong Ylide password. What will happen?**
 
