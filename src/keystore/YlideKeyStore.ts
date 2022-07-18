@@ -1,6 +1,9 @@
 import { AbstractStorage } from '../storage/AbstractStorage';
 import { YlideKeyPair } from './YlideKeyPair';
 
+/**
+ * Class for managing Ylide keys for multiple accounts and blockchains
+ */
 export class YlideKeyStore {
 	private readonly pfx = 'YLD1_';
 
@@ -30,6 +33,15 @@ export class YlideKeyStore {
 		return this.pfx + str;
 	}
 
+	/**
+	 * Method to create and store new Ylide communication key.
+	 *
+	 * @param reason Reason for password/derivation request
+	 * @param blockchain Blockchain name
+	 * @param address User's address
+	 * @param password Ylide password
+	 * @returns `YlideKeyPair` instance
+	 */
 	async create(reason: string, blockchain: string, address: string, password: string) {
 		const secretKey = await this.options.onDeriveRequest(
 			reason,
@@ -50,11 +62,18 @@ export class YlideKeyStore {
 		return key;
 	}
 
+	/**
+	 * Method to remove key from internal storage
+	 * @param key `YlideKeyPair` reference
+	 */
 	async delete(key: { blockchain: string; address: string; key: YlideKeyPair }) {
 		this.keys = this.keys.filter(_key => key !== _key);
 		await this.save();
 	}
 
+	/**
+	 * Method to load keys from internal storage
+	 */
 	async load() {
 		const initialized = await this.storage.readJSON<boolean>(this.key('init'));
 		if (!initialized) {
@@ -84,6 +103,9 @@ export class YlideKeyStore {
 		}
 	}
 
+	/**
+	 * Method to save keys to internal storage
+	 */
 	async save() {
 		await this.storage.storeJSON(this.key('init'), true);
 		await this.storage.storeJSON(this.key('keysLength'), this.keys.length);
@@ -97,6 +119,12 @@ export class YlideKeyStore {
 		}
 	}
 
+	/**
+	 * Method to retrieve key for certain blockchain and address
+	 * @param blockchain Blockchain name
+	 * @param address User's address
+	 * @returns Key reference or `null` if nothing was found.
+	 */
 	get(blockchain: string, address: string) {
 		const keyEntry = this.keys.find(t => t.blockchain === blockchain && t.address === address);
 		if (!keyEntry) {
