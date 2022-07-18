@@ -1,7 +1,8 @@
 import jssha256 from 'js-sha256';
 
 /**
- * Method to calculate SHA256 hash of the arbitrary data (bytes array or string)
+ * @category Crypto
+ * @description Method to calculate SHA256 hash of the arbitrary data (bytes array or string)
  * @param data Data to calculate hash
  * @returns 32-bytes array with the SHA256 hash of the data
  */

@@ -2,7 +2,8 @@ import SmartBuffer from '@ylide/smart-buffer';
 import { AbstractStorage } from './AbstractStorage';
 
 /**
- * Class representing browser local storage
+ * @category Storage
+ * @description Class representing browser local storage
  */
 export class BrowserLocalStorage extends AbstractStorage {
 	async storeBytes(key: string, bytes: Uint8Array): Promise<boolean> {

@@ -1,5 +1,6 @@
 /**
- * Interface representing base message metadata and content
+ * @category Content
+ * @description Interface representing base message metadata and content
  */
 export interface IMessageBase {
 	msgId: string;
@@ -21,7 +22,8 @@ export interface IMessageBase {
 }
 
 /**
- * Enum for all types of errors for message content reading/decrypting/unpacking
+ * @category Content
+ * @description Enum for all types of errors for message content reading/decrypting/unpacking
  */
 export enum MessageContentFailure {
 	/**
@@ -51,7 +53,8 @@ export enum MessageContentFailure {
 }
 
 /**
- * Interface representing failed content-reading result
+ * @category Content
+ * @description Interface representing failed content-reading result
  */
 export interface IMessageCorruptedContent {
 	msgId: string;
@@ -61,7 +64,8 @@ export interface IMessageCorruptedContent {
 }
 
 /**
- * Interface representing successful content-reading result
+ * @category Content
+ * @description Interface representing successful content-reading result
  */
 export interface IMessageContent {
 	msgId: string;
@@ -74,7 +78,8 @@ export interface IMessageContent {
 }
 
 /**
- * Type representing a certain message
+ * @category Content
+ * @description Type representing a certain message
  */
 export type IMessage = IMessageBase;
 

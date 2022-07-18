@@ -24,7 +24,7 @@
         "lint": "tslint -p tsconfig.json",
         "prepublishOnly": "npm run lint",
         "preversion": "npm run lint",
-        "docgen": "typedoc src/index.ts --name \"Ylide SDK\" --out docs --plugin typedoc-plugin-coverage --excludeInternal"
+        "docgen": "typedoc src/index.ts --name \"Ylide SDK\" --requiredToBeDocumented Class --out docs --plugin typedoc-plugin-coverage --excludeInternal"
     },
     "keywords": [
         "ylide",

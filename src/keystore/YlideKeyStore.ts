@@ -2,7 +2,8 @@ import { AbstractStorage } from '../storage/AbstractStorage';
 import { YlideKeyPair } from './YlideKeyPair';
 
 /**
- * Class for managing Ylide keys for multiple accounts and blockchains
+ * @category Keys
+ * @description Class for managing Ylide keys for multiple accounts and blockchains
  */
 export class YlideKeyStore {
 	private readonly pfx = 'YLD1_';

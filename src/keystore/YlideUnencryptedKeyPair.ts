@@ -2,7 +2,8 @@ import { BoxKeyPair } from 'tweetnacl';
 import { asymmetricDecrypt, asymmetricEncrypt } from '../crypto';
 
 /**
- * Class to represent unencrypted communication key which could be used to decrypt/encrypt message content
+ * @category Keys
+ * @description Class to represent unencrypted communication key which could be used to decrypt/encrypt message content
  */
 export class YlideUnencryptedKeyPair {
 	constructor(private readonly keypair: BoxKeyPair) {

@@ -1,7 +1,8 @@
 import SmartBuffer from '@ylide/smart-buffer';
 
 /**
- * Abstract class representing async key-value storage
+ * @category Storage
+ * @description Abstract class representing async key-value storage
  */
 export abstract class AbstractStorage {
 	/**

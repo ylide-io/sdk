@@ -2,7 +2,8 @@ import SmartBuffer from '@ylide/smart-buffer';
 import nacl from 'tweetnacl';
 
 /**
- * Method to asymmetrically encrypt the data using *x25519-xsalsa20-poly1305* algorithm.
+ * @category Crypto
+ * @description Method to asymmetrically encrypt the data using *x25519-xsalsa20-poly1305* algorithm.
  *
  * @param data Data to encrypt
  * @param mySecretKey My private key
@@ -19,7 +20,8 @@ export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, the
 }
 
 /**
- * Method to asymmetrically decrypt the data using *x25519-xsalsa20-poly1305* algorithm.
+ * @category Crypto
+ * @description Method to asymmetrically decrypt the data using *x25519-xsalsa20-poly1305* algorithm.
  *
  * @param data Data to decrypt
  * @param mySecretKey My private key

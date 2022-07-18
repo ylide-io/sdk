@@ -5,7 +5,8 @@ import { symmetricDecrypt, symmetricEncrypt } from '../crypto/symmetric';
 import { YlideUnencryptedKeyPair } from './YlideUnencryptedKeyPair';
 
 /**
- * This class is designate to store and interact with Ylide communication keypairs
+ * @category Keys
+ * @description This class is designate to store and interact with Ylide communication keypairs
  * @see [Basics of key storage](https://ylide-io.github.io/sdk/handbook/basics#keys-storage) to understand common concepts used here
  */
 export class YlideKeyPair {
