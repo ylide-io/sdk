@@ -1,9 +1,12 @@
 import { EventEmitter } from 'eventemitter3';
-import Ylide, { BlockchainMap } from '..';
+import { Ylide, BlockchainMap } from '..';
 import { AbstractReadingController, AbstractReadingControllerClass } from '../abstracts/AbstractReadingController';
 import { RetrievingMessagesOptions } from '../types/IMessage';
 import asyncTimer from '../utils/asyncTimer';
 
+/**
+ * @internal
+ */
 export class YlideReaderSubscriber extends EventEmitter {
 	private pullTimer: any;
 	private lastPullDate: Date | null = null;

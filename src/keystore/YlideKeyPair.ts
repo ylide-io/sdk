@@ -4,6 +4,10 @@ import { sha256 } from '../crypto/sha256';
 import { symmetricDecrypt, symmetricEncrypt } from '../crypto/symmetric';
 import { YlideUnencryptedKeyPair } from './YlideUnencryptedKeyPair';
 
+/**
+ * This class is designate to store and interact with Ylide communication keypairs
+ * @see [Basics of key storage](/handbook/basics.md) to understand common concepts used here
+ */
 export class YlideKeyPair {
 	private readonly keyIndex = 1;
 

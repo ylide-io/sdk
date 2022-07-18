@@ -23,7 +23,8 @@
         "format": "prettier --write \"src/**/*.ts\"",
         "lint": "tslint -p tsconfig.json",
         "prepublishOnly": "npm run lint",
-        "preversion": "npm run lint"
+        "preversion": "npm run lint",
+        "docgen": "typedoc src/index.ts --name \"Ylide SDK\" --out docs --plugin typedoc-plugin-coverage --excludeInternal"
     },
     "keywords": [
         "ylide",
@@ -48,6 +49,9 @@
         "ts-node": "^10.8.2",
         "tslint": "^6.1.3",
         "tslint-config-prettier": "^1.18.0",
+        "typedoc": "^0.23.8",
+        "typedoc-plugin-coverage": "^2.0.0",
+        "typedoc-theme-hierarchy": "^3.0.0",
         "typescript": "^4.7.4"
     },
     "dependencies": {

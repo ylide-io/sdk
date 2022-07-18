@@ -1,6 +1,13 @@
 import SmartBuffer from '@ylide/smart-buffer';
-import nacl, { BoxKeyPair } from 'tweetnacl';
+import nacl from 'tweetnacl';
 
+/**
+ * Method to symmetrically encrypt the data using *xsalsa20-poly1305* algorithm.
+ *
+ * @param data Data to encrypt
+ * @param key Symmetric key to encrypt the data
+ * @returns Encrypted data
+ */
 export function symmetricEncrypt(data: Uint8Array, key: Uint8Array) {
 	const nonce = nacl.randomBytes(24);
 	const encData = nacl.box.after(data, nonce, key);
@@ -10,6 +17,13 @@ export function symmetricEncrypt(data: Uint8Array, key: Uint8Array) {
 	return buf.bytes;
 }
 
+/**
+ * Method to symmetrically decrypt the data using *xsalsa20-poly1305* algorithm.
+ *
+ * @param data Data to decrypt
+ * @param key Symmetric key to decrypt the data
+ * @returns Decrypted data
+ */
 export function symmetricDecrypt(data: Uint8Array, key: Uint8Array) {
 	const buf = new SmartBuffer(data);
 

@@ -1,6 +1,14 @@
 import SmartBuffer from '@ylide/smart-buffer';
-import nacl, { BoxKeyPair } from 'tweetnacl';
+import nacl from 'tweetnacl';
 
+/**
+ * Method to asymmetrically encrypt the data using *x25519-xsalsa20-poly1305* algorithm.
+ *
+ * @param data Data to encrypt
+ * @param mySecretKey My private key
+ * @param theirPublicKey Recipient's public key
+ * @returns Encrypted data
+ */
 export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) {
 	const nonce = nacl.randomBytes(24);
 	const encData = nacl.box(data, nonce, theirPublicKey, mySecretKey);
@@ -10,6 +18,14 @@ export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, the
 	return buf.bytes;
 }
 
+/**
+ * Method to asymmetrically decrypt the data using *x25519-xsalsa20-poly1305* algorithm.
+ *
+ * @param data Data to decrypt
+ * @param mySecretKey My private key
+ * @param theirPublicKey Sender's public key
+ * @returns Decrypted data
+ */
 export function asymmetricDecrypt(data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) {
 	const buf = new SmartBuffer(data);
 
