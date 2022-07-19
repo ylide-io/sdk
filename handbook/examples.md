@@ -27,7 +27,7 @@ So, our next step is to initialize sending and reading controllers:
 const provider = await Ylide.instantiateWallet(EverscaleSendingController, EverscaleReadingController);
 ```
 
-Now, you can access both controllers as properties of the `wallet` object.
+Now, you can access both controllers as properties of the `provider` object.
 
 ## Initializing communication key
 
@@ -42,13 +42,13 @@ Then, let's instantiate `YlideKeystore` with `BrowserLocalStorage`:
 ```ts
 const storage = new BrowserLocalStorage();
 const keystore = new YlideKeyStore(storage, {
-	// This handler will be called every time when Keystore needs user's Ylide password
+	// This handler will be called every time Keystore needs user's Ylide password
 	onPasswordRequest: async (reason: string) => prompt(`Enter Ylide password for ${reason}:`),
 
-	// This handler will be called every time when Keystore needs derived signature from user's Ylide password
+	// This handler will be called every time Keystore needs derived signature of user's Ylide password
 	onDeriveRequest: async (reason: string, blockchain: string, address: string, magicString: string) => {
 		try {
-			// We request wallet to sign our magic string - it will be used for communication private key generation
+			// We request wallet to sign our magic string - it will be used for generation of communication private key
 			return provider.sender.deriveMessagingKeypair(magicString);
 		} catch (err) {
 			return null;
@@ -57,7 +57,7 @@ const keystore = new YlideKeyStore(storage, {
 });
 ```
 
-Now, we are ready for creating our first communication key:
+Now, we are ready for creation of our first communication key:
 
 ```ts
 const ylidePassword = prompt(`Enter Ylide password for your first key:`);
@@ -67,11 +67,11 @@ if (!ylidePassword) {
 const key = await keystore.create('For your first key', 'everscale', account.address, ylidePassword);
 ```
 
-Now, key is ready and saved into the storage, encrypted. To store it decrypted let's do the following:
+Now, key is ready, encrypted and saved into the storage. To store it decrypted let's do the following:
 
 ```ts
 // Switch key storage mode to decrypted
-await key.storeUnencrypted(passwordForKey);
+await key.storeUnencrypted(ylidePassword);
 // Save the key in the storage again
 await keystore.save();
 ```
@@ -80,11 +80,11 @@ Key is ready and available for usage.
 
 ## Registering communication key
 
-First of all, let's check if this key was already saved into Ylide Registry:
+First of all, let's check if this key had already been saved into the Ylide Registry:
 
 ```ts
-const blockchainPublicKey = await provider.reader.extractPublicKeyFromAddress(account.address);
-if (!blockchainPublicKey) {
+const pk = await provider.reader.extractPublicKeyFromAddress(account.address);
+if (!pk) {
 	// There is no public key connected to this address in the Registry
 } else {
 	if (pk.length === key.publicKey.length && pk.every((e, idx) => e === key.publicKey[idx])) {
@@ -101,7 +101,7 @@ If user's public key is not in the Registry - you should register it:
 await provider.sender.attachPublicKey(key.publicKey);
 ```
 
-It's done. Now, user can send and receive messages using Ylide Protocol.
+Now, user can send and receive messages using Ylide Protocol.
 
 ## Sending message
 
