@@ -6,6 +6,10 @@ import SmartBuffer from '@ylide/smart-buffer';
  */
 export abstract class AbstractStorage {
 	/**
+	 * Method to initialize storage and check its availability
+	 */
+	abstract init(): Promise<boolean>;
+	/**
 	 * Method to store arbitrary bytes array
 	 * @param key Key for indexation
 	 * @param str Value to store

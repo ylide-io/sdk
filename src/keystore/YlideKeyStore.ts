@@ -27,6 +27,17 @@ export class YlideKeyStore {
 		},
 	) {}
 
+	/**
+	 * Initializes underlaying storage engine and Keystore
+	 */
+	async init() {
+		if (await this.storage.init()) {
+			await this.load();
+		} else {
+			throw new Error('Storage is not available');
+		}
+	}
+
 	key(str: string) {
 		return this.pfx + str;
 	}
@@ -81,6 +92,7 @@ export class YlideKeyStore {
 		if (!keysLength) {
 			return;
 		}
+		this.keys = [];
 		for (let keyIdx = 0; keyIdx < keysLength; keyIdx++) {
 			const keyMeta = await this.storage.readJSON<{ blockchain: string; address: string }>(
 				this.key(`keyMeta${keyIdx}`),
