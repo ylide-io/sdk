@@ -24,7 +24,7 @@ import { IGenericAccount } from '../types/IGenericAccount';
  *     static walletType(): string {
  *     	return 'everwallet';
  *     }
-
+ *
  *     static blockchainType(): string {
  *     	return 'everscale';
  *     }

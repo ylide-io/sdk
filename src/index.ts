@@ -73,7 +73,6 @@ export class Ylide {
 	 */
 	static registerReader(cls: AbstractReadingControllerClass) {
 		this._readers[cls.blockchainType()] = cls;
-		this.registerSender;
 	}
 
 	/**

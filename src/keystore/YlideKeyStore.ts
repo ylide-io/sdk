@@ -8,9 +8,6 @@ import { YlideKeyPair } from './YlideKeyPair';
 export class YlideKeyStore {
 	private readonly pfx = 'YLD1_';
 
-	onPasswordRequest: ((reason: string) => Promise<string | null>) | null = null;
-	onDeriveRequest: ((reason: string, magicString: string) => Promise<Uint8Array | null>) | null = null;
-
 	keys: {
 		blockchain: string;
 		address: string;
@@ -19,7 +16,7 @@ export class YlideKeyStore {
 
 	constructor(
 		readonly storage: AbstractStorage,
-		private readonly options: {
+		readonly options: {
 			onPasswordRequest: (reason: string) => Promise<string | null>;
 			onDeriveRequest: (
 				reason: string,
@@ -51,7 +48,7 @@ export class YlideKeyStore {
 			YlideKeyPair.getMagicString(address, 1, password),
 		);
 		if (!secretKey) {
-			throw new Error('Interrrupted');
+			throw new Error('Interrupted');
 		}
 		const key = new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
 		this.keys.push({
