@@ -12,8 +12,6 @@ export class BrowserIframeStorage extends AbstractStorage {
 
 	private readonly reqs: Record<string, (result?: any) => void> = {};
 
-	async handleIframeMessage() {}
-
 	constructor(private readonly iframeUrl: string = 'https://ks.ylide.io/', private readonly timeout: number = 5000) {
 		super();
 		this.iframeOrigin = new URL(this.iframeUrl).origin;
@@ -59,7 +57,7 @@ export class BrowserIframeStorage extends AbstractStorage {
 
 	async init() {
 		return new Promise<boolean>(resolve => {
-			let timeoutTimer = setTimeout(() => {
+			const timeoutTimer = setTimeout(() => {
 				return resolve(false);
 			}, this.timeout);
 			window.addEventListener('message', ev => {
