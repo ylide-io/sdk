@@ -55,6 +55,8 @@ const keystore = new YlideKeyStore(storage, {
 		}
 	},
 });
+
+await keystore.init();
 ```
 
 Now, we are ready for creation of our first communication key:
