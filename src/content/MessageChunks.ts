@@ -50,13 +50,15 @@ export class MessageChunks {
 		publicKey: Uint8Array,
 		content: Uint8Array,
 		chunkSize = 15 * 1024,
+		isNative = false,
 	) {
-		const buf = SmartBuffer.ofSize(1 + 4 + 1 + publicKey.length + 4 + content.length);
+		const buf = SmartBuffer.ofSize(1 + 4 + 1 + 1 + publicKey.length + 4 + content.length);
 		buf.writeUint8(this.VERSION);
 		buf.writeUint8(serviceCode[0]);
 		buf.writeUint8(serviceCode[1]);
 		buf.writeUint8(serviceCode[2]);
 		buf.writeUint8(serviceCode[3]);
+		buf.writeUint8(isNative ? 1 : 0);
 		buf.writeBytes8Length(publicKey);
 		buf.writeBytes32Length(content);
 		return this.splitMessageChunks(buf.bytes, chunkSize);
@@ -89,10 +91,12 @@ export class MessageChunks {
 	 */
 	static unpackContentV4(buf: SmartBuffer) {
 		const sessionCode = [buf.readUint8(), buf.readUint8(), buf.readUint8(), buf.readUint8()];
+		const isNative = buf.readUint8() === 1;
 		const publicKey = buf.readBytes8Length();
 		const content = buf.readBytes32Length();
 		return {
 			version: 0x04,
+			isNative,
 			sessionCode,
 			publicKey,
 			content,

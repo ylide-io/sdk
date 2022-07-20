@@ -12,8 +12,19 @@ import nacl from 'tweetnacl';
 export function symmetricEncrypt(data: Uint8Array, key: Uint8Array) {
 	const nonce = nacl.randomBytes(24);
 	const encData = nacl.box.after(data, nonce, key);
-	const buf = SmartBuffer.ofSize(nonce.length + 4 + encData.length);
-	buf.writeBytes(nonce);
+	return packSymmetricalyEncryptedData(encData, nonce);
+}
+
+/**
+ * Method to pack data and nonce into one readable bytes array
+ * @param encData Encrypted data raw bytes
+ * @param nonce Nonce raw bytes
+ * @returns Container buffer
+ */
+export function packSymmetricalyEncryptedData(encData: Uint8Array, nonce: Uint8Array) {
+	const buf = SmartBuffer.ofSize(1 + 1 + nonce.length + 4 + encData.length);
+	buf.writeUint8(1);
+	buf.writeBytes8Length(nonce);
 	buf.writeBytes32Length(encData);
 	return buf.bytes;
 }
@@ -27,14 +38,29 @@ export function symmetricEncrypt(data: Uint8Array, key: Uint8Array) {
  * @returns Decrypted data
  */
 export function symmetricDecrypt(data: Uint8Array, key: Uint8Array) {
-	const buf = new SmartBuffer(data);
-
-	const nonce = buf.readBytes(24);
-	const encData = buf.readBytes32Length();
+	const { nonce, encData } = unpackSymmetricalyEncryptedData(data);
 
 	const decData = nacl.box.open.after(encData, nonce, key);
 	if (!decData) {
 		throw new Error('Invalid box or key');
 	}
 	return decData;
+}
+
+/**
+ * Method to unpack data and nonce from one readable bytes array
+ * @param data Bytes with encrypted data and nonce
+ * @returns Data and nonce
+ */
+export function unpackSymmetricalyEncryptedData(data: Uint8Array) {
+	const buf = new SmartBuffer(data);
+
+	const version = buf.readUint8();
+	const nonce = buf.readBytes8Length();
+	const encData = buf.readBytes32Length();
+
+	return {
+		nonce,
+		encData,
+	};
 }
