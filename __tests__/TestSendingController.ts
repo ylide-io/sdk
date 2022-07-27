@@ -1,12 +1,12 @@
 import Ylide from '..';
 import { IGenericAccount } from '../types/IGenericAccount';
 import { IMessage, RetrievingMessagesOptions } from '../types/IMessage';
-import { AbstractSendingController } from '../abstracts/AbstractSendingController';
-import { testMessagingState } from './TestReadingController';
+import { AbstractWalletController } from '../abstracts/AbstractWalletController';
+import { testMessagingState } from './TestBlockchainController';
 import { YlideUnencryptedKeyPair } from '../keystore/YlideUnencryptedKeyPair';
 import { MessageContent } from '../content/MessageContent';
 
-export class TestSendingController extends AbstractSendingController {
+export class TestWalletController extends AbstractWalletController {
 	constructor(options: any) {
 		super(options);
 	}

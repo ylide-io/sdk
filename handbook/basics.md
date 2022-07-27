@@ -126,7 +126,7 @@ As part of the Ylide Smart Contracts, we provide a different version of the ledg
 -   store the “wallet address” ⇒ “communication public key” link (or pair).
 -   store the “communication public key” ⇒ “wallet address” link (or pair).
 
-The second link is not necessary but allows to verify the senders' old emails if for some reason they had to change the communication private key (for example, in case of losing a password).
+The second link is not necessary but allows to verify the wallets' old emails if for some reason they had to change the communication private key (for example, in case of losing a password).
 
 Important to note that the communication public key is passed to the transaction in an explicit (decrypted) form. Therefore, an attacker can substitute any other information instead of a real public key.
 

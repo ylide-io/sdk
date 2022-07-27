@@ -1,5 +1,6 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import nacl from 'tweetnacl';
+import { packSymmetricalyEncryptedData, unpackSymmetricalyEncryptedData } from '.';
 
 /**
  * @category Crypto
@@ -13,10 +14,7 @@ import nacl from 'tweetnacl';
 export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) {
 	const nonce = nacl.randomBytes(24);
 	const encData = nacl.box(data, nonce, theirPublicKey, mySecretKey);
-	const buf = SmartBuffer.ofSize(nonce.length + 4 + encData.length);
-	buf.writeBytes(nonce);
-	buf.writeBytes32Length(encData);
-	return buf.bytes;
+	return packSymmetricalyEncryptedData(encData, nonce);
 }
 
 /**
@@ -29,10 +27,7 @@ export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, the
  * @returns Decrypted data
  */
 export function asymmetricDecrypt(data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) {
-	const buf = new SmartBuffer(data);
-
-	const nonce = buf.readBytes(24);
-	const encData = buf.readBytes32Length();
+	const { nonce, encData } = unpackSymmetricalyEncryptedData(data);
 
 	const decData = nacl.box.open(encData, nonce, theirPublicKey, mySecretKey);
 	if (!decData) {

@@ -1,26 +1,29 @@
 import { EventEmitter } from 'eventemitter3';
 import { Ylide, BlockchainMap } from '..';
-import { AbstractReadingController, AbstractReadingControllerClass } from '../abstracts/AbstractReadingController';
+import {
+	AbstractBlockchainController,
+	AbstractBlockchainControllerClass,
+} from '../abstracts/AbstractBlockchainController';
 import { RetrievingMessagesOptions } from '../types/IMessage';
 import asyncTimer from '../utils/asyncTimer';
 
 /**
  * @internal
  */
-export class YlideReaderSubscriber extends EventEmitter {
+export class Ylideblockchainsubscriber extends EventEmitter {
 	private pullTimer: any;
 	private lastPullDate: Date | null = null;
 
-	private readonly activeReaders: BlockchainMap<AbstractReadingController> = {};
+	private readonly activeblockchains: BlockchainMap<AbstractBlockchainController> = {};
 	private readonly activeAddresses: BlockchainMap<string[]> = {};
 
-	connectReaderByClass(address: string, readerCls: AbstractReadingControllerClass) {
+	connectReaderByClass(address: string, readerCls: AbstractBlockchainControllerClass) {
 		const blockchain = readerCls.blockchainType();
 		if (this.activeAddresses[blockchain].includes(address)) {
 			return;
 		}
-		const reader = this.activeReaders[blockchain] || Ylide.instantiateReader(readerCls);
-		this.activeReaders[blockchain] = reader;
+		const reader = this.activeblockchains[blockchain] || Ylide.instantiateBlockchain(readerCls);
+		this.activeblockchains[blockchain] = reader;
 		this.activeAddresses[blockchain].push(address);
 	}
 
@@ -28,11 +31,13 @@ export class YlideReaderSubscriber extends EventEmitter {
 		if (this.activeAddresses[blockchain].includes(address)) {
 			return;
 		}
-		if (!this.activeReaders[blockchain] && !Ylide.isReaderRegistered(blockchain)) {
+		if (!this.activeblockchains[blockchain] && !Ylide.isBlockchainRegistered(blockchain)) {
 			throw new Error(`Reader for blockchain ${blockchain} is not available`);
 		}
-		const reader = this.activeReaders[blockchain] || Ylide.instantiateReader(Ylide.getReader(blockchain));
-		this.activeReaders[blockchain] = reader;
+		const reader =
+			this.activeblockchains[blockchain] ||
+			Ylide.instantiateBlockchain(Ylide.getBlockchainController(blockchain));
+		this.activeblockchains[blockchain] = reader;
 		this.activeAddresses[blockchain].push(address);
 	}
 
@@ -60,9 +65,9 @@ export class YlideReaderSubscriber extends EventEmitter {
 	}
 
 	private async optionalLoad(options?: RetrievingMessagesOptions) {
-		for (const readerBlockchain of Object.keys(this.activeReaders)) {
+		for (const readerBlockchain of Object.keys(this.activeblockchains)) {
 			const addresses = this.activeAddresses[readerBlockchain];
-			const reader = this.activeReaders[readerBlockchain];
+			const reader = this.activeblockchains[readerBlockchain];
 
 			for (const address of addresses) {
 				const messages = await reader.retrieveMessageHistoryByDates(address, options);

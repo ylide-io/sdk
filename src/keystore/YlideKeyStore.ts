@@ -6,10 +6,11 @@ import { YlideKeyPair } from './YlideKeyPair';
  * @description Class for managing Ylide keys for multiple accounts and blockchains
  */
 export class YlideKeyStore {
-	private readonly pfx = 'YLD1_';
+	private readonly pfx = 'YLD2_';
 
 	keys: {
 		blockchain: string;
+		wallet: string;
 		address: string;
 		key: YlideKeyPair;
 	}[] = [];
@@ -21,6 +22,7 @@ export class YlideKeyStore {
 			onDeriveRequest: (
 				reason: string,
 				blockchain: string,
+				wallet: string,
 				address: string,
 				magicString: string,
 			) => Promise<Uint8Array | null>;
@@ -47,14 +49,16 @@ export class YlideKeyStore {
 	 *
 	 * @param reason Reason for password/derivation request
 	 * @param blockchain Blockchain name
+	 * @param wallet Wallet name
 	 * @param address User's address
 	 * @param password Ylide password
 	 * @returns `YlideKeyPair` instance
 	 */
-	async create(reason: string, blockchain: string, address: string, password: string) {
+	async create(reason: string, blockchain: string, wallet: string, address: string, password: string) {
 		const secretKey = await this.options.onDeriveRequest(
 			reason,
 			blockchain,
+			wallet,
 			address,
 			YlideKeyPair.getMagicString(address, 1, password),
 		);
@@ -64,6 +68,7 @@ export class YlideKeyStore {
 		const key = new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
 		this.keys.push({
 			blockchain,
+			wallet,
 			address,
 			key,
 		});
@@ -94,7 +99,7 @@ export class YlideKeyStore {
 		}
 		this.keys = [];
 		for (let keyIdx = 0; keyIdx < keysLength; keyIdx++) {
-			const keyMeta = await this.storage.readJSON<{ blockchain: string; address: string }>(
+			const keyMeta = await this.storage.readJSON<{ blockchain: string; wallet: string; address: string }>(
 				this.key(`keyMeta${keyIdx}`),
 			);
 			const keyBytes = await this.storage.readBytes(this.key(`key${keyIdx}`));
@@ -107,6 +112,7 @@ export class YlideKeyStore {
 			}
 			this.keys.push({
 				blockchain: keyMeta.blockchain,
+				wallet: keyMeta.wallet,
 				address: keyMeta.address,
 				key,
 			});
@@ -130,13 +136,12 @@ export class YlideKeyStore {
 	}
 
 	/**
-	 * Method to retrieve key for certain blockchain and address
-	 * @param blockchain Blockchain name
+	 * Method to retrieve key for certain address
 	 * @param address User's address
 	 * @returns Key reference or `null` if nothing was found.
 	 */
-	get(blockchain: string, address: string) {
-		const keyEntry = this.keys.find(t => t.blockchain === blockchain && t.address === address);
+	get(address: string) {
+		const keyEntry = this.keys.find(t => t.address === address);
 		if (!keyEntry) {
 			return null;
 		} else {

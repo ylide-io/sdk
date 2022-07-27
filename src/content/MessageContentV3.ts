@@ -17,7 +17,7 @@ export class MessageContentV3 extends MessageContent {
 	 */
 	private constructor(private readonly isPlain: boolean, subjectBytes: Uint8Array, bytes: Uint8Array) {
 		super();
-		const buf = SmartBuffer.ofSize(2 + 2 + subjectBytes.length + bytes.length);
+		const buf = SmartBuffer.ofSize(1 + 1 + 2 + subjectBytes.length + bytes.length);
 
 		buf.writeUint8(MessageContentV3.VERSION);
 		buf.writeUint8(this.isPlain ? 0x01 : 0x02);

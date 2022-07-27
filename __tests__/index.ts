@@ -1,7 +1,7 @@
 import Ylide from '../';
 import { describe, it, before } from 'mocha';
-import { TestMessagingLayer, testMessagingState } from './TestReadingController';
-import { AbstractMessagingLayer } from '../abstracts/AbstractSendingController';
+import { TestMessagingLayer, testMessagingState } from './TestBlockchainController';
+import { AbstractMessagingLayer } from '../abstracts/AbstractWalletController';
 import { expect } from 'chai';
 import nacl from 'tweetnacl';
 import { IGenericAccount } from '../types/IGenericAccount';

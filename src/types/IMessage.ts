@@ -1,3 +1,5 @@
+import { IGenericAccount } from './IGenericAccount';
+
 /**
  * @category Content
  * @description Interface representing base message metadata and content

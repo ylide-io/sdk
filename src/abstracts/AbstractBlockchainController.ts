@@ -1,12 +1,21 @@
-import { IMessage, IMessageContent, IMessageCorruptedContent, RetrievingMessagesOptions } from '../types/IMessage';
+import {
+	MessageKey,
+	PublicKey,
+	IExtraEncryptionStrateryBulk,
+	IExtraEncryptionStrateryEntry,
+	IMessage,
+	IMessageContent,
+	IMessageCorruptedContent,
+	RetrievingMessagesOptions,
+} from '..';
 
 /**
  * @description It's an abstract class designated to define an interface to read messaging data from blockchain: messages metadata, content and public keys of recipients
  * @example Example of how to define your own ancestor:
  * ```ts
- * import { Ylide, AbstractReadingController } from '@ylide/sdk';
+ * import { Ylide, AbstractBlockchainController } from '@ylide/sdk';
  *
- * class EverscaleReadingController extends AbstractReadingController {
+ * class EverscaleBlockchainController extends AbstractBlockchainController {
  *     readonly registryContract: RegistryContract;
  *
  *     constructor(options: { dev?: boolean } = {}) {
@@ -15,36 +24,30 @@ import { IMessage, IMessageContent, IMessageCorruptedContent, RetrievingMessages
  *         // ...
  *     }
  *
- *     static blockchainType(): string {
- *         return "everscale";
- *     }
- *
  *     async extractAddressFromPublicKey(
- *         publicKey: Uint8Array
+ *         publicKey: PublicKey
  *     ): Promise<string | null> {
- *         return this.registryContract.getAddressByPublicKey(publicKey);
+ *         return this.registryContract.getAddressByPublicKey(publicKey.bytes);
  *     }
  *
  *     // Other implementations ...
  * }
  * ```
  */
-export abstract class AbstractReadingController {
-	constructor(options: any) {
+export abstract class AbstractBlockchainController {
+	constructor(options?: any) {
 		//
-	}
-
-	/**
-	 * Static method to get the name of the blockchain this reading controller can work with
-	 */
-	static blockchainType(): string {
-		throw new Error(`Method not implemented`);
 	}
 
 	/**
 	 * Method to check address validity in this blockchain
 	 */
 	abstract isAddressValid(address: string): boolean;
+
+	/**
+	 * Method to make address from 32 bytes array
+	 */
+	abstract uint256ToAddress(value: Uint8Array): string;
 
 	/**
 	 * Method to retrieve recipient rules for getting messages
@@ -83,16 +86,42 @@ export abstract class AbstractReadingController {
 	 *
 	 * @param address - Recipient's wallet address
 	 */
-	abstract extractPublicKeyFromAddress(address: string): Promise<Uint8Array | null>;
+	abstract extractPublicKeyFromAddress(address: string): Promise<PublicKey | null>;
 
 	/**
 	 * Method to get address of the recipient by public key. Used to verify integrity of the message. Returns `null` if address was not connected to this public key.
 	 *
 	 * @param publicKey - Public key of recipient
 	 */
-	abstract extractAddressFromPublicKey(publicKey: Uint8Array): Promise<string | null>;
+	abstract extractAddressFromPublicKey(publicKey: PublicKey): Promise<string | null>;
+
+	/**
+	 * Method to get available non-Ylide encryption strategies for address
+	 *
+	 * @param address - Recipient's wallet address
+	 */
+	abstract getExtraEncryptionStrategiesFromAddress(address: string): Promise<IExtraEncryptionStrateryEntry[]>;
+
+	/**
+	 * Method to get available non-Ylide encryption strategies for address
+	 *
+	 * @param address - Recipient's wallet address
+	 */
+	abstract getSupportedExtraEncryptionStrategies(): string[];
+
+	abstract prepareExtraEncryptionStrategyBulk(
+		entries: IExtraEncryptionStrateryEntry[],
+	): Promise<IExtraEncryptionStrateryBulk>;
+
+	/**
+	 * Method to get available non-Ylide encryption strategies for address
+	 *
+	 * @param address - Recipient's wallet address
+	 */
+	abstract executeExtraEncryptionStrategy(
+		entries: IExtraEncryptionStrateryEntry[],
+		bulk: IExtraEncryptionStrateryBulk,
+		addedPublicKeyIndex: number | null,
+		messageKey: Uint8Array,
+	): Promise<MessageKey[]>;
 }
-
-export type AbstractReadingControllerClass = typeof AbstractReadingController;
-
-export type AbstractReadingControllerConstructor = new (options: any) => AbstractReadingController;

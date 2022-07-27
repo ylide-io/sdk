@@ -1,107 +1,87 @@
-import { MessageContentV3 } from './MessageContentV3';
-import pako from 'pako';
-import nacl from 'tweetnacl';
-import { symmetricDecrypt, symmetricEncrypt } from '../crypto/symmetric';
-import { MessageContent } from '.';
+import SmartBuffer from '@ylide/smart-buffer';
+import { PublicKey } from '../types';
 
 /**
  * @category Content
- * @description Helper class to compress and encrypt message content
+ * @description Internal helper class to pack content into container and split it into chunks (for blockchains with transaction size limit)
  * @example
  * ```ts
  * // Packing:
  *
+ * const recipientAddresses: string[] = [...];
+ *
  * const messageContent = MessageContentV3.plain('Hi there', 'Hello world everyone :)');
- * const { content: encodedContent, key } = MessageContainer.encodeContent(messageContent);
- * // Content is bytes array with compressed and encrypted content. Key is a symmetric key which was used for encryption
+ * const { encodedContent, key } = MessageEncodedContent.encodeContent(messageContent);
+ * const preparedRecipients = await sender.prepareRecipients(recipientAddresses);
+ * const container = MessageContainer.packContainer(ServiceCode.SDK, senderPublicKey, encodedContent)
+ * const chunks = MessageChunks.packContainer();
+ * // Broadcast chunks through blockchain
  *
  * // Unpacking:
- * const decodedContent = MessageContainer.decodeContent(encodedContent, key);
- * console.log('Your message: ', decodedContent);
+ * const chunks: Uint8Array[] = await readChunksFromSomewhere();
+ * const content = MessageChunks.unpackContainer(chunks);
+ * console.log('Your message: ', content);
  * ```
  */
 export class MessageContainer {
+	static VERSION = 0x05;
+
 	/**
-	 * Method to compress arbitrary bytes
-	 * @param bytes Bytes you want to compress
-	 * @returns Bytes of compression result
+	 * Method to prepare outgoing message for publishing to blockchain
+	 *
+	 * @param serviceCode Service code of an app used to send message. Used for analytics, could be left zero-filled.
+	 * @param senderPublicKey Public key of message sender
+	 * @param contentBytes Content bytes of the message (usually the result of `MessageContent.toBytes()`)
+	 * @param chunkSize Max size of one chunk
+	 * @returns Wrapped content splet into chunks
 	 */
-	private static pack(bytes: Uint8Array): Uint8Array {
-		return pako.deflate(bytes);
+	static packContainer(serviceCode: number, senderPublicKeys: PublicKey[], contentBytes: Uint8Array) {
+		const keysSize = senderPublicKeys.reduce((p, c) => p + c.getPackedSize(), 0);
+		const buf = SmartBuffer.ofSize(1 + 4 + 1 + keysSize + 4 + contentBytes.length);
+		buf.writeUint8(this.VERSION);
+		buf.writeUint32(serviceCode);
+		buf.writeUint8(senderPublicKeys.length);
+		for (const senderPublicKey of senderPublicKeys) {
+			senderPublicKey.toPackedBytesInBuffer(buf);
+		}
+		buf.writeBytes32Length(contentBytes);
+		return buf.bytes;
 	}
 
 	/**
-	 * Method to decompress bytes
-	 * @param bytes Compressed bytes you want to decompress
-	 * @returns Bytes of decompression result
+	 * Method to retrieve message content and metadata from containers' chunks
+	 *
+	 * @param bytes Raw bytes message container
+	 * @returns Instance of `MessageContent` class ancestor
 	 */
-	private static unpack(bytes: Uint8Array): Uint8Array {
-		return pako.inflate(bytes);
-	}
-
-	/**
-	 * Method to encode (compress & encrypt) raw message content bytes
-	 * @param content Bytes of the content you want to encode
-	 * @returns Encoded content and key used for encryption
-	 */
-	static encodeRawContent(content: Uint8Array) {
-		const packedBytes = this.pack(content);
-		const key = nacl.randomBytes(32);
-		return {
-			content: symmetricEncrypt(packedBytes, key),
-			key,
-		};
-	}
-
-	/**
-	 * Method to decode raw message content bytes
-	 * @param content Encoded (compressed & encrypted) message content bytes
-	 * @param key Symmetric key used for encryption
-	 * @returns Decoded message content bytes
-	 */
-	static decodeRawContent(content: Uint8Array, key: Uint8Array) {
-		const packedBytes = symmetricDecrypt(content, key);
-		return this.unpack(packedBytes);
-	}
-
-	/**
-	 * Method to get bytes of message content
-	 * @param content `MessageContent` instance to convert into bytes
-	 * @returns Raw bytes of message content
-	 */
-	static messageContentToBytes(content: MessageContent) {
-		return content.toBytes();
-	}
-
-	/**
-	 * Method to get message content instance from raw message content bytes
-	 * @param bytes Raw bytes of message content
-	 * @returns Instance of `MessageContent` ancestor
-	 */
-	static messageContentFromBytes(bytes: Uint8Array) {
-		if (bytes.length && bytes[0] === 0x03) {
-			return MessageContentV3.fromBytes(bytes);
+	static unpackContainter(bytes: Uint8Array) {
+		const buf = new SmartBuffer(bytes);
+		const version = buf.readUint8();
+		if (version === 0x05) {
+			return this.unpackContainerV5(buf);
 		} else {
-			throw new Error('Unsupported message content version');
+			throw new Error(`Version ${version} is not supported`);
 		}
 	}
 
 	/**
-	 * Method to encode `MessageContent` instance
-	 * @param content `MessageContent` instance
-	 * @returns Bytes of encoded message
+	 * Method to unpack container of version 5.
+	 * @param buf Message content bytes
+	 * @returns Metadata of the container and message content
 	 */
-	static encodeContent(content: MessageContent) {
-		return this.encodeRawContent(this.messageContentToBytes(content));
-	}
-
-	/**
-	 * Method to decode raw message content bytes into `MessageContent` instance
-	 * @param content Raw encoded message content
-	 * @param key Symmetric key used for encryption
-	 * @returns Instance of `MessageContent` ancestor
-	 */
-	static decodeContent(content: Uint8Array, key: Uint8Array) {
-		return this.messageContentFromBytes(this.decodeRawContent(content, key));
+	static unpackContainerV5(buf: SmartBuffer) {
+		const serviceCode = buf.readUint32();
+		const keysLength = buf.readUint8();
+		const senderPublicKeys: PublicKey[] = [];
+		for (let i = 0; i < keysLength; i++) {
+			senderPublicKeys.push(PublicKey.fromPackedBytesInBuffer(buf));
+		}
+		const content = buf.readBytes32Length();
+		return {
+			version: 0x05,
+			serviceCode,
+			senderPublicKeys,
+			content,
+		};
 	}
 }

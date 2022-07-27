@@ -1,7 +1,7 @@
 import Ylide from '..';
 import { IGenericAccount } from '../types/IGenericAccount';
 import { IMessage, RetrievingMessagesOptions } from '../types/IMessage';
-import { AbstractReadingController } from '../abstracts/AbstractReadingController';
+import { AbstractBlockchainController } from '../abstracts/AbstractBlockchainController';
 
 export const testMessagingState = {
 	auth: false,
@@ -26,7 +26,7 @@ export const testMessagingState = {
 	requestAuthHandler: (async () => null) as () => Promise<IGenericAccount | null>,
 };
 
-export class TestReadingController extends AbstractReadingController {
+export class TestBlockchainController extends AbstractBlockchainController {
 	constructor(options: any) {
 		super(options);
 	}

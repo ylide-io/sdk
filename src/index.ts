@@ -1,13 +1,10 @@
-import {
-	AbstractReadingController,
-	AbstractReadingControllerClass,
-	AbstractReadingControllerConstructor,
-} from './abstracts/AbstractReadingController';
-import {
-	AbstractSendingController,
-	AbstractSendingControllerConstructor,
-	AbstractSendingControllerClass,
-} from './abstracts/AbstractSendingController';
+import { AbstractBlockchainController, BlockchainControllerFactory, WalletControllerFactory } from './abstracts';
+import { AbstractWalletController } from './abstracts/AbstractWalletController';
+import { MessageContainer, MessageContent, MessageEncodedContent, MessageKey } from './content';
+import { DynamicEncryptionRouter } from './cross-chain/DynamicEncryptionRouter';
+import { sha256 } from './crypto';
+import { YlideKeyStore } from './keystore';
+import { IGenericAccount, IMessage, IMessageContent, PublicKeyType, ServiceCode } from './types';
 
 export * from './types';
 export * from './abstracts';
@@ -26,159 +23,143 @@ export type BlockchainWalletMap<T> = BlockchainMap<WalletMap<T>>;
  * @example
  * ```ts
  * import { Ylide } from '@ylide/sdk';
- * import { EverscaleReadingController, EverscaleSendingController } from '@ylide/everscale';
+ * import { everscaleBlockchainFactory, everscaleWalletFactory } from '@ylide/everscale';
  *
- * Ylide.registerReader(EverscaleReadingController);
- * Ylide.registerSender(EverscaleSendingController);
+ * Ylide.registerBlockchain(everscaleBlockchainFactory);
+ * Ylide.registerWallet(everscaleWalletFactory);
  *
- * const sendingCls = Ylide.getSender('everscale', 'everwallet');
- * const readingCls = Ylide.getReader('everscale');
- * const wallet = await Ylide.instantiateWallet(sendingCls, readingCls, { dev: false });
+ * const wallet = await Ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
  *
- * const isMyAddressValid = wallet.reader.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
+ * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
  * ```
  */
 export class Ylide {
-	private static _senders: BlockchainWalletMap<AbstractSendingControllerClass> = {};
-	private static _readers: BlockchainMap<AbstractReadingControllerClass> = {};
+	private static _walletFactories: BlockchainWalletMap<WalletControllerFactory> = {};
+	private static _blockchainFactories: BlockchainMap<BlockchainControllerFactory> = {};
 
 	/**
-	 * Use this method to register all available blockchain senders to Ylide.
+	 * Use this method to register all available blockchain wallets to Ylide.
 	 * @example
 	 * ```ts
 	 * import { Ylide } from '@ylide/sdk';
-	 * import { EverscaleSendingController } from '@ylide/everscale';
+	 * import { everscaleWalletFactory } from '@ylide/everscale';
 	 *
-	 * Ylide.registerSender(EverscaleSendingController);
+	 * Ylide.registerWallet(everscaleWalletFactory);
 	 * ```
-	 * @param cls Sending controller which you want to register
+	 * @param factory Wallet controller factory which you want to register
 	 */
-	static registerSender(cls: AbstractSendingControllerClass) {
-		this._senders[cls.blockchainType()] = {
-			...this._senders[cls.blockchainType()],
-			[cls.walletType()]: cls,
+	static registerWalletFactory(factory: WalletControllerFactory) {
+		this._walletFactories[factory.blockchain] = {
+			...this._walletFactories[factory.blockchain],
+			[factory.wallet]: factory,
 		};
 	}
 
 	/**
-	 * Use this method to register all available blockchain readers to Ylide.
+	 * Use this method to register all available blockchain blockchains to Ylide.
 	 * @example
 	 * ```ts
 	 * import { Ylide } from '@ylide/sdk';
-	 * import { EverscaleReadingController } from '@ylide/everscale';
+	 * import { everscaleBlockchainFactory } from '@ylide/everscale';
 	 *
-	 * Ylide.registerReader(EverscaleReadingController);
+	 * Ylide.registerBlockchain(everscaleBlockchainFactory);
 	 * ```
-	 * @param cls Reading controller which you want to register
+	 * @param factory Blockchain controller factory which you want to register
 	 */
-	static registerReader(cls: AbstractReadingControllerClass) {
-		this._readers[cls.blockchainType()] = cls;
+	static registerBlockchainFactory(factory: BlockchainControllerFactory) {
+		this._blockchainFactories[factory.blockchain] = factory;
 	}
 
 	/**
 	 * Method to check availability of a certain blockchain for reading messages
 	 * @example
 	 * ```ts
-	 * Ylide.isReaderRegistered('everscale'); // return true if `Ylide.registerReader` was called with this blockchain reader before
+	 * Ylide.isBlockchainRegistered('everscale'); // return true if `Ylide.registerBlockchain` was called with this blockchain controller factory before
 	 * ```
 	 * @param blockchain Name of blockchain you want to check
 	 */
-	static isReaderRegistered(blockchain: string) {
-		return !!this._readers[blockchain];
+	static isBlockchainRegistered(blockchain: string) {
+		return !!this._blockchainFactories[blockchain];
 	}
 
 	/**
 	 * Method to check availability of a certain blockchain for sending messages
 	 * @example
 	 * ```ts
-	 * Ylide.isSenderRegistered('everscale'); // return true if `Ylide.registerSender` was called with this blockchain sender before
+	 * Ylide.isWalletRegistered('everscale', 'everwallet'); // return true if `Ylide.registerWallet` was called with this wallet factory before
 	 * ```
 	 * @param blockchain Name of blockchain you want to check
 	 */
-	static isSenderRegistered(blockchain: string, wallet: string) {
-		return !!(this._senders[blockchain] && this._senders[blockchain][wallet]);
+	static isWalletRegistered(blockchain: string, wallet: string) {
+		return !!(this._walletFactories[blockchain] && this._walletFactories[blockchain][wallet]);
 	}
 
 	/**
-	 * Method to get reading controller class for a certain blockchain
-	 * @example
-	 * ```ts
-	 * const cls = Ylide.getReader('everscale');
-	 * const everscaleReader = await Ylide.instantiateReader(cls);
-	 * // ...
-	 * const isMyAddressValid = everscaleReader.isAddressValid('some address');
-	 * ```
+	 * Method to get blockchain controller factory for a certain blockchain
 	 * @param blockchain Name of blockchain
 	 */
-	static getReader(blockchain: string) {
-		return this._readers[blockchain];
+	static getBlockchainControllerFactory(blockchain: string) {
+		return this._blockchainFactories[blockchain];
 	}
 
 	/**
-	 * Method to get sending controller class for a certain blockchain
-	 * @example
-	 * ```ts
-	 * const cls = Ylide.getSender('everscale', 'everwallet');
-	 * const everscaleSender = await Ylide.instantiateSender(cls);
-	 * // ...
-	 * const myAccount = await everscaleSender.getAuthenticatedAccount();
-	 * ```
+	 * Method to get wallet controller factory for a certain blockchain and wallet type
 	 * @param blockchain Name of blockchain
 	 * @param wallet Name of in-browser wallet
 	 */
-	static getSender(blockchain: string, wallet: string) {
-		return this._senders[blockchain][wallet];
+	static getWalletControllerFactory(blockchain: string, wallet: string) {
+		return this._walletFactories[blockchain][wallet];
 	}
 
 	/**
-	 * Method to get registered sending controllers
+	 * Method to get registered wallet controllers
 	 * @example
 	 * ```ts
-	 * const ethereumWalletSenders = Ylide.sendersList.filter(t => t.blockchain === 'ethereum');
+	 * const ethereumWallets = Ylide.walletsList.filter(t => t.blockchain === 'ethereum');
 	 * ```
 	 */
-	static get sendersList() {
-		return Object.keys(this._senders)
+	static get walletsList() {
+		return Object.keys(this._walletFactories)
 			.map(blockchain =>
-				Object.keys(this._senders[blockchain]).map(wallet => ({
+				Object.keys(this._walletFactories[blockchain]).map(wallet => ({
 					blockchain,
 					wallet,
-					cls: this._senders[blockchain][wallet],
+					factory: this._walletFactories[blockchain][wallet],
 				})),
 			)
 			.flat();
 	}
 
 	/**
-	 * Method to get registered reading controllers
+	 * Method to get registered blockchain controllers
 	 * @example
 	 * ```ts
-	 * const ethereumWalletReaders = Ylide.readersList.filter(t => t.blockchain === 'ethereum');
+	 * const ethereumChains = Ylide.blockchainsList.filter(t => t.blockchain === 'ethereum');
 	 * ```
 	 */
-	static get readersList() {
-		return Object.keys(this._readers).map(blockchain => ({
+	static get blockchainsList() {
+		return Object.keys(this._blockchainFactories).map(blockchain => ({
 			blockchain,
-			cls: this._readers[blockchain],
+			factory: this._blockchainFactories[blockchain],
 		}));
 	}
 
 	/**
-	 * Method to get a list of registered sending controllers that are available in the user's browser (wallets installed)
+	 * Method to get a list of registered wallet controllers that are available in the user's browser (wallets installed)
 	 * @example
 	 * ```ts
-	 * const availableSenders = await Ylide.getAvailableSenders();
+	 * const availableWallets = await Ylide.getAvailableWallets();
 	 * ```
 	 */
-	static async getAvailableSenders(): Promise<AbstractSendingControllerClass[]> {
-		const list = this.sendersList;
+	static async getAvailableWallets(): Promise<WalletControllerFactory[]> {
+		const list = this.walletsList;
 
-		const result: AbstractSendingControllerClass[] = [];
+		const result: WalletControllerFactory[] = [];
 
 		for (const sender of list) {
 			try {
-				if (await sender.cls.isWalletAvailable()) {
-					result.push(sender.cls);
+				if (await sender.factory.isWalletAvailable()) {
+					result.push(sender.factory);
 				}
 			} catch (e) {
 				//
@@ -189,68 +170,163 @@ export class Ylide {
 	}
 
 	/**
-	 * Method to get a list of registered reading controllers
+	 * Method to get a list of registered blockchain controllers
 	 * @example
 	 * ```ts
-	 * const availableReaders = await Ylide.getAvailableReaders();
+	 * const availableBlockchains = await Ylide.getAvailableBlockchains();
 	 * ```
 	 */
-	static async getAvailableReaders(): Promise<AbstractReadingControllerClass[]> {
-		return this.readersList.map(r => r.cls);
+	static async getAvailableBlockchains(): Promise<BlockchainControllerFactory[]> {
+		return this.blockchainsList.map(r => r.factory);
 	}
 
 	/**
-	 * Method to instantiate both sending and reading controllers with the same options
+	 * Method to instantiate both wallet and blockchain controllers with the same options
 	 * @example
 	 * ```ts
-	 * const sendingCls = Ylide.getSender('everscale', 'everwallet');
-	 * const readingCls = Ylide.getReader('everscale');
-	 * const wallet = await Ylide.instantiateWallet(sendingCls, readingCls, { dev: false });
+	 * const wallet = await Ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
 	 *
-	 * const isMyAddressValid = wallet.reader.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
+	 * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
 	 */
 	static async instantiateWallet(
-		senderCls: AbstractSendingControllerClass,
-		readerCls: AbstractReadingControllerClass,
+		blockchain: string,
+		wallet: string,
 		options?: any,
+		blockchainController?: AbstractBlockchainController,
 	) {
-		const sender = await this.instantiateSender(senderCls, options);
-		const reader = this.instantiateReader(readerCls, options);
-		return { sender, reader };
-	}
-
-	/**
-	 * Method to instantiate sending controller with double-check of wallet availability
-	 * @example
-	 * ```ts
-	 * const sendingCls = Ylide.getSender('everscale', 'everwallet');
-	 * const sender = await Ylide.instantiateSender(sendingCls, { dev: false });
-	 *
-	 * const myAccount = await sender.getAuthenticatedAccount();
-	 * ```
-	 */
-	static async instantiateSender(
-		provider: AbstractSendingControllerClass,
-		options?: any,
-	): Promise<AbstractSendingController> {
-		if (!(await provider.isWalletAvailable())) {
+		const blockchainControllerFactory = this.getBlockchainControllerFactory(blockchain);
+		const walletControllerFactory = this.getWalletControllerFactory(blockchain, wallet);
+		if (!(await walletControllerFactory.isWalletAvailable())) {
 			throw new Error('Wallet is not available');
 		}
-		return new (provider as unknown as AbstractSendingControllerConstructor)(options);
+		blockchainController = blockchainController || blockchainControllerFactory.create(options);
+		const walletController = walletControllerFactory.create(blockchainController, options);
+		return { blockchainController, walletController };
 	}
 
 	/**
-	 * Method to instantiate reading controller
+	 * Method to instantiate blockchain controller
 	 * @example
 	 * ```ts
-	 * const readingCls = Ylide.getReader('everscale');
-	 * const reader = await Ylide.instantiateReader(readingCls, { dev: false });
+	 * const blockchainController = await Ylide.instantiateBlockchain('everscale', { dev: false });
 	 *
-	 * const isMyAddressValid = reader.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
+	 * const isMyAddressValid = blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
 	 */
-	static instantiateReader(provider: AbstractReadingControllerClass, options?: any): AbstractReadingController {
-		return new (provider as unknown as AbstractReadingControllerConstructor)(options);
+	static instantiateBlockchain(blockchain: string, options?: any) {
+		const blockchainControllerFactory = this.getBlockchainControllerFactory(blockchain);
+		return blockchainControllerFactory.create(options);
 	}
+
+	// non-singleton part starts here:
+
+	readonly blockchains: AbstractBlockchainController[] = [];
+	readonly blockchainsMap: BlockchainMap<AbstractBlockchainController> = {};
+	readonly wallets: AbstractWalletController[] = [];
+	readonly walletsMap: BlockchainWalletMap<AbstractWalletController> = {};
+
+	constructor(public readonly keystore: YlideKeyStore) {
+		//
+	}
+
+	async addBlockchain(blockchain: string, options?: any) {
+		if (this.blockchainsMap[blockchain]) {
+			throw new Error('For now we support only one blockchain reader per blockchain per instance');
+		}
+		const ctrl = await Ylide.instantiateBlockchain(blockchain, options);
+		this.blockchainsMap[blockchain] = ctrl;
+		this.blockchains.push(ctrl);
+		return ctrl;
+	}
+
+	async addWallet(blockchain: string, wallet: string, options?: any) {
+		if (this.walletsMap[blockchain] && this.walletsMap[blockchain][wallet]) {
+			throw new Error('For now we support only one wallet writer per blockchain per instance');
+		}
+		const ctrl = await Ylide.instantiateWallet(blockchain, wallet, options, this.blockchainsMap[blockchain]);
+		if (!this.blockchainsMap[blockchain]) {
+			this.blockchainsMap[blockchain] = ctrl.blockchainController;
+			this.blockchains.push(ctrl.blockchainController);
+		}
+		this.walletsMap[blockchain] = {
+			...(this.walletsMap[blockchain] || {}),
+			[wallet]: ctrl.walletController,
+		};
+		this.wallets.push(ctrl.walletController);
+		return ctrl;
+	}
+
+	async sendMessage({
+		wallet,
+		sender,
+		content,
+		recipients,
+		serviceCode = ServiceCode.SDK,
+		copyOfSent = true,
+	}: SendMessageArgs) {
+		const { encodedContent, key } = MessageEncodedContent.encodeContent(content);
+		const actualRecipients = recipients.map(r => ({ keyAddress: r, address: r }));
+		if (copyOfSent) {
+			actualRecipients.push({
+				keyAddress: sender.address,
+				address: wallet.blockchainController.uint256ToAddress(sha256(sender.address)),
+			});
+		}
+		const route = await DynamicEncryptionRouter.findEncyptionRoute(actualRecipients, this.blockchains);
+		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
+		const container = MessageContainer.packContainer(serviceCode, publicKeys, encodedContent);
+		return wallet.publishMessage(sender, container, processedRecipients);
+	}
+
+	async decryptMessageContent(msg: IMessage, content: IMessageContent, receipientKeyAddress?: string) {
+		if (!receipientKeyAddress) {
+			receipientKeyAddress = msg.recipientAddress;
+		}
+		const unpackedContent = await MessageContainer.unpackContainter(content.content);
+		const msgKey = MessageKey.fromBytes(msg.key);
+		const publicKey = unpackedContent.senderPublicKeys[msgKey.publicKeyIndex];
+		if (!this.walletsMap[msg.blockchain]) {
+			throw new Error('Wallet of this message recipient is not registered');
+		}
+		const wallets = Object.values(this.walletsMap[msg.blockchain]);
+		const walletAccounts = await Promise.all(wallets.map(w => w.getAuthenticatedAccount()));
+		const accountIdx = walletAccounts.findIndex(a => a && a.address === receipientKeyAddress);
+		if (accountIdx === -1) {
+			throw new Error('Wallet of this message recipient is not registered');
+		}
+		const wallet = wallets[accountIdx];
+		const account = walletAccounts[accountIdx]!;
+		let symmKey: Uint8Array | null = null;
+		if (publicKey.type === PublicKeyType.YLIDE) {
+			const ylideKey = this.keystore.get(account.address);
+			if (!ylideKey) {
+				throw new Error('Key of this message recipient is not derived');
+			}
+			await ylideKey.execute('read mail', async keypair => {
+				symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
+			});
+		} else {
+			symmKey = await wallet.decryptMessageKey(publicKey, account, msgKey.encryptedMessageKey);
+		}
+		if (!symmKey) {
+			throw new Error('Unable to find decryption route');
+		}
+		const decryptedContent = MessageEncodedContent.decodeRawContent(unpackedContent.content, symmKey);
+		const decodedContent = MessageEncodedContent.messageContentFromBytes(decryptedContent);
+		return {
+			...decodedContent,
+			serviceCode: unpackedContent.serviceCode,
+			decryptedContent,
+		};
+	}
+}
+
+export interface SendMessageArgs {
+	wallet: AbstractWalletController;
+	sender: IGenericAccount;
+	content: MessageContent;
+	recipients: string[];
+	serviceCode?: number;
+	copyOfSent?: boolean;
 }
