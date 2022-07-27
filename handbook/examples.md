@@ -117,17 +117,14 @@ First of all, let's build message's content:
 const content = MessageContentV3.plain('Test subject', 'Hello Ylide world :)');
 ```
 
-Now, we should get public key of the recipient;
+Now, send the message;
 
 ```ts
-const recipient = '0:86c4c21b15f373d77e80d6449358cfe59fc9a03e756052ac52258d8dd0ceb977';
-
-// Now we execute boxed function with decrypted keypair:
 const msgId = await ylide.sendMessage({
 	wallet: provider.wallet,
 	sender: account,
 	content,
-	recipients: [recipient],
+	recipients: ['0:86c4c21b15f373d77e80d6449358cfe59fc9a03e756052ac52258d8dd0ceb977'],
 });
 ```
 
