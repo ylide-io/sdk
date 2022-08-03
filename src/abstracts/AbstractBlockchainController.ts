@@ -6,8 +6,8 @@ import {
 	IMessage,
 	IMessageContent,
 	IMessageCorruptedContent,
-	RetrievingMessagesOptions,
 } from '..';
+import { Uint256 } from '../types/Uint256';
 
 /**
  * @description It's an abstract class designated to define an interface to read messaging data from blockchain: messages metadata, content and public keys of recipients
@@ -45,26 +45,41 @@ export abstract class AbstractBlockchainController {
 	abstract isAddressValid(address: string): boolean;
 
 	/**
-	 * Method to make address from 32 bytes array
+	 * Method to convert address to 32 bytes array
 	 */
-	abstract uint256ToAddress(value: Uint8Array): string;
+	abstract addressToUint256(address: string): Uint256;
 
 	/**
 	 * Method to retrieve recipient rules for getting messages
 	 *
 	 * @param address - Address of the wallet you want to retrieve rules of
 	 */
-	abstract getRecipientReadingRules(address: string): Promise<any>;
+	abstract getRecipientReadingRules(address: Uint256): Promise<any>;
 
 	/**
 	 * Method to retrieve messages from this blockchain for a certain recipient
 	 *
-	 * @param recipientAddress - Address of the recipient
-	 * @param options - Rules for filtering messages history
+	 * @param recipient - Address of the recipient
+	 * @param fromTimestamp - Start time (not included) for filtering messages history
+	 * @param toTimestamp - End time (included) for filtering messages history
 	 */
-	abstract retrieveMessageHistoryByDates(
-		recipientAddress: string,
-		options?: RetrievingMessagesOptions,
+	abstract retrieveMessageHistoryByTime(
+		recipient: Uint256 | null,
+		fromTimestamp?: number,
+		toTimestamp?: number,
+	): Promise<IMessage[]>;
+
+	/**
+	 * Method to retrieve messages from this blockchain for a certain recipient
+	 *
+	 * @param recipient - Address of the recipient
+	 * @param fromMessage - Start message (not included) for filtering messages history
+	 * @param toMessage - End message (not included) for filtering messages history
+	 */
+	abstract retrieveMessageHistoryByBounds(
+		recipient: Uint256 | null,
+		fromMessage?: IMessage,
+		toMessage?: IMessage,
 	): Promise<IMessage[]>;
 
 	/**
@@ -79,7 +94,7 @@ export abstract class AbstractBlockchainController {
 	 *
 	 * @param msg - Message metadata
 	 */
-	abstract retrieveMessageContentByMsgId(msgId: string): Promise<IMessageContent | IMessageCorruptedContent | null>;
+	abstract retrieveMessageContentByMsgId(msgId: Uint256): Promise<IMessageContent | IMessageCorruptedContent | null>;
 
 	/**
 	 * Method to get public key of the recipient by address. If key is not registered - you will get `null`.
@@ -87,13 +102,6 @@ export abstract class AbstractBlockchainController {
 	 * @param address - Recipient's wallet address
 	 */
 	abstract extractPublicKeyFromAddress(address: string): Promise<PublicKey | null>;
-
-	/**
-	 * Method to get address of the recipient by public key. Used to verify integrity of the message. Returns `null` if address was not connected to this public key.
-	 *
-	 * @param publicKey - Public key of recipient
-	 */
-	abstract extractAddressFromPublicKey(publicKey: PublicKey): Promise<string | null>;
 
 	/**
 	 * Method to get available non-Ylide encryption strategies for address

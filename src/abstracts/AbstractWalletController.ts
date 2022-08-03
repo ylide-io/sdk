@@ -1,4 +1,5 @@
 import { MessageKey, AbstractBlockchainController, PublicKey, IGenericAccount } from '..';
+import { Uint256 } from '../types/Uint256';
 
 /**
  * @description It's an abstract class designated to define an interface to send messages through blockchain and publish public keys
@@ -62,8 +63,8 @@ export abstract class AbstractWalletController {
 	abstract publishMessage(
 		me: IGenericAccount,
 		contentData: Uint8Array,
-		recipients: { address: string; messageKey: MessageKey }[],
-	): Promise<string | null>;
+		recipients: { address: Uint256; messageKey: MessageKey }[],
+	): Promise<Uint256 | null>;
 
 	/**
 	 * Method to connect user's public key with his address

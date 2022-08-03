@@ -3,6 +3,7 @@ import { AbstractBlockchainController } from '../abstracts';
 import { MessageKey } from '../content';
 import { symmetricEncrypt } from '../crypto';
 import { IExtraEncryptionStrateryEntry, PublicKey, PublicKeyType } from '../types';
+import { Uint256 } from '../types/Uint256';
 
 export interface IAvailableStrategy {
 	type: string;
@@ -12,14 +13,20 @@ export interface IAvailableStrategy {
 
 export class DynamicEncryptionRouter {
 	static async findEncyptionRoute(
-		recipients: { keyAddress: string; address: string }[],
+		recipients: {
+			keyAddress: Uint256;
+			keyAddressOriginal: string;
+			address: Uint256;
+			blockchain: AbstractBlockchainController;
+		}[],
 		blockchainControllers: AbstractBlockchainController[],
 		preferredStrategy: string = 'ylide',
 	) {
 		const recipientsMap = await this.identifyEncryptionStrategies(
-			recipients.map(r => r.keyAddress),
+			recipients.map(r => ({ address: r.keyAddress, original: r.keyAddressOriginal, blockchain: r.blockchain })),
 			blockchainControllers,
 		);
+		console.log('purr');
 		return this.findBestEncryptionRouting(recipients, recipientsMap, blockchainControllers, preferredStrategy);
 	}
 
@@ -34,7 +41,7 @@ export class DynamicEncryptionRouter {
 		const ylideEphemeral = nacl.box.keyPair.fromSecretKey(nacl.randomBytes(32));
 		const ylideEphemeralPublic = PublicKey.fromBytes(PublicKeyType.YLIDE, ylideEphemeral.publicKey);
 		const publicKeys: PublicKey[] = [];
-		const result: { address: string; messageKey: MessageKey }[] = [];
+		const result: { address: Uint256; messageKey: MessageKey }[] = [];
 		for (const entity of route) {
 			if (entity.type === 'ylide') {
 				const pkIdx = publicKeys.push(ylideEphemeralPublic) - 1;
@@ -67,7 +74,7 @@ export class DynamicEncryptionRouter {
 				);
 				result.push(
 					...temp.map((t, idx) => ({
-						address: entries[idx].address,
+						address: entity.blockchainController.addressToUint256(entries[idx].address),
 						messageKey: t,
 					})),
 				);
@@ -80,18 +87,18 @@ export class DynamicEncryptionRouter {
 	}
 
 	private static async identifyEncryptionStrategies(
-		recipients: string[],
+		recipients: { address: Uint256; original: string; blockchain: AbstractBlockchainController }[],
 		blockchainControllers: AbstractBlockchainController[],
 	) {
-		const recipientsMap: Record<string, IAvailableStrategy[]> = {};
+		const recipientsMap: Record<Uint256, IAvailableStrategy[]> = {};
 		for (const recipient of recipients) {
 			for (const blockchainController of blockchainControllers) {
-				if (!blockchainController.isAddressValid(recipient)) {
+				if (blockchainController !== recipient.blockchain) {
 					continue;
 				}
-				const arr = recipientsMap[recipient] || [];
+				const arr = recipientsMap[recipient.address] || [];
 				const strategies = [];
-				const ylideKey = await blockchainController.extractPublicKeyFromAddress(recipient);
+				const ylideKey = await blockchainController.extractPublicKeyFromAddress(recipient.original);
 				if (ylideKey) {
 					strategies.push({
 						type: 'ylide',
@@ -99,7 +106,9 @@ export class DynamicEncryptionRouter {
 						data: { ylide: true as true, publicKey: ylideKey },
 					});
 				}
-				const nativeStrategies = await blockchainController.getExtraEncryptionStrategiesFromAddress(recipient);
+				const nativeStrategies = await blockchainController.getExtraEncryptionStrategiesFromAddress(
+					recipient.original,
+				);
 				strategies.push(
 					...nativeStrategies.map(ns => ({
 						type: ns.type,
@@ -108,7 +117,7 @@ export class DynamicEncryptionRouter {
 					})),
 				);
 				arr.push(...strategies);
-				recipientsMap[recipient] = arr;
+				recipientsMap[recipient.address] = arr;
 			}
 		}
 		return recipientsMap;
@@ -134,15 +143,15 @@ export class DynamicEncryptionRouter {
 	}
 
 	private static findBestEncryptionRouting(
-		recipients: { keyAddress: string; address: string }[],
-		recipientsMap: Record<string, IAvailableStrategy[]>,
+		recipients: { keyAddress: Uint256; address: Uint256; blockchain: AbstractBlockchainController }[],
+		recipientsMap: Record<Uint256, IAvailableStrategy[]>,
 		blockchainControllers: AbstractBlockchainController[],
 		preferredStrategy: string = 'ylide',
 	) {
 		const usedStrategies: Record<string, boolean> = {};
-		const selectedStrategyMap: Record<string, IAvailableStrategy | null> = {};
-		const uniqueRecipientStrategies: Record<string, string[]> = {};
-		const badBoys: Record<string, boolean> = {};
+		const selectedStrategyMap: Record<Uint256, IAvailableStrategy | null> = {};
+		const uniqueRecipientStrategies: Record<Uint256, string[]> = {};
+		const badBoys: Record<Uint256, boolean> = {};
 		let ambigiousRecipients = [];
 		for (const recipient of recipients) {
 			const map = recipientsMap[recipient.keyAddress];

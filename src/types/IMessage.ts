@@ -1,14 +1,15 @@
 import { IGenericAccount } from './IGenericAccount';
+import { Uint256 } from './Uint256';
 
 /**
  * @category Content
  * @description Interface representing base message metadata and content
  */
 export interface IMessageBase {
-	msgId: string;
+	msgId: Uint256;
 	createdAt: number;
 	senderAddress: string;
-	recipientAddress: string;
+	recipientAddress: Uint256;
 	blockchain: string;
 
 	key: Uint8Array;
@@ -84,14 +85,3 @@ export interface IMessageContent {
  * @description Type representing a certain message
  */
 export type IMessage = IMessageBase;
-
-/**
- * Interface for filtering messages history on retrieval
- */
-export interface RetrievingMessagesOptions {
-	firstMessageIdToStopSearching?: string;
-	since?: Date;
-	to?: Date;
-	messagesLimit?: number;
-	nextPageAfterMessage?: IMessage;
-}

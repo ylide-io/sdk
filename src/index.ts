@@ -5,6 +5,7 @@ import { DynamicEncryptionRouter } from './cross-chain/DynamicEncryptionRouter';
 import { sha256 } from './crypto';
 import { YlideKeyStore } from './keystore';
 import { IGenericAccount, IMessage, IMessageContent, PublicKeyType, ServiceCode } from './types';
+import { uint8ArrayToUint256 } from './types/Uint256';
 
 export * from './types';
 export * from './abstracts';
@@ -265,17 +266,35 @@ export class Ylide {
 		serviceCode = ServiceCode.SDK,
 		copyOfSent = true,
 	}: SendMessageArgs) {
+		console.log('ddd');
 		const { encodedContent, key } = MessageEncodedContent.encodeContent(content);
-		const actualRecipients = recipients.map(r => ({ keyAddress: r, address: r }));
+		const actualRecipients = recipients.map(r => {
+			const bc = this.blockchains.find(b => b.isAddressValid(r));
+			if (!bc) {
+				throw new Error(`Address ${r} is not valid for any registered blockchain`);
+			}
+			return {
+				keyAddress: bc.addressToUint256(r),
+				keyAddressOriginal: r,
+				address: bc.addressToUint256(r),
+				blockchain: bc,
+			};
+		});
+		console.log('bien');
 		if (copyOfSent) {
 			actualRecipients.push({
-				keyAddress: sender.address,
-				address: wallet.blockchainController.uint256ToAddress(sha256(sender.address)),
+				keyAddress: wallet.blockchainController.addressToUint256(sender.address),
+				keyAddressOriginal: sender.address,
+				address: uint8ArrayToUint256(sha256(sender.address)),
+				blockchain: wallet.blockchainController,
 			});
 		}
+		console.log('locs');
 		const route = await DynamicEncryptionRouter.findEncyptionRoute(actualRecipients, this.blockchains);
+		console.log('gon');
 		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
 		const container = MessageContainer.packContainer(serviceCode, publicKeys, encodedContent);
+		console.log('yac');
 		return wallet.publishMessage(sender, container, processedRecipients);
 	}
 
@@ -286,17 +305,15 @@ export class Ylide {
 		const unpackedContent = await MessageContainer.unpackContainter(content.content);
 		const msgKey = MessageKey.fromBytes(msg.key);
 		const publicKey = unpackedContent.senderPublicKeys[msgKey.publicKeyIndex];
-		if (!this.walletsMap[msg.blockchain]) {
-			throw new Error('Wallet of this message recipient is not registered');
-		}
-		const wallets = Object.values(this.walletsMap[msg.blockchain]);
-		const walletAccounts = await Promise.all(wallets.map(w => w.getAuthenticatedAccount()));
-		const accountIdx = walletAccounts.findIndex(a => a && a.address === receipientKeyAddress);
+		const walletAccounts = await Promise.all(
+			this.wallets.map(async w => ({ wallet: w, account: await w.getAuthenticatedAccount() })),
+		);
+		const accountIdx = walletAccounts.findIndex(a => a.account && a.account.address === receipientKeyAddress);
 		if (accountIdx === -1) {
-			throw new Error('Wallet of this message recipient is not registered');
+			throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
 		}
-		const wallet = wallets[accountIdx];
-		const account = walletAccounts[accountIdx]!;
+		const account = walletAccounts[accountIdx].account!;
+		const wallet = walletAccounts[accountIdx].wallet;
 		let symmKey: Uint8Array | null = null;
 		if (publicKey.type === PublicKeyType.YLIDE) {
 			const ylideKey = this.keystore.get(account.address);

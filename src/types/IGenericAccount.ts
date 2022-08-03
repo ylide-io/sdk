@@ -6,5 +6,5 @@ import { PublicKey } from './PublicKey';
 export interface IGenericAccount {
 	blockchain: string;
 	address: string;
-	publicKey: PublicKey;
+	publicKey: PublicKey | null;
 }
