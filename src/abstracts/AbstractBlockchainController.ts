@@ -56,8 +56,10 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract getRecipientReadingRules(address: Uint256): Promise<any>;
 
+	abstract getDefaultMailerAddress(): string;
+
 	/**
-	 * Method to retrieve messages from this blockchain for a certain recipient
+	 * Method to retrieve sent messages from this blockchain for a certain recipient
 	 *
 	 * @param recipient - Address of the recipient
 	 * @param fromTimestamp - Start time (not included) for filtering messages history
@@ -65,12 +67,14 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract retrieveMessageHistoryByTime(
 		recipient: Uint256 | null,
+		mailerAddress?: string,
 		fromTimestamp?: number,
 		toTimestamp?: number,
+		limit?: number,
 	): Promise<IMessage[]>;
 
 	/**
-	 * Method to retrieve messages from this blockchain for a certain recipient
+	 * Method to retrieve sent messages from this blockchain for a certain recipient
 	 *
 	 * @param recipient - Address of the recipient
 	 * @param fromMessage - Start message (not included) for filtering messages history
@@ -78,8 +82,40 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract retrieveMessageHistoryByBounds(
 		recipient: Uint256 | null,
+		mailerAddress?: string,
 		fromMessage?: IMessage,
 		toMessage?: IMessage,
+		limit?: number,
+	): Promise<IMessage[]>;
+
+	/**
+	 * Method to retrieve broadcasted messages from this blockchain of a certain sender
+	 *
+	 * @param sender - Address of the sender
+	 * @param fromTimestamp - Start time (not included) for filtering messages history
+	 * @param toTimestamp - End time (included) for filtering messages history
+	 */
+	abstract retrieveBroadcastHistoryByTime(
+		sender: Uint256 | null,
+		mailerAddress?: string,
+		fromTimestamp?: number,
+		toTimestamp?: number,
+		limit?: number,
+	): Promise<IMessage[]>;
+
+	/**
+	 * Method to retrieve broadcasted messages from this blockchain of a certain sender
+	 *
+	 * @param sender - Address of the sender
+	 * @param fromMessage - Start message (not included) for filtering messages history
+	 * @param toMessage - End message (not included) for filtering messages history
+	 */
+	abstract retrieveBroadcastHistoryByBounds(
+		recipient: Uint256 | null,
+		mailerAddress?: string,
+		fromMessage?: IMessage,
+		toMessage?: IMessage,
+		limit?: number,
 	): Promise<IMessage[]>;
 
 	/**
@@ -132,4 +168,6 @@ export abstract class AbstractBlockchainController {
 		addedPublicKeyIndex: number | null,
 		messageKey: Uint8Array,
 	): Promise<MessageKey[]>;
+
+	abstract compareMessagesTime(a: IMessage, b: IMessage): number;
 }

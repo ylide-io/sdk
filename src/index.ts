@@ -5,7 +5,7 @@ import { DynamicEncryptionRouter } from './cross-chain/DynamicEncryptionRouter';
 import { sha256 } from './crypto';
 import { YlideKeyStore } from './keystore';
 import { IGenericAccount, IMessage, IMessageContent, PublicKeyType, ServiceCode } from './types';
-import { uint8ArrayToUint256 } from './types/Uint256';
+import { Uint256, uint256ToUint8Array, uint8ArrayToUint256 } from './types/Uint256';
 
 export * from './types';
 export * from './abstracts';
@@ -13,7 +13,7 @@ export * from './storage';
 export * from './keystore';
 export * from './crypto';
 export * from './content';
-// export * from './fetch';
+export * from './cross-chain';
 
 export type WalletMap<T> = Record<string, T>;
 export type BlockchainMap<T> = Record<string, T>;
@@ -231,6 +231,10 @@ export class Ylide {
 		//
 	}
 
+	static getSentAddress(recipient: Uint256): Uint256 {
+		return uint8ArrayToUint256(sha256(uint256ToUint8Array(recipient)));
+	}
+
 	async addBlockchain(blockchain: string, options?: any) {
 		if (this.blockchainsMap[blockchain]) {
 			throw new Error('For now we support only one blockchain reader per blockchain per instance');
@@ -266,7 +270,6 @@ export class Ylide {
 		serviceCode = ServiceCode.SDK,
 		copyOfSent = true,
 	}: SendMessageArgs) {
-		console.log('ddd');
 		const { encodedContent, key } = MessageEncodedContent.encodeContent(content);
 		const actualRecipients = recipients.map(r => {
 			const bc = this.blockchains.find(b => b.isAddressValid(r));
@@ -280,22 +283,51 @@ export class Ylide {
 				blockchain: bc,
 			};
 		});
-		console.log('bien');
 		if (copyOfSent) {
 			actualRecipients.push({
 				keyAddress: wallet.blockchainController.addressToUint256(sender.address),
 				keyAddressOriginal: sender.address,
-				address: uint8ArrayToUint256(sha256(sender.address)),
+				address: Ylide.getSentAddress(wallet.blockchainController.addressToUint256(sender.address)),
 				blockchain: wallet.blockchainController,
 			});
 		}
-		console.log('locs');
 		const route = await DynamicEncryptionRouter.findEncyptionRoute(actualRecipients, this.blockchains);
-		console.log('gon');
 		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
-		const container = MessageContainer.packContainer(serviceCode, publicKeys, encodedContent);
-		console.log('yac');
+		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encodedContent);
 		return wallet.publishMessage(sender, container, processedRecipients);
+	}
+
+	async broadcastMessage({ wallet, sender, content, serviceCode = ServiceCode.SDK }: SendMessageArgs) {
+		const { nonEncodedContent } = MessageEncodedContent.packContent(content);
+		const container = MessageContainer.packContainer(serviceCode, false, [], nonEncodedContent);
+		return wallet.broadcastMessage(sender, container);
+	}
+
+	async getMessageControllers(
+		msg: IMessage,
+		keyAddress?: Uint256,
+	): Promise<{ blockchain: AbstractBlockchainController; wallet: AbstractWalletController }> {
+		const blockchain = this.blockchainsMap[msg.blockchain];
+		if (!blockchain) {
+			throw new Error(`Blockchain ${msg.blockchain} not found`);
+		}
+		const walletsMap = this.walletsMap[msg.blockchain];
+		if (!walletsMap) {
+			throw new Error(`Wallet for ${msg.blockchain} was not found`);
+		}
+		const address = keyAddress || msg.recipientAddress;
+		const wallets = Object.values(walletsMap);
+		for (const wallet of wallets) {
+			const acc = await wallet.getAuthenticatedAccount();
+			if (!acc) {
+				continue;
+			}
+			const rec = blockchain.addressToUint256(acc.address);
+			if (rec === address) {
+				return { blockchain, wallet };
+			}
+		}
+		throw new Error(`Wallet for ${address} was not found`);
 	}
 
 	async decryptMessageContent(msg: IMessage, content: IMessageContent, receipientKeyAddress?: string) {
@@ -303,33 +335,38 @@ export class Ylide {
 			receipientKeyAddress = msg.recipientAddress;
 		}
 		const unpackedContent = await MessageContainer.unpackContainter(content.content);
-		const msgKey = MessageKey.fromBytes(msg.key);
-		const publicKey = unpackedContent.senderPublicKeys[msgKey.publicKeyIndex];
-		const walletAccounts = await Promise.all(
-			this.wallets.map(async w => ({ wallet: w, account: await w.getAuthenticatedAccount() })),
-		);
-		const accountIdx = walletAccounts.findIndex(a => a.account && a.account.address === receipientKeyAddress);
-		if (accountIdx === -1) {
-			throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
-		}
-		const account = walletAccounts[accountIdx].account!;
-		const wallet = walletAccounts[accountIdx].wallet;
-		let symmKey: Uint8Array | null = null;
-		if (publicKey.type === PublicKeyType.YLIDE) {
-			const ylideKey = this.keystore.get(account.address);
-			if (!ylideKey) {
-				throw new Error('Key of this message recipient is not derived');
+		let decryptedContent;
+		if (unpackedContent.isEncoded) {
+			const msgKey = MessageKey.fromBytes(msg.key);
+			const publicKey = unpackedContent.senderPublicKeys[msgKey.publicKeyIndex];
+			const walletAccounts = await Promise.all(
+				this.wallets.map(async w => ({ wallet: w, account: await w.getAuthenticatedAccount() })),
+			);
+			const accountIdx = walletAccounts.findIndex(a => a.account && a.account.address === receipientKeyAddress);
+			if (accountIdx === -1) {
+				throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
 			}
-			await ylideKey.execute('read mail', async keypair => {
-				symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
-			});
+			const account = walletAccounts[accountIdx].account!;
+			const wallet = walletAccounts[accountIdx].wallet;
+			let symmKey: Uint8Array | null = null;
+			if (publicKey.type === PublicKeyType.YLIDE) {
+				const ylideKey = this.keystore.get(account.address);
+				if (!ylideKey) {
+					throw new Error('Key of this message recipient is not derived');
+				}
+				await ylideKey.execute('read mail', async keypair => {
+					symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
+				});
+			} else {
+				symmKey = await wallet.decryptMessageKey(publicKey, account, msgKey.encryptedMessageKey);
+			}
+			if (!symmKey) {
+				throw new Error('Unable to find decryption route');
+			}
+			decryptedContent = MessageEncodedContent.decodeRawContent(unpackedContent.content, symmKey);
 		} else {
-			symmKey = await wallet.decryptMessageKey(publicKey, account, msgKey.encryptedMessageKey);
+			decryptedContent = MessageEncodedContent.unpackRawContent(unpackedContent.content);
 		}
-		if (!symmKey) {
-			throw new Error('Unable to find decryption route');
-		}
-		const decryptedContent = MessageEncodedContent.decodeRawContent(unpackedContent.content, symmKey);
 		const decodedContent = MessageEncodedContent.messageContentFromBytes(decryptedContent);
 		return {
 			...decodedContent,

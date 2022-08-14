@@ -24,7 +24,7 @@ import { PublicKey } from '../types';
  * ```
  */
 export class MessageContainer {
-	static VERSION = 0x05;
+	static VERSION = 0x06;
 
 	/**
 	 * Method to prepare outgoing message for publishing to blockchain
@@ -35,11 +35,17 @@ export class MessageContainer {
 	 * @param chunkSize Max size of one chunk
 	 * @returns Wrapped content splet into chunks
 	 */
-	static packContainer(serviceCode: number, senderPublicKeys: PublicKey[], contentBytes: Uint8Array) {
+	static packContainer(
+		serviceCode: number,
+		isEncoded: boolean,
+		senderPublicKeys: PublicKey[],
+		contentBytes: Uint8Array,
+	) {
 		const keysSize = senderPublicKeys.reduce((p, c) => p + c.getPackedSize(), 0);
-		const buf = SmartBuffer.ofSize(1 + 4 + 1 + keysSize + 4 + contentBytes.length);
+		const buf = SmartBuffer.ofSize(1 + 4 + 1 + 1 + keysSize + 4 + contentBytes.length);
 		buf.writeUint8(this.VERSION);
 		buf.writeUint32(serviceCode);
+		buf.writeUint8(isEncoded ? 1 : 0);
 		buf.writeUint8(senderPublicKeys.length);
 		for (const senderPublicKey of senderPublicKeys) {
 			senderPublicKey.toPackedBytesInBuffer(buf);
@@ -57,7 +63,9 @@ export class MessageContainer {
 	static unpackContainter(bytes: Uint8Array) {
 		const buf = new SmartBuffer(bytes);
 		const version = buf.readUint8();
-		if (version === 0x05) {
+		if (version === 0x06) {
+			return this.unpackContainerV6(buf);
+		} else if (version === 0x05) {
 			return this.unpackContainerV5(buf);
 		} else {
 			throw new Error(`Version ${version} is not supported`);
@@ -82,6 +90,30 @@ export class MessageContainer {
 			serviceCode,
 			senderPublicKeys,
 			content,
+			isEncoded: true,
+		};
+	}
+
+	/**
+	 * Method to unpack container of version 5.
+	 * @param buf Message content bytes
+	 * @returns Metadata of the container and message content
+	 */
+	static unpackContainerV6(buf: SmartBuffer) {
+		const serviceCode = buf.readUint32();
+		const isEncoded = buf.readUint8();
+		const keysLength = buf.readUint8();
+		const senderPublicKeys: PublicKey[] = [];
+		for (let i = 0; i < keysLength; i++) {
+			senderPublicKeys.push(PublicKey.fromPackedBytesInBuffer(buf));
+		}
+		const content = buf.readBytes32Length();
+		return {
+			version: 0x05,
+			serviceCode,
+			senderPublicKeys,
+			content,
+			isEncoded,
 		};
 	}
 }

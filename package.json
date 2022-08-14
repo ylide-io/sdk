@@ -55,6 +55,7 @@
 	},
 	"dependencies": {
 		"@ylide/smart-buffer": "^0.0.9",
+		"datastructures-js": "^12.0.0",
 		"eventemitter3": "^4.0.7",
 		"js-sha256": "^0.9.0",
 		"pako": "^2.0.4",

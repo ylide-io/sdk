@@ -53,6 +53,14 @@ export class MessageEncodedContent {
 		};
 	}
 
+	static packRawContent(content: Uint8Array) {
+		const packedBytes = this.pack(content);
+		const key = nacl.randomBytes(32);
+		return {
+			nonEncodedContent: symmetricEncrypt(packedBytes, key),
+		};
+	}
+
 	/**
 	 * Method to decode raw message content bytes
 	 * @param content Encoded (compressed & encrypted) message content bytes
@@ -62,6 +70,10 @@ export class MessageEncodedContent {
 	static decodeRawContent(content: Uint8Array, key: Uint8Array) {
 		const packedBytes = symmetricDecrypt(content, key);
 		return this.unpack(packedBytes);
+	}
+
+	static unpackRawContent(nonEncodedContent: Uint8Array) {
+		return this.unpack(nonEncodedContent);
 	}
 
 	/**
@@ -103,5 +115,13 @@ export class MessageEncodedContent {
 	 */
 	static decodeContent(encodedContent: Uint8Array, key: Uint8Array) {
 		return this.messageContentFromBytes(this.decodeRawContent(encodedContent, key));
+	}
+
+	static packContent(content: MessageContent) {
+		return this.packRawContent(this.messageContentToBytes(content));
+	}
+
+	static unpackContent(nonEncodedContent: Uint8Array) {
+		return this.messageContentFromBytes(this.unpackRawContent(nonEncodedContent));
 	}
 }

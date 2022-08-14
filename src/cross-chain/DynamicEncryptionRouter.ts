@@ -26,7 +26,6 @@ export class DynamicEncryptionRouter {
 			recipients.map(r => ({ address: r.keyAddress, original: r.keyAddressOriginal, blockchain: r.blockchain })),
 			blockchainControllers,
 		);
-		console.log('purr');
 		return this.findBestEncryptionRouting(recipients, recipientsMap, blockchainControllers, preferredStrategy);
 	}
 

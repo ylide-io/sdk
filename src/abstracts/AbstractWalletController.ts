@@ -66,6 +66,8 @@ export abstract class AbstractWalletController {
 		recipients: { address: Uint256; messageKey: MessageKey }[],
 	): Promise<Uint256 | null>;
 
+	abstract broadcastMessage(me: IGenericAccount, contentData: Uint8Array): Promise<Uint256 | null>;
+
 	/**
 	 * Method to connect user's public key with his address
 	 *
