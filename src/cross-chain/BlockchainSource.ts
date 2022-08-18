@@ -130,7 +130,6 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 			: await this.getLast(this.limit);
 		if (messages.length) {
 			this.lastMessage = messages[0].link;
-			console.log(`${this.reader.constructor.name} for ${this.subject.address}: `, messages);
 			this.emit('messages', { reader: this.reader, subject: this.subject, messages });
 			for (const message of messages) {
 				this.emit('message', { reader: this.reader, subject: this.subject, message });

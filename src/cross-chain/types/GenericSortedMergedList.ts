@@ -77,8 +77,7 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 
 	private handleWindowUpdated() {
 		const minmax: IFirstLastMessage<T, S>[] = this.sources.map(r => ({ first: null, last: null }));
-		for (let i = 0; i < this.window.length; i++) {
-			const m = this.window[i];
+		for (const m of this.window) {
 			const sourceIdx = this.sourceIndex.get(m.source)!;
 			if (!minmax[sourceIdx].first) {
 				minmax[sourceIdx].first = m;
@@ -95,11 +94,11 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 	}
 
 	private putMessage(msg: GenericEntry<T, S>): boolean {
-		console.log('put message: ', msg.link);
+		// console.log('put message: ', msg.link);
 		const node = new DoublyLinkedListNode(msg);
 		let was = false;
 		if (this.windowFilled === 0) {
-			console.log('put in empty');
+			// console.log('put in empty');
 			this.window = [msg];
 			this.windowFirstMessage = node;
 			this.windowLastMessage = node;
@@ -107,25 +106,25 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 			was = true;
 		} else if (this.compare(msg, this.windowFirstMessage!.getValue()) < 0) {
 			if (this.windowStart === 0) {
-				console.log('put before inside');
+				// console.log('put before inside');
 				was = true;
 				this.window.unshift(msg);
 				this.windowFirstMessage = node;
 				this.windowFilled++;
 				if (this.windowFilled > this.pageSize) {
-					console.log('window slice');
+					// console.log('window slice');
 					this.window.splice(this.pageSize, this.window.length - this.pageSize);
 					this.windowFilled = this.pageSize;
 					this.windowLastMessage = this.windowLastMessage!.getPrev();
 				}
 			} else {
-				console.log('put before outside');
+				// console.log('put before outside');
 				this.emit('beforeWindowUpdate');
 				this.windowStart++;
 			}
 		} else if (this.compare(msg, this.windowLastMessage!.getValue()) <= 0) {
 			// put inside window
-			console.log('put inside');
+			// console.log('put inside');
 			was = true;
 			const pos = this.window.findIndex(v => this.compare(v, msg) >= 0);
 			this.window.splice(pos, 0, msg);
@@ -141,7 +140,7 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 			}
 		} else {
 			// put after window
-			console.log('put after');
+			// console.log('put after');
 			if (this.windowFilled < this.pageSize) {
 				was = true;
 				this.window.push(msg);
@@ -280,8 +279,7 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 
 	private async readNextPage() {
 		const notLoaded: WrappedSource<T, S>[] = [];
-		for (let r = 0; r < this.sources.length; r++) {
-			const source = this.sources[r];
+		for (const source of this.sources) {
 			if (!this.windowLastMessage) {
 				notLoaded.push(source);
 				continue;
@@ -360,8 +358,8 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 		}
 		this.windowFirstMessage = cursor;
 		const newWindow = [];
-		let i;
-		for (i = 0; i < Math.min(this.pageSize, this.list.count() - this.windowStart); i++) {
+		let j;
+		for (j = 0; j < Math.min(this.pageSize, this.list.count() - this.windowStart); j++) {
 			if (!cursor) {
 				break;
 			}
@@ -369,7 +367,7 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 			this.windowLastMessage = cursor;
 			cursor = cursor?.getNext() || null;
 		}
-		this.windowFilled = i;
+		this.windowFilled = j;
 		this.window = newWindow;
 		this.handleWindowUpdated();
 		this.emit('windowUpdate');
