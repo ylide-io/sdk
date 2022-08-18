@@ -37,6 +37,7 @@ export type BlockchainWalletMap<T> = BlockchainMap<WalletMap<T>>;
 export class Ylide {
 	private static _walletFactories: BlockchainWalletMap<WalletControllerFactory> = {};
 	private static _blockchainFactories: BlockchainMap<BlockchainControllerFactory> = {};
+	private static _blockchainToGroupMap: Record<string, string> = {};
 
 	/**
 	 * Use this method to register all available blockchain wallets to Ylide.
@@ -50,8 +51,8 @@ export class Ylide {
 	 * @param factory Wallet controller factory which you want to register
 	 */
 	static registerWalletFactory(factory: WalletControllerFactory) {
-		this._walletFactories[factory.blockchain] = {
-			...this._walletFactories[factory.blockchain],
+		this._walletFactories[factory.blockchainGroup] = {
+			...this._walletFactories[factory.blockchainGroup],
 			[factory.wallet]: factory,
 		};
 	}
@@ -69,6 +70,7 @@ export class Ylide {
 	 */
 	static registerBlockchainFactory(factory: BlockchainControllerFactory) {
 		this._blockchainFactories[factory.blockchain] = factory;
+		this._blockchainToGroupMap[factory.blockchain] = factory.blockchainGroup;
 	}
 
 	/**
@@ -105,11 +107,17 @@ export class Ylide {
 
 	/**
 	 * Method to get wallet controller factory for a certain blockchain and wallet type
-	 * @param blockchain Name of blockchain
+	 * @param blockchainGroup Name of the blockchain group
 	 * @param wallet Name of in-browser wallet
 	 */
-	static getWalletControllerFactory(blockchain: string, wallet: string) {
-		return this._walletFactories[blockchain][wallet];
+	static getWalletControllerFactory(blockchainGroup: string, wallet: string) {
+		if (!this._walletFactories[blockchainGroup]) {
+			throw new Error(`Blockchain group ${blockchainGroup} not found`);
+		}
+		if (!this._walletFactories[blockchainGroup][wallet]) {
+			throw new Error(`Wallet ${wallet} not found in the blockchain group ${blockchainGroup}`);
+		}
+		return this._walletFactories[blockchainGroup][wallet];
 	}
 
 	/**
@@ -190,20 +198,13 @@ export class Ylide {
 	 * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
 	 */
-	static async instantiateWallet(
-		blockchain: string,
-		wallet: string,
-		options?: any,
-		blockchainController?: AbstractBlockchainController,
-	) {
-		const blockchainControllerFactory = this.getBlockchainControllerFactory(blockchain);
-		const walletControllerFactory = this.getWalletControllerFactory(blockchain, wallet);
+	static async instantiateWallet(blockchainGroup: string, wallet: string, options?: any) {
+		const walletControllerFactory = this.getWalletControllerFactory(blockchainGroup, wallet);
 		if (!(await walletControllerFactory.isWalletAvailable())) {
 			throw new Error('Wallet is not available');
 		}
-		blockchainController = blockchainController || blockchainControllerFactory.create(options);
-		const walletController = walletControllerFactory.create(blockchainController, options);
-		return { blockchainController, walletController };
+		const walletController = walletControllerFactory.create(options);
+		return walletController;
 	}
 
 	/**
@@ -245,31 +246,23 @@ export class Ylide {
 		return ctrl;
 	}
 
-	async addWallet(blockchain: string, wallet: string, options?: any) {
-		if (this.walletsMap[blockchain] && this.walletsMap[blockchain][wallet]) {
+	async addWallet(blockchainGroup: string, wallet: string, options?: any) {
+		if (this.walletsMap[blockchainGroup] && this.walletsMap[blockchainGroup][wallet]) {
 			throw new Error('For now we support only one wallet writer per blockchain per instance');
 		}
-		const ctrl = await Ylide.instantiateWallet(blockchain, wallet, options, this.blockchainsMap[blockchain]);
-		if (!this.blockchainsMap[blockchain]) {
-			this.blockchainsMap[blockchain] = ctrl.blockchainController;
-			this.blockchains.push(ctrl.blockchainController);
-		}
-		this.walletsMap[blockchain] = {
-			...(this.walletsMap[blockchain] || {}),
-			[wallet]: ctrl.walletController,
+		const walletController = await Ylide.instantiateWallet(blockchainGroup, wallet, options);
+		this.walletsMap[blockchainGroup] = {
+			...(this.walletsMap[blockchainGroup] || {}),
+			[wallet]: walletController,
 		};
-		this.wallets.push(ctrl.walletController);
-		return ctrl;
+		this.wallets.push(walletController);
+		return walletController;
 	}
 
-	async sendMessage({
-		wallet,
-		sender,
-		content,
-		recipients,
-		serviceCode = ServiceCode.SDK,
-		copyOfSent = true,
-	}: SendMessageArgs) {
+	async sendMessage(
+		{ wallet, sender, content, recipients, serviceCode = ServiceCode.SDK, copyOfSent = true }: SendMessageArgs,
+		walletOptions?: any,
+	) {
 		const { encodedContent, key } = MessageEncodedContent.encodeContent(content);
 		const actualRecipients = recipients.map(r => {
 			const bc = this.blockchains.find(b => b.isAddressValid(r));
@@ -280,27 +273,28 @@ export class Ylide {
 				keyAddress: bc.addressToUint256(r),
 				keyAddressOriginal: r,
 				address: bc.addressToUint256(r),
-				blockchain: bc,
 			};
 		});
 		if (copyOfSent) {
 			actualRecipients.push({
-				keyAddress: wallet.blockchainController.addressToUint256(sender.address),
+				keyAddress: wallet.addressToUint256(sender.address),
 				keyAddressOriginal: sender.address,
-				address: Ylide.getSentAddress(wallet.blockchainController.addressToUint256(sender.address)),
-				blockchain: wallet.blockchainController,
+				address: Ylide.getSentAddress(wallet.addressToUint256(sender.address)),
 			});
 		}
 		const route = await DynamicEncryptionRouter.findEncyptionRoute(actualRecipients, this.blockchains);
 		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
 		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encodedContent);
-		return wallet.publishMessage(sender, container, processedRecipients);
+		return wallet.publishMessage(sender, container, processedRecipients, walletOptions);
 	}
 
-	async broadcastMessage({ wallet, sender, content, serviceCode = ServiceCode.SDK }: SendMessageArgs) {
+	async broadcastMessage(
+		{ wallet, sender, content, serviceCode = ServiceCode.SDK }: SendMessageArgs,
+		walletOptions?: any,
+	) {
 		const { nonEncodedContent } = MessageEncodedContent.packContent(content);
 		const container = MessageContainer.packContainer(serviceCode, false, [], nonEncodedContent);
-		return wallet.broadcastMessage(sender, container);
+		return wallet.broadcastMessage(sender, container, walletOptions);
 	}
 
 	async getMessageControllers(
@@ -311,9 +305,10 @@ export class Ylide {
 		if (!blockchain) {
 			throw new Error(`Blockchain ${msg.blockchain} not found`);
 		}
-		const walletsMap = this.walletsMap[msg.blockchain];
+		const blockchainGroup = Ylide._blockchainToGroupMap[msg.blockchain];
+		const walletsMap = this.walletsMap[blockchainGroup];
 		if (!walletsMap) {
-			throw new Error(`Wallet for ${msg.blockchain} was not found`);
+			throw new Error(`Wallet for ${blockchainGroup} was not found`);
 		}
 		const address = keyAddress || msg.recipientAddress;
 		const wallets = Object.values(walletsMap);

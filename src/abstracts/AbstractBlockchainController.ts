@@ -56,8 +56,6 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract getRecipientReadingRules(address: Uint256): Promise<any>;
 
-	abstract getDefaultMailerAddress(): string;
-
 	/**
 	 * Method to retrieve sent messages from this blockchain for a certain recipient
 	 *
@@ -67,7 +65,6 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract retrieveMessageHistoryByTime(
 		recipient: Uint256 | null,
-		mailerAddress?: string,
 		fromTimestamp?: number,
 		toTimestamp?: number,
 		limit?: number,
@@ -82,7 +79,6 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract retrieveMessageHistoryByBounds(
 		recipient: Uint256 | null,
-		mailerAddress?: string,
 		fromMessage?: IMessage,
 		toMessage?: IMessage,
 		limit?: number,
@@ -97,7 +93,6 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract retrieveBroadcastHistoryByTime(
 		sender: Uint256 | null,
-		mailerAddress?: string,
 		fromTimestamp?: number,
 		toTimestamp?: number,
 		limit?: number,
@@ -112,7 +107,6 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract retrieveBroadcastHistoryByBounds(
 		recipient: Uint256 | null,
-		mailerAddress?: string,
 		fromMessage?: IMessage,
 		toMessage?: IMessage,
 		limit?: number,
@@ -128,7 +122,7 @@ export abstract class AbstractBlockchainController {
 	/**
 	 * Method to retrieve the encrypted content of a certain message without deep integrity check
 	 *
-	 * @param msg - Message metadata
+	 * @param msgId - Message ID
 	 */
 	abstract retrieveMessageContentByMsgId(msgId: Uint256): Promise<IMessageContent | IMessageCorruptedContent | null>;
 

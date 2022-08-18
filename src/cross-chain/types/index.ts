@@ -1,2 +1,2 @@
-export { BetterDoublyLinkedList } from './BetterDoublyLinkedList';
-export { GenericSortedMergedList } from './GenericSortedMergedList';
+export * from './BetterDoublyLinkedList';
+export * from './GenericSortedMergedList';

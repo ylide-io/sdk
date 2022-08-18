@@ -7,8 +7,8 @@ export interface GenericEntryPure<T> {
 	link: T;
 }
 
-export interface GenericEntry<T> extends GenericEntryPure<T> {
-	source: GenericSortedSource<T>;
+export interface GenericEntry<T, S extends GenericSortedSource<T>> extends GenericEntryPure<T> {
+	source: S;
 }
 
 export interface GenericSortedSource<T> {
@@ -26,42 +26,42 @@ export interface GenericSortedSource<T> {
 	off(event: 'message', callback: (params: { message: GenericEntryPure<T> }) => void): void;
 }
 
-export interface IFirstLastMessage<T> {
-	first: GenericEntry<T> | null;
-	last: GenericEntry<T> | null;
+export interface IFirstLastMessage<T, S extends GenericSortedSource<T>> {
+	first: GenericEntry<T, S> | null;
+	last: GenericEntry<T, S> | null;
 }
 
-interface WrappedSource<T> {
-	source: GenericSortedSource<T>;
+interface WrappedSource<T, S extends GenericSortedSource<T>> {
+	source: S;
 	handler: (params: { messages: GenericEntryPure<T>[] }) => void;
-	array: GenericEntry<T>[];
-	firstLast: IFirstLastMessage<T>;
-	firstLastWindow: IFirstLastMessage<T>;
+	array: GenericEntry<T, S>[];
+	firstLast: IFirstLastMessage<T, S>;
+	firstLastWindow: IFirstLastMessage<T, S>;
 	noMoreAvailable: boolean;
 }
 
-export class GenericSortedMergedList<T> extends EventEmitter {
-	private sources: WrappedSource<T>[] = [];
-	private sourceIndex: Map<GenericSortedSource<T>, number> = new Map();
-	private msgs = new AvlTree<DoublyLinkedListNode<GenericEntry<T>>>((a, b) =>
+export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extends EventEmitter {
+	private sources: WrappedSource<T, S>[] = [];
+	private sourceIndex: Map<S, number> = new Map();
+	private msgs = new AvlTree<DoublyLinkedListNode<GenericEntry<T, S>>>((a, b) =>
 		this.compare(a.getValue(), b.getValue()),
 	);
-	private list = new BetterDoublyLinkedList<GenericEntry<T>>();
+	private list = new BetterDoublyLinkedList<GenericEntry<T, S>>();
 
-	private windowFirstMessage: DoublyLinkedListNode<GenericEntry<T>> | null = null;
-	private windowLastMessage: DoublyLinkedListNode<GenericEntry<T>> | null = null;
+	private windowFirstMessage: DoublyLinkedListNode<GenericEntry<T, S>> | null = null;
+	private windowLastMessage: DoublyLinkedListNode<GenericEntry<T, S>> | null = null;
 
 	private pageSize: number = 10;
 	private windowStart: number = 0;
 	private windowFilled: number = 0;
 
-	private window: GenericEntry<T>[] = [];
+	private window: GenericEntry<T, S>[] = [];
 
 	getWindow() {
 		return this.window;
 	}
 
-	private compare(a: GenericEntry<T>, b: GenericEntry<T>): number {
+	private compare(a: GenericEntry<T, S>, b: GenericEntry<T, S>): number {
 		if (a.time === b.time) {
 			const aSourceIdx = this.sourceIndex.get(a.source)!;
 			const bSourceIdx = this.sourceIndex.get(b.source)!;
@@ -76,7 +76,7 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 	}
 
 	private handleWindowUpdated() {
-		const minmax: IFirstLastMessage<T>[] = this.sources.map(r => ({ first: null, last: null }));
+		const minmax: IFirstLastMessage<T, S>[] = this.sources.map(r => ({ first: null, last: null }));
 		for (let i = 0; i < this.window.length; i++) {
 			const m = this.window[i];
 			const sourceIdx = this.sourceIndex.get(m.source)!;
@@ -94,10 +94,12 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 		}
 	}
 
-	private putMessage(msg: GenericEntry<T>): boolean {
+	private putMessage(msg: GenericEntry<T, S>): boolean {
+		console.log('put message: ', msg.link);
 		const node = new DoublyLinkedListNode(msg);
 		let was = false;
 		if (this.windowFilled === 0) {
+			console.log('put in empty');
 			this.window = [msg];
 			this.windowFirstMessage = node;
 			this.windowLastMessage = node;
@@ -105,21 +107,25 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 			was = true;
 		} else if (this.compare(msg, this.windowFirstMessage!.getValue()) < 0) {
 			if (this.windowStart === 0) {
+				console.log('put before inside');
 				was = true;
 				this.window.unshift(msg);
 				this.windowFirstMessage = node;
 				this.windowFilled++;
 				if (this.windowFilled > this.pageSize) {
+					console.log('window slice');
 					this.window.splice(this.pageSize, this.window.length - this.pageSize);
 					this.windowFilled = this.pageSize;
 					this.windowLastMessage = this.windowLastMessage!.getPrev();
 				}
 			} else {
+				console.log('put before outside');
 				this.emit('beforeWindowUpdate');
 				this.windowStart++;
 			}
 		} else if (this.compare(msg, this.windowLastMessage!.getValue()) <= 0) {
 			// put inside window
+			console.log('put inside');
 			was = true;
 			const pos = this.window.findIndex(v => this.compare(v, msg) >= 0);
 			this.window.splice(pos, 0, msg);
@@ -135,6 +141,7 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 			}
 		} else {
 			// put after window
+			console.log('put after');
 			if (this.windowFilled < this.pageSize) {
 				was = true;
 				this.window.push(msg);
@@ -174,7 +181,7 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 		return was;
 	}
 
-	private putMessages(messages: GenericEntry<T>[]): boolean {
+	private putMessages(messages: GenericEntry<T, S>[]): boolean {
 		let was = false;
 		for (const msg of messages) {
 			was = this.putMessage(msg) || was;
@@ -210,9 +217,8 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 		}
 	}
 
-	addSource(source: GenericSortedSource<T>) {
+	addSource(source: S) {
 		const handler = ({ messages }: { messages: GenericEntryPure<T>[] }) => {
-			console.log('source sent messages: ', messages);
 			const isWindowChanged = this.putMessages(messages.map(message => ({ ...message, source })));
 			if (isWindowChanged) {
 				this.handleWindowUpdated();
@@ -235,29 +241,29 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 		this.reinitiate();
 	}
 
-	removeSource(source: GenericSortedSource<T>) {
+	removeSource(source: S) {
 		const idx = this.sourceIndex.get(source);
-		if (!idx) {
+		if (idx === undefined) {
 			return;
 		}
-		this.sourceIndex.delete(source);
-		this.sources.splice(idx, 1);
 		source.off('messages', this.sources[idx].handler);
+		this.sources.splice(idx, 1);
+		this.sourceIndex.clear();
+		for (let i = 0; i < this.sources.length; i++) {
+			this.sourceIndex.set(this.sources[i].source, i);
+		}
 
 		this.reinitiate();
 	}
 
 	async readFirstPage() {
-		if (this.windowFirstMessage) {
-			return;
-		}
 		for (const source of this.sources) {
 			await source.source.init();
 		}
 		// await this.readNextPage();
 	}
 
-	private getOverlook(source: WrappedSource<T>) {
+	private getOverlook(source: WrappedSource<T, S>) {
 		if (!source.firstLastWindow.last) {
 			return source.array.length;
 		}
@@ -273,7 +279,7 @@ export class GenericSortedMergedList<T> extends EventEmitter {
 	}
 
 	private async readNextPage() {
-		const notLoaded: WrappedSource<T>[] = [];
+		const notLoaded: WrappedSource<T, S>[] = [];
 		for (let r = 0; r < this.sources.length; r++) {
 			const source = this.sources[r];
 			if (!this.windowLastMessage) {

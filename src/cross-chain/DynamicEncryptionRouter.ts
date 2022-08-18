@@ -17,13 +17,12 @@ export class DynamicEncryptionRouter {
 			keyAddress: Uint256;
 			keyAddressOriginal: string;
 			address: Uint256;
-			blockchain: AbstractBlockchainController;
 		}[],
 		blockchainControllers: AbstractBlockchainController[],
 		preferredStrategy: string = 'ylide',
 	) {
 		const recipientsMap = await this.identifyEncryptionStrategies(
-			recipients.map(r => ({ address: r.keyAddress, original: r.keyAddressOriginal, blockchain: r.blockchain })),
+			recipients.map(r => ({ address: r.keyAddress, original: r.keyAddressOriginal })),
 			blockchainControllers,
 		);
 		return this.findBestEncryptionRouting(recipients, recipientsMap, blockchainControllers, preferredStrategy);
@@ -86,13 +85,13 @@ export class DynamicEncryptionRouter {
 	}
 
 	private static async identifyEncryptionStrategies(
-		recipients: { address: Uint256; original: string; blockchain: AbstractBlockchainController }[],
+		recipients: { address: Uint256; original: string }[],
 		blockchainControllers: AbstractBlockchainController[],
 	) {
 		const recipientsMap: Record<Uint256, IAvailableStrategy[]> = {};
 		for (const recipient of recipients) {
 			for (const blockchainController of blockchainControllers) {
-				if (blockchainController !== recipient.blockchain) {
+				if (!blockchainController.isAddressValid(recipient.original)) {
 					continue;
 				}
 				const arr = recipientsMap[recipient.address] || [];
@@ -142,7 +141,7 @@ export class DynamicEncryptionRouter {
 	}
 
 	private static findBestEncryptionRouting(
-		recipients: { keyAddress: Uint256; address: Uint256; blockchain: AbstractBlockchainController }[],
+		recipients: { keyAddress: Uint256; address: Uint256 }[],
 		recipientsMap: Record<Uint256, IAvailableStrategy[]>,
 		blockchainControllers: AbstractBlockchainController[],
 		preferredStrategy: string = 'ylide',

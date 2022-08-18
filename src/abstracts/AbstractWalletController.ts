@@ -29,7 +29,7 @@ import { Uint256 } from '../types/Uint256';
  * ```
  */
 export abstract class AbstractWalletController {
-	constructor(public readonly blockchainController: AbstractBlockchainController, options?: any) {
+	constructor(options?: any) {
 		//
 	}
 
@@ -55,6 +55,12 @@ export abstract class AbstractWalletController {
 	abstract signMagicString(magicString: string): Promise<Uint8Array>;
 
 	/**
+	 * TODO
+	 * @param me Accout for which you request the private communication key
+	 */
+	abstract requestYlidePrivateKey(me: IGenericAccount): Promise<Uint8Array | null>;
+
+	/**
 	 * Method to publish message using Ylide Protocol.
 	 *
 	 * @param contentData - raw bytes content to publish
@@ -64,16 +70,22 @@ export abstract class AbstractWalletController {
 		me: IGenericAccount,
 		contentData: Uint8Array,
 		recipients: { address: Uint256; messageKey: MessageKey }[],
+		options?: any,
 	): Promise<Uint256 | null>;
 
-	abstract broadcastMessage(me: IGenericAccount, contentData: Uint8Array): Promise<Uint256 | null>;
+	abstract broadcastMessage(me: IGenericAccount, contentData: Uint8Array, options?: any): Promise<Uint256 | null>;
 
 	/**
 	 * Method to connect user's public key with his address
 	 *
 	 * @param publicKey - public key to attach to user's address
 	 */
-	abstract attachPublicKey(publicKey: Uint8Array): Promise<void>;
+	abstract attachPublicKey(publicKey: Uint8Array, options?: any): Promise<void>;
+
+	/**
+	 * Method to convert address to 32 bytes array
+	 */
+	abstract addressToUint256(address: string): Uint256;
 
 	abstract decryptMessageKey(
 		senderPublicKey: PublicKey,
