@@ -6,6 +6,8 @@ import { Uint256 } from './Uint256';
  * @description Interface representing base message metadata and content
  */
 export interface IMessageBase {
+	isBroadcast: boolean;
+
 	msgId: Uint256;
 	createdAt: number;
 	senderAddress: string;

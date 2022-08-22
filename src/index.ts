@@ -289,7 +289,7 @@ export class Ylide {
 	}
 
 	async broadcastMessage(
-		{ wallet, sender, content, serviceCode = ServiceCode.SDK }: SendMessageArgs,
+		{ wallet, sender, content, serviceCode = ServiceCode.SDK }: BroadcastMessageArgs,
 		walletOptions?: any,
 	) {
 		const { nonEncodedContent } = MessageEncodedContent.packContent(content);
@@ -325,27 +325,16 @@ export class Ylide {
 		throw new Error(`Wallet for ${address} was not found`);
 	}
 
-	async decryptMessageContent(msg: IMessage, content: IMessageContent, receipientKeyAddress?: string) {
-		if (!receipientKeyAddress) {
-			receipientKeyAddress = msg.recipientAddress;
-		}
+	async decryptMessageContent(recipient: IGenericAccount, msg: IMessage, content: IMessageContent) {
+		const receipientKeyAddress = recipient.address;
 		const unpackedContent = await MessageContainer.unpackContainter(content.content);
 		let decryptedContent;
 		if (unpackedContent.isEncoded) {
 			const msgKey = MessageKey.fromBytes(msg.key);
 			const publicKey = unpackedContent.senderPublicKeys[msgKey.publicKeyIndex];
-			const walletAccounts = await Promise.all(
-				this.wallets.map(async w => ({ wallet: w, account: await w.getAuthenticatedAccount() })),
-			);
-			const accountIdx = walletAccounts.findIndex(a => a.account && a.account.address === receipientKeyAddress);
-			if (accountIdx === -1) {
-				throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
-			}
-			const account = walletAccounts[accountIdx].account!;
-			const wallet = walletAccounts[accountIdx].wallet;
 			let symmKey: Uint8Array | null = null;
 			if (publicKey.type === PublicKeyType.YLIDE) {
-				const ylideKey = this.keystore.get(account.address);
+				const ylideKey = this.keystore.get(receipientKeyAddress);
 				if (!ylideKey) {
 					throw new Error('Key of this message recipient is not derived');
 				}
@@ -353,7 +342,18 @@ export class Ylide {
 					symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
 				});
 			} else {
-				symmKey = await wallet.decryptMessageKey(publicKey, account, msgKey.encryptedMessageKey);
+				const walletAccounts = await Promise.all(
+					this.wallets.map(async w => ({ wallet: w, account: await w.getAuthenticatedAccount() })),
+				);
+				const accountIdx = walletAccounts.findIndex(
+					a => a.account && a.account.address === receipientKeyAddress,
+				);
+				if (accountIdx === -1) {
+					throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
+				}
+				const account = walletAccounts[accountIdx].account!;
+				const wallet = walletAccounts[accountIdx].wallet;
+				symmKey = await wallet.decryptMessageKey(account, publicKey, msgKey.encryptedMessageKey);
 			}
 			if (!symmKey) {
 				throw new Error('Unable to find decryption route');
@@ -378,4 +378,11 @@ export interface SendMessageArgs {
 	recipients: string[];
 	serviceCode?: number;
 	copyOfSent?: boolean;
+}
+
+export interface BroadcastMessageArgs {
+	wallet: AbstractWalletController;
+	sender: IGenericAccount;
+	content: MessageContent;
+	serviceCode?: number;
 }

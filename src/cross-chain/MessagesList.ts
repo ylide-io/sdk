@@ -10,8 +10,8 @@ export class MessagesList extends GenericSortedMergedList<IMessage, BlockchainSo
 		source: BlockchainSource;
 	}[] = [];
 
-	addReader(reader: AbstractBlockchainController, subject: ISourceSubject) {
-		const source = new BlockchainSource(reader, subject);
+	addReader(reader: AbstractBlockchainController, subject: ISourceSubject, pullPeriod: number = 10000) {
+		const source = new BlockchainSource(reader, subject, pullPeriod);
 		this.drainers.push({ reader, subject, source });
 		this.addSource(source);
 

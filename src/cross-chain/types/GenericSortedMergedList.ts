@@ -256,8 +256,16 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 	}
 
 	async readFirstPage() {
+		await Promise.all(this.sources.map(async source => source.source.init()));
+		let was = false;
 		for (const source of this.sources) {
-			await source.source.init();
+			if (source.array.length < this.pageSize) {
+				source.noMoreAvailable = true;
+				was = true;
+			}
+		}
+		if (was) {
+			this.emit('stateUpdate');
 		}
 		// await this.readNextPage();
 	}
@@ -295,19 +303,23 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 		let wasUpdate = false;
 		for (const source of notLoaded) {
 			const lastMessage = source.firstLast.last;
-			const newMessages = lastMessage
-				? await source.source.getAfter(lastMessage, this.pageSize)
-				: await source.source.getLast(this.pageSize);
-			if (!newMessages.length) {
-				source.noMoreAvailable = true;
-			} else {
-				wasUpdate =
-					this.putMessages(
-						newMessages.map(message => ({
-							...message,
-							source: source.source,
-						})),
-					) || wasUpdate;
+			try {
+				const newMessages = lastMessage
+					? await source.source.getBefore(lastMessage, this.pageSize)
+					: await source.source.getLast(this.pageSize);
+				if (!newMessages.length) {
+					source.noMoreAvailable = true;
+				} else {
+					wasUpdate =
+						this.putMessages(
+							newMessages.map(message => ({
+								...message,
+								source: source.source,
+							})),
+						) || wasUpdate;
+				}
+			} catch (err) {
+				// Do nothing
 			}
 		}
 		if (wasUpdate) {

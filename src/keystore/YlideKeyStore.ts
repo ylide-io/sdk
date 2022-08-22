@@ -6,10 +6,10 @@ import { YlideKeyPair } from './YlideKeyPair';
  * @description Class for managing Ylide keys for multiple accounts and blockchains
  */
 export class YlideKeyStore {
-	private readonly pfx = 'YLD2_';
+	private readonly pfx = 'YLD3_';
 
 	keys: {
-		blockchain: string;
+		blockchainGroup: string;
 		wallet: string;
 		address: string;
 		key: YlideKeyPair;
@@ -21,7 +21,7 @@ export class YlideKeyStore {
 			onPasswordRequest: (reason: string) => Promise<string | null>;
 			onDeriveRequest: (
 				reason: string,
-				blockchain: string,
+				blockchainGroup: string,
 				wallet: string,
 				address: string,
 				magicString: string,
@@ -54,10 +54,10 @@ export class YlideKeyStore {
 	 * @param password Ylide password
 	 * @returns `YlideKeyPair` instance
 	 */
-	async create(reason: string, blockchain: string, wallet: string, address: string, password: string) {
+	async create(reason: string, blockchainGroup: string, wallet: string, address: string, password: string) {
 		const secretKey = await this.options.onDeriveRequest(
 			reason,
-			blockchain,
+			blockchainGroup,
 			wallet,
 			address,
 			YlideKeyPair.getMagicString(address, 1, password),
@@ -67,7 +67,7 @@ export class YlideKeyStore {
 		}
 		const key = new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
 		this.keys.push({
-			blockchain,
+			blockchainGroup,
 			wallet,
 			address,
 			key,
@@ -80,7 +80,7 @@ export class YlideKeyStore {
 	 * Method to remove key from internal storage
 	 * @param key `YlideKeyPair` reference
 	 */
-	async delete(key: { blockchain: string; address: string; key: YlideKeyPair }) {
+	async delete(key: { blockchainGroup: string; address: string; key: YlideKeyPair }) {
 		this.keys = this.keys.filter(_key => key !== _key);
 		await this.save();
 	}
@@ -99,7 +99,7 @@ export class YlideKeyStore {
 		}
 		this.keys = [];
 		for (let keyIdx = 0; keyIdx < keysLength; keyIdx++) {
-			const keyMeta = await this.storage.readJSON<{ blockchain: string; wallet: string; address: string }>(
+			const keyMeta = await this.storage.readJSON<{ blockchainGroup: string; wallet: string; address: string }>(
 				this.key(`keyMeta${keyIdx}`),
 			);
 			const keyBytes = await this.storage.readBytes(this.key(`key${keyIdx}`));
@@ -111,7 +111,7 @@ export class YlideKeyStore {
 				continue;
 			}
 			this.keys.push({
-				blockchain: keyMeta.blockchain,
+				blockchainGroup: keyMeta.blockchainGroup,
 				wallet: keyMeta.wallet,
 				address: keyMeta.address,
 				key,
@@ -128,7 +128,7 @@ export class YlideKeyStore {
 		for (let keyIdx = 0; keyIdx < this.keys.length; keyIdx++) {
 			const keyData = this.keys[keyIdx];
 			await this.storage.storeJSON(this.key(`keyMeta${keyIdx}`), {
-				blockchain: keyData.blockchain,
+				blockchainGroup: keyData.blockchainGroup,
 				address: keyData.address,
 			});
 			await this.storage.storeBytes(this.key(`key${keyIdx}`), keyData.key.toBytes());

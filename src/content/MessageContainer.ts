@@ -109,7 +109,7 @@ export class MessageContainer {
 		}
 		const content = buf.readBytes32Length();
 		return {
-			version: 0x05,
+			version: 0x06,
 			serviceCode,
 			senderPublicKeys,
 			content,

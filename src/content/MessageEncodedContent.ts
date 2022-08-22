@@ -55,9 +55,8 @@ export class MessageEncodedContent {
 
 	static packRawContent(content: Uint8Array) {
 		const packedBytes = this.pack(content);
-		const key = nacl.randomBytes(32);
 		return {
-			nonEncodedContent: symmetricEncrypt(packedBytes, key),
+			nonEncodedContent: packedBytes,
 		};
 	}
 

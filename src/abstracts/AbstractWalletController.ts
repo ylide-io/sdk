@@ -46,23 +46,25 @@ export abstract class AbstractWalletController {
 	/**
 	 * Method to request wallet to revoke authenticaion of this app
 	 */
-	abstract disconnectAccount(): Promise<void>;
+	abstract disconnectAccount(account: IGenericAccount): Promise<void>;
 
 	/**
 	 * Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString (usually containing Ylide password)
+	 * @param account Account for which you request signature
 	 * @param magicString - string which consists of some fixed part and dynamic part like Ylide password
 	 */
-	abstract signMagicString(magicString: string): Promise<Uint8Array>;
+	abstract signMagicString(account: IGenericAccount, magicString: string): Promise<Uint8Array>;
 
 	/**
 	 * TODO
-	 * @param me Accout for which you request the private communication key
+	 * @param account Account for which you request the private communication key
 	 */
-	abstract requestYlidePrivateKey(me: IGenericAccount): Promise<Uint8Array | null>;
+	abstract requestYlidePrivateKey(account: IGenericAccount): Promise<Uint8Array | null>;
 
 	/**
 	 * Method to publish message using Ylide Protocol.
 	 *
+	 * @param me Account from which publish should occur
 	 * @param contentData - raw bytes content to publish
 	 * @param recipients - array of recipients (address-public key pairs)
 	 */
@@ -78,18 +80,25 @@ export abstract class AbstractWalletController {
 	/**
 	 * Method to connect user's public key with his address
 	 *
+	 * @param account Account for which connection should occur
 	 * @param publicKey - public key to attach to user's address
 	 */
-	abstract attachPublicKey(publicKey: Uint8Array, options?: any): Promise<void>;
+	abstract attachPublicKey(account: IGenericAccount, publicKey: Uint8Array, options?: any): Promise<void>;
 
 	/**
 	 * Method to convert address to 32 bytes array
 	 */
 	abstract addressToUint256(address: string): Uint256;
 
+	/**
+	 * Method to decrypt message key using native wallet encryption system
+	 *
+	 * @param recipientAccount Account of the recipient
+	 * @param publicKey - public key to attach to user's address
+	 */
 	abstract decryptMessageKey(
-		senderPublicKey: PublicKey,
 		recipientAccount: IGenericAccount,
+		senderPublicKey: PublicKey,
 		encryptedKey: Uint8Array,
 	): Promise<Uint8Array>;
 }
