@@ -33,6 +33,8 @@ export abstract class AbstractWalletController {
 		//
 	}
 
+	abstract getCurrentBlockchain(): Promise<string>;
+
 	/**
 	 * Method to get account currently authenticated by the wallet for this app
 	 */
