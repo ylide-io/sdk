@@ -18,14 +18,14 @@ export interface ISourceSubject {
  * @internal
  */
 export class BlockchainSource extends EventEmitter implements GenericSortedSource<IMessage> {
-	private pullTimer: any;
-	private lastMessage: IMessage | null = null;
-	private inited = false;
+	protected pullTimer: any;
+	protected lastMessage: IMessage | null = null;
+	protected inited = false;
 
 	constructor(
 		public readonly reader: AbstractBlockchainController,
 		public readonly subject: ISourceSubject,
-		private _pullCycle: number = 5000,
+		protected _pullCycle: number = 5000,
 		public readonly limit = 50,
 	) {
 		super();
@@ -124,7 +124,7 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 		this.pullTimer = asyncTimer(this.pull.bind(this), this._pullCycle);
 	}
 
-	private async pull() {
+	protected async pull() {
 		const messages = this.lastMessage
 			? await this.getAfter({ link: this.lastMessage, time: this.lastMessage.createdAt }, this.limit)
 			: await this.getLast(this.limit);

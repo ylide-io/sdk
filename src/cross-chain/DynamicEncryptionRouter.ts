@@ -96,7 +96,12 @@ export class DynamicEncryptionRouter {
 				}
 				const arr = recipientsMap[recipient.address] || [];
 				const strategies = [];
-				const ylideKey = await blockchainController.extractPublicKeyFromAddress(recipient.original);
+				let ylideKey;
+				try {
+					ylideKey = await blockchainController.extractPublicKeyFromAddress(recipient.original);
+				} catch (err) {
+					ylideKey = null;
+				}
 				if (ylideKey) {
 					strategies.push({
 						type: 'ylide',
