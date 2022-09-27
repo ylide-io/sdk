@@ -225,7 +225,7 @@ export class DynamicEncryptionRouter {
 			const recs = recipients.filter(r => selectedStrategyMap[r.keyAddress]?.type === strategy);
 			return {
 				type: strategy,
-				blockchainController: strategiesControllers[strategy],
+				blockchainController: strategiesControllers[strategy] || null,
 				recipients: recs,
 				entries: recs.map(r => selectedStrategyMap[r.keyAddress]!.data),
 			};

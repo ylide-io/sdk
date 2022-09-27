@@ -8,6 +8,7 @@ import {
 	IMessageCorruptedContent,
 } from '..';
 import { Uint256 } from '../types/Uint256';
+import { AbstractNameService } from './AbstractNameService';
 
 /**
  * @description It's an abstract class designated to define an interface to read messaging data from blockchain: messages metadata, content and public keys of recipients
@@ -38,6 +39,13 @@ export abstract class AbstractBlockchainController {
 	constructor(options?: any) {
 		//
 	}
+
+	abstract init(): Promise<void>;
+
+	/**
+	 * Method to get instance of default name service for this blockchain (if available)
+	 */
+	abstract defaultNameService(): AbstractNameService | null;
 
 	/**
 	 * Method to check address validity in this blockchain
@@ -132,6 +140,14 @@ export abstract class AbstractBlockchainController {
 	 * @param address - Recipient's wallet address
 	 */
 	abstract extractPublicKeyFromAddress(address: string): Promise<PublicKey | null>;
+
+	/**
+	 * Method to get balance of the address. Currency used is the same which is used to pay for the Ylide tx in this blockchain
+	 *
+	 * @param address - Recipient's wallet address
+	 * @return Decimal number in a string format
+	 */
+	abstract getBalance(address: string): Promise<string>;
 
 	/**
 	 * Method to get available non-Ylide encryption strategies for address

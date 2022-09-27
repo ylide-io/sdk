@@ -1,5 +1,18 @@
+import { EventEmitter } from 'eventemitter3';
 import { MessageKey, AbstractBlockchainController, PublicKey, IGenericAccount } from '..';
 import { Uint256 } from '../types/Uint256';
+
+export enum WalletEvent {
+	BLOCKCHAIN_CHANGED = 'blockchain_changed',
+	ACCOUNT_CHANGED = 'account_changed',
+	LOGOUT = 'logout',
+	LOGIN = 'login',
+}
+
+export type SwitchAccountCallback = (
+	currentAccount: IGenericAccount | null,
+	needAccount: IGenericAccount,
+) => Promise<void>;
 
 /**
  * @description It's an abstract class designated to define an interface to send messages through blockchain and publish public keys
@@ -28,10 +41,30 @@ import { Uint256 } from '../types/Uint256';
  * }
  * ```
  */
-export abstract class AbstractWalletController {
+export abstract class AbstractWalletController extends EventEmitter<WalletEvent> {
+	onSwitchAccountRequest: SwitchAccountCallback | null = null;
+
 	constructor(options?: any) {
-		//
+		super();
 	}
+
+	protected async switchAccountRequest(currentAccount: IGenericAccount | null, needAccount: IGenericAccount) {
+		if (this.onSwitchAccountRequest) {
+			await this.onSwitchAccountRequest(currentAccount, needAccount);
+		}
+	}
+
+	on(event: WalletEvent.ACCOUNT_CHANGED, fn: (newAccount: IGenericAccount) => void, context?: any): this;
+	on(event: WalletEvent.BLOCKCHAIN_CHANGED, fn: (newBlockchain: string) => void, context?: any): this;
+	on(event: WalletEvent.LOGIN, fn: (newAccount: IGenericAccount) => void, context?: any): this;
+	on(event: WalletEvent.LOGOUT, fn: () => void, context?: any): this;
+	on(event: WalletEvent, fn: (...args: any[]) => void, context?: any): this {
+		return super.on(event, fn, context);
+	}
+
+	abstract init(): Promise<void>;
+
+	abstract isMultipleAccountsSupported(): boolean;
 
 	abstract getCurrentBlockchain(): Promise<string>;
 

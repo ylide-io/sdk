@@ -7,13 +7,14 @@ import { YlideKeyStore } from './keystore';
 import { IGenericAccount, IMessage, IMessageContent, PublicKeyType, ServiceCode } from './types';
 import { Uint256, uint256ToUint8Array, uint8ArrayToUint256 } from './types/Uint256';
 
-export * from './types';
 export * from './abstracts';
-export * from './storage';
-export * from './keystore';
-export * from './crypto';
 export * from './content';
 export * from './cross-chain';
+export * from './crypto';
+export * from './errors';
+export * from './keystore';
+export * from './storage';
+export * from './types';
 
 export type WalletMap<T> = Record<string, T>;
 export type BlockchainMap<T> = Record<string, T>;
@@ -203,7 +204,8 @@ export class Ylide {
 		if (!(await walletControllerFactory.isWalletAvailable())) {
 			throw new Error('Wallet is not available');
 		}
-		const walletController = walletControllerFactory.create(options);
+		const walletController = await walletControllerFactory.create(options);
+		await walletController.init();
 		return walletController;
 	}
 
@@ -216,9 +218,11 @@ export class Ylide {
 	 * const isMyAddressValid = blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
 	 */
-	static instantiateBlockchain(blockchain: string, options?: any) {
+	static async instantiateBlockchain(blockchain: string, options?: any) {
 		const blockchainControllerFactory = this.getBlockchainControllerFactory(blockchain);
-		return blockchainControllerFactory.create(options);
+		const blockchainController = await blockchainControllerFactory.create(options);
+		await blockchainController.init();
+		return blockchainController;
 	}
 
 	// non-singleton part starts here:

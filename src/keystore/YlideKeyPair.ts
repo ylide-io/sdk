@@ -198,8 +198,8 @@ export class YlideKeyPair {
 	 * @param reason Reason for accessing communication key
 	 * @param processor Async callback which uses decrypted key
 	 */
-	async execute(reason: string, processor: (keypair: YlideUnencryptedKeyPair) => Promise<void>) {
+	async execute<T = void>(reason: string, processor: (keypair: YlideUnencryptedKeyPair) => Promise<T>): Promise<T> {
 		const keypair = await this.decrypt(reason);
-		await processor(keypair);
+		return await processor(keypair);
 	}
 }

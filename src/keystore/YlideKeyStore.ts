@@ -1,19 +1,37 @@
+import { EventEmitter } from 'eventemitter3';
+import { YlideError, YlideErrorType } from '../errors';
 import { AbstractStorage } from '../storage/AbstractStorage';
 import { YlideKeyPair } from './YlideKeyPair';
+
+export enum YlideKeyStoreEvent {
+	KEY_ADDED = 'key_added',
+	KEY_REMOVED = 'key_removed',
+	KEYS_UPDATED = 'keys_updated',
+}
+
+export class YlideKey {
+	constructor(
+		public readonly blockchainGroup: string,
+		public readonly wallet: string,
+		public readonly address: string,
+		public readonly keypair: YlideKeyPair,
+	) {
+		//
+	}
+
+	private _classEnforcer() {
+		//
+	}
+}
 
 /**
  * @category Keys
  * @description Class for managing Ylide keys for multiple accounts and blockchains
  */
-export class YlideKeyStore {
-	private readonly pfx = 'YLD3_';
+export class YlideKeyStore extends EventEmitter {
+	private readonly pfx = 'YLD4_';
 
-	keys: {
-		blockchainGroup: string;
-		wallet: string;
-		address: string;
-		key: YlideKeyPair;
-	}[] = [];
+	keys: YlideKey[] = [];
 
 	constructor(
 		readonly storage: AbstractStorage,
@@ -27,7 +45,9 @@ export class YlideKeyStore {
 				magicString: string,
 			) => Promise<Uint8Array | null>;
 		},
-	) {}
+	) {
+		super();
+	}
 
 	/**
 	 * Initializes underlaying storage engine and Keystore
@@ -55,6 +75,22 @@ export class YlideKeyStore {
 	 * @returns `YlideKeyPair` instance
 	 */
 	async create(reason: string, blockchainGroup: string, wallet: string, address: string, password: string) {
+		const key = await this.constructKeypair(reason, blockchainGroup, wallet, address, password);
+		await this.storeKey(key, blockchainGroup, wallet);
+		return key;
+	}
+
+	/**
+	 * Method to construct new Ylide communication key without storing it.
+	 *
+	 * @param reason Reason for password/derivation request
+	 * @param blockchainGroup Blockchain group name
+	 * @param wallet Wallet name
+	 * @param address User's address
+	 * @param password Ylide password
+	 * @returns `YlideKeyPair` instance
+	 */
+	async constructKeypair(reason: string, blockchainGroup: string, wallet: string, address: string, password: string) {
 		const secretKey = await this.options.onDeriveRequest(
 			reason,
 			blockchainGroup,
@@ -63,26 +99,39 @@ export class YlideKeyStore {
 			YlideKeyPair.getMagicString(address, 1, password),
 		);
 		if (!secretKey) {
-			throw new Error('Interrupted');
+			throw new YlideError(YlideErrorType.USER_CANCELLED);
 		}
-		const key = new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
-		this.keys.push({
-			blockchainGroup,
-			wallet,
-			address,
-			key,
-		});
+		return new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
+	}
+
+	/**
+	 * Method to store Ylide communication key.
+	 *
+	 * @param keypair YlideKeyPair instance (result of "constructKeypair" execution)
+	 * @param blockchainGroup Blockchain group name
+	 * @param wallet Wallet name
+	 */
+	async storeKey(keypair: YlideKeyPair, blockchainGroup: string, wallet: string) {
+		const key = new YlideKey(blockchainGroup, wallet, keypair.address, keypair);
+		this.keys.push(key);
+		this.emit(YlideKeyStoreEvent.KEY_ADDED, key);
+		this.emit(YlideKeyStoreEvent.KEYS_UPDATED, this.keys);
 		await this.save();
 		return key;
 	}
 
 	/**
 	 * Method to remove key from internal storage
-	 * @param key `YlideKeyPair` reference
+	 * @param key `YlideKey` instance
 	 */
-	async delete(key: { blockchainGroup: string; address: string; key: YlideKeyPair }) {
-		this.keys = this.keys.filter(_key => key !== _key);
-		await this.save();
+	async delete(key: YlideKey) {
+		const idx = this.keys.indexOf(key);
+		if (idx > -1) {
+			this.keys.splice(idx, 1);
+			this.emit(YlideKeyStoreEvent.KEY_REMOVED, key);
+			this.emit(YlideKeyStoreEvent.KEYS_UPDATED, this.keys);
+			await this.save();
+		}
 	}
 
 	/**
@@ -106,17 +155,15 @@ export class YlideKeyStore {
 			if (!keyMeta || !keyBytes) {
 				continue;
 			}
-			const key = YlideKeyPair.fromBytes(keyBytes);
-			if (key.address !== keyMeta.address) {
+			const keypair = YlideKeyPair.fromBytes(keyBytes);
+			if (keypair.address !== keyMeta.address) {
 				continue;
 			}
-			this.keys.push({
-				blockchainGroup: keyMeta.blockchainGroup,
-				wallet: keyMeta.wallet,
-				address: keyMeta.address,
-				key,
-			});
+			const key = new YlideKey(keyMeta.blockchainGroup, keyMeta.wallet, keyMeta.address, keypair);
+			this.keys.push(key);
+			this.emit(YlideKeyStoreEvent.KEY_ADDED, key);
 		}
+		this.emit(YlideKeyStoreEvent.KEYS_UPDATED, this.keys);
 	}
 
 	/**
@@ -129,9 +176,10 @@ export class YlideKeyStore {
 			const keyData = this.keys[keyIdx];
 			await this.storage.storeJSON(this.key(`keyMeta${keyIdx}`), {
 				blockchainGroup: keyData.blockchainGroup,
+				wallet: keyData.wallet,
 				address: keyData.address,
 			});
-			await this.storage.storeBytes(this.key(`key${keyIdx}`), keyData.key.toBytes());
+			await this.storage.storeBytes(this.key(`key${keyIdx}`), keyData.keypair.toBytes());
 		}
 	}
 
@@ -145,7 +193,7 @@ export class YlideKeyStore {
 		if (!keyEntry) {
 			return null;
 		} else {
-			return keyEntry.key;
+			return keyEntry.keypair;
 		}
 	}
 }
