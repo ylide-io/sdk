@@ -1,27 +1,13 @@
 import { EventEmitter } from 'eventemitter3';
 import { YlideError, YlideErrorType } from '../errors';
 import { AbstractStorage } from '../storage/AbstractStorage';
+import { YlideKey } from './YlideKey';
 import { YlideKeyPair } from './YlideKeyPair';
 
 export enum YlideKeyStoreEvent {
 	KEY_ADDED = 'key_added',
 	KEY_REMOVED = 'key_removed',
 	KEYS_UPDATED = 'keys_updated',
-}
-
-export class YlideKey {
-	constructor(
-		public readonly blockchainGroup: string,
-		public readonly wallet: string,
-		public readonly address: string,
-		public readonly keypair: YlideKeyPair,
-	) {
-		//
-	}
-
-	private _classEnforcer() {
-		//
-	}
 }
 
 /**

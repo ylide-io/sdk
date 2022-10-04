@@ -373,6 +373,21 @@ export class Ylide {
 			decryptedContent,
 		};
 	}
+
+	async decryptBroadcastContent(msg: IMessage, content: IMessageContent) {
+		const unpackedContent = await MessageContainer.unpackContainter(content.content);
+		if (unpackedContent.isEncoded) {
+			throw new Error(`Can't decode encrypted content`);
+		}
+		const decryptedContent = MessageEncodedContent.unpackRawContent(unpackedContent.content);
+		const decodedContent = MessageEncodedContent.messageContentFromBytes(decryptedContent);
+
+		return {
+			...decodedContent,
+			serviceCode: unpackedContent.serviceCode,
+			decryptedContent,
+		};
+	}
 }
 
 export interface SendMessageArgs {

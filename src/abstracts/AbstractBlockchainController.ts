@@ -72,6 +72,7 @@ export abstract class AbstractBlockchainController {
 	 * @param toTimestamp - End time (included) for filtering messages history
 	 */
 	abstract retrieveMessageHistoryByTime(
+		sender: Uint256 | null,
 		recipient: Uint256 | null,
 		fromTimestamp?: number,
 		toTimestamp?: number,
@@ -86,6 +87,7 @@ export abstract class AbstractBlockchainController {
 	 * @param toMessage - End message (not included) for filtering messages history
 	 */
 	abstract retrieveMessageHistoryByBounds(
+		sender: Uint256 | null,
 		recipient: Uint256 | null,
 		fromMessage?: IMessage,
 		toMessage?: IMessage,

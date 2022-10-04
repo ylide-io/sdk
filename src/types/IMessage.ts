@@ -16,14 +16,14 @@ export interface IMessageBase {
 
 	key: Uint8Array;
 
-	blockchainMeta: any;
-	userspaceMeta: any;
+	readonly $$blockchainMetaDontUseThisField: any;
+	// userspaceMeta: any;
 
-	isContentDecrypted: boolean;
-	decryptedContent: Uint8Array | null;
+	// isContentDecrypted: boolean;
+	// decryptedContent: Uint8Array | null;
 
-	isContentLoaded: boolean;
-	contentLink: IMessageContent | null;
+	// isContentLoaded: boolean;
+	// contentLink: IMessageContent | null;
 }
 
 /**
@@ -75,8 +75,8 @@ export interface IMessageCorruptedContent {
 export interface IMessageContent {
 	msgId: string;
 	corrupted: false;
-	storage: string;
 	createdAt: number;
+	storage: string;
 	senderAddress: string;
 	parts: number;
 	content: Uint8Array;

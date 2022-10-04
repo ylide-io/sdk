@@ -2,17 +2,23 @@ import { EventEmitter } from 'eventemitter3';
 import { AbstractBlockchainController } from '../abstracts';
 import { IMessage, Uint256 } from '../types';
 import asyncTimer from '../utils/asyncTimer';
-import { GenericEntryPure, GenericSortedSource } from './types/GenericSortedMergedList';
+import { GenericEntryPure, GenericSortedSource } from './list/CombinedList';
 
-export enum BlockchainSourceSubjectType {
-	RECIPIENT,
-	AUTHOR,
+export enum BlockchainSourceType {
+	BROADCAST,
+	DIRECT,
 }
 
-export interface ISourceSubject {
-	type: BlockchainSourceSubjectType;
-	address: Uint256 | null;
-}
+export type ISourceSubject =
+	| {
+			type: BlockchainSourceType.BROADCAST;
+			sender: Uint256 | null;
+	  }
+	| {
+			type: BlockchainSourceType.DIRECT;
+			sender: Uint256 | null;
+			recipient: Uint256 | null;
+	  };
 
 /**
  * @internal
@@ -27,6 +33,7 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 		public readonly subject: ISourceSubject,
 		protected _pullCycle: number = 5000,
 		public readonly limit = 50,
+		public readonly meta: any = null,
 	) {
 		super();
 	}
@@ -37,7 +44,7 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 		}
 	}
 
-	cmpr(a: GenericEntryPure<IMessage>, b: GenericEntryPure<IMessage>): number {
+	compare(a: GenericEntryPure<IMessage>, b: GenericEntryPure<IMessage>): number {
 		if (a.time === a.time) {
 			// we pass it in reverse order to ensure descending way
 			return this.reader.compareMessagesTime(b.link, a.link);
@@ -47,16 +54,22 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 	}
 
 	async getBefore(entry: GenericEntryPure<IMessage>, limit: number): Promise<GenericEntryPure<IMessage>[]> {
-		if (this.subject.type === BlockchainSourceSubjectType.RECIPIENT) {
+		if (this.subject.type === BlockchainSourceType.DIRECT) {
 			return (
-				await this.reader.retrieveMessageHistoryByBounds(this.subject.address, undefined, entry.link, limit)
+				await this.reader.retrieveMessageHistoryByBounds(
+					this.subject.sender,
+					this.subject.recipient,
+					undefined,
+					entry.link,
+					limit,
+				)
 			).map(msg => ({
 				link: msg,
 				time: msg.createdAt,
 			}));
 		} else {
 			return (
-				await this.reader.retrieveBroadcastHistoryByBounds(this.subject.address, undefined, entry.link, limit)
+				await this.reader.retrieveBroadcastHistoryByBounds(this.subject.sender, undefined, entry.link, limit)
 			).map(msg => ({
 				link: msg,
 				time: msg.createdAt,
@@ -65,16 +78,22 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 	}
 
 	async getAfter(entry: GenericEntryPure<IMessage>, limit: number): Promise<GenericEntryPure<IMessage>[]> {
-		if (this.subject.type === BlockchainSourceSubjectType.RECIPIENT) {
+		if (this.subject.type === BlockchainSourceType.DIRECT) {
 			return (
-				await this.reader.retrieveMessageHistoryByBounds(this.subject.address, entry.link, undefined, limit)
+				await this.reader.retrieveMessageHistoryByBounds(
+					this.subject.sender,
+					this.subject.recipient,
+					entry.link,
+					undefined,
+					limit,
+				)
 			).map(msg => ({
 				link: msg,
 				time: msg.createdAt,
 			}));
 		} else {
 			return (
-				await this.reader.retrieveBroadcastHistoryByBounds(this.subject.address, entry.link, undefined, limit)
+				await this.reader.retrieveBroadcastHistoryByBounds(this.subject.sender, entry.link, undefined, limit)
 			).map(msg => ({
 				link: msg,
 				time: msg.createdAt,
@@ -83,20 +102,30 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 	}
 
 	async getLast(limit: number): Promise<GenericEntryPure<IMessage>[]> {
-		if (this.subject.type === BlockchainSourceSubjectType.RECIPIENT) {
-			return (
-				await this.reader.retrieveMessageHistoryByBounds(this.subject.address, undefined, undefined, limit)
+		if (this.subject.type === BlockchainSourceType.DIRECT) {
+			const res = (
+				await this.reader.retrieveMessageHistoryByBounds(
+					this.subject.sender,
+					this.subject.recipient,
+					undefined,
+					undefined,
+					limit,
+				)
 			).map(msg => ({
 				link: msg,
 				time: msg.createdAt,
 			}));
+			this.lastMessage = res[0].link;
+			return res;
 		} else {
-			return (
-				await this.reader.retrieveBroadcastHistoryByBounds(this.subject.address, undefined, undefined, limit)
+			const res = (
+				await this.reader.retrieveBroadcastHistoryByBounds(this.subject.sender, undefined, undefined, limit)
 			).map(msg => ({
 				link: msg,
 				time: msg.createdAt,
 			}));
+			this.lastMessage = res[0].link;
+			return res;
 		}
 	}
 
@@ -117,7 +146,6 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 			return;
 		}
 		this.inited = true;
-		await this.pull();
 		if (this.pullTimer) {
 			this.pullTimer();
 		}
@@ -125,9 +153,10 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 	}
 
 	protected async pull() {
-		const messages = this.lastMessage
-			? await this.getAfter({ link: this.lastMessage, time: this.lastMessage.createdAt }, this.limit)
-			: await this.getLast(this.limit);
+		if (!this.lastMessage) {
+			return;
+		}
+		const messages = await this.getAfter({ link: this.lastMessage, time: this.lastMessage.createdAt }, this.limit);
 		if (messages.length) {
 			this.lastMessage = messages[0].link;
 			this.emit('messages', { reader: this.reader, subject: this.subject, messages });
