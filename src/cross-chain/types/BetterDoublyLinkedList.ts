@@ -36,6 +36,46 @@ export class BetterDoublyLinkedList<T> extends DoublyLinkedList<T> {
 		return value;
 	}
 
+	insertBefore(value: T, node: DoublyLinkedListNode<T> | null): DoublyLinkedListNode<T> {
+		if (node === null) {
+			return this.insertLast(value);
+		}
+
+		if (node === this.head()) {
+			return this.insertFirst(value);
+		}
+
+		const newNode = new DoublyLinkedListNode(value);
+
+		newNode.setNext(node);
+		newNode.setPrev(node.getPrev());
+
+		newNode.getNext().setPrev(newNode);
+		newNode.getPrev().setNext(newNode);
+
+		this.setCount(this.count() + 1);
+
+		return newNode;
+	}
+
+	insertAfter(value: T, node: DoublyLinkedListNode<T> | null): DoublyLinkedListNode<T> {
+		if (node === null || node === this.tail()) {
+			return this.insertLast(value);
+		}
+
+		const newNode = new DoublyLinkedListNode(value);
+
+		newNode.setPrev(node);
+		newNode.setNext(node.getNext());
+
+		newNode.getNext().setPrev(newNode);
+		newNode.getPrev().setNext(newNode);
+
+		this.setCount(this.count() + 1);
+
+		return newNode;
+	}
+
 	insertFirstForNode(newNode: DoublyLinkedListNode<T>) {
 		if (this.isEmpty()) {
 			this.setHead(newNode);

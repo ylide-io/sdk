@@ -1,4 +1,4 @@
-import { ExecutionQueue } from './cross-chain/types/ExecutionQueue';
+import { ExecutionQueue } from '../src/cross-chain/types/ExecutionQueue';
 
 (async () => {
 	const queue = new ExecutionQueue<{ a: number; b: number }, number>(async ({ request }) => {

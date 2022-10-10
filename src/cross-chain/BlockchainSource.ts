@@ -12,11 +12,11 @@ export enum BlockchainSourceType {
 export type ISourceSubject =
 	| {
 			type: BlockchainSourceType.BROADCAST;
-			sender: Uint256 | null;
+			sender: string | null;
 	  }
 	| {
 			type: BlockchainSourceType.DIRECT;
-			sender: Uint256 | null;
+			sender: string | null;
 			recipient: Uint256 | null;
 	  };
 
@@ -27,6 +27,7 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 	protected pullTimer: any;
 	protected lastMessage: IMessage | null = null;
 	protected inited = false;
+	protected reallyInited = false;
 
 	constructor(
 		public readonly reader: AbstractBlockchainController,
@@ -115,7 +116,8 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 				link: msg,
 				time: msg.createdAt,
 			}));
-			this.lastMessage = res[0].link;
+			this.lastMessage = res.length ? res[0].link : null;
+			this.reallyInited = true;
 			return res;
 		} else {
 			const res = (
@@ -124,7 +126,8 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 				link: msg,
 				time: msg.createdAt,
 			}));
-			this.lastMessage = res[0].link;
+			this.lastMessage = res.length ? res[0].link : null;
+			this.reallyInited = true;
 			return res;
 		}
 	}
@@ -153,10 +156,12 @@ export class BlockchainSource extends EventEmitter implements GenericSortedSourc
 	}
 
 	protected async pull() {
-		if (!this.lastMessage) {
+		if (!this.reallyInited) {
 			return;
 		}
-		const messages = await this.getAfter({ link: this.lastMessage, time: this.lastMessage.createdAt }, this.limit);
+		const messages = this.lastMessage
+			? await this.getAfter({ link: this.lastMessage, time: this.lastMessage.createdAt }, this.limit)
+			: await this.getLast(this.limit);
 		if (messages.length) {
 			this.lastMessage = messages[0].link;
 			this.emit('messages', { reader: this.reader, subject: this.subject, messages });

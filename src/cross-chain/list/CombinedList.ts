@@ -411,6 +411,8 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 					});
 				}
 			} catch (err) {
+				source.noMoreAvailable = true;
+				console.error('Error loading messages: ', err);
 				// Do nothing
 			}
 		}
