@@ -1,5 +1,4 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { IMessage } from '../../types';
 import { ListStorage } from './ListStorage';
 
 interface DBInterface extends DBSchema {
@@ -16,7 +15,7 @@ interface DBInterface extends DBSchema {
 	};
 }
 
-const dev = true;
+const dev = false;
 
 export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;

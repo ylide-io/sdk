@@ -92,7 +92,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	};
 
 	private log(...args: any[]) {
-		console.log('PLS: ', ...args);
+		// console.log('PLS: ', ...args);
 	}
 
 	private handleSourceGuaranteedSegmentUpdated = async () => {
