@@ -6,6 +6,7 @@ import { CriticalSection } from './utils/CriticalSection';
 
 export interface ListWrappedSource {
 	source: IListSource;
+	newMessages: number;
 	newMessagesHandler: (params: { messages: IMessage[] }) => Promise<void>;
 	segmentUpdateHandler: () => Promise<void>;
 }
@@ -60,6 +61,10 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 		}
 	}
 
+	private log(...args: any[]) {
+		console.log('LSM: ', ...args);
+	}
+
 	private completeRebuild() {
 		this._guaranteedSegment = [];
 		if (!this.sources.length) {
@@ -75,6 +80,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 			guaranteed = this.sources.reduce((p, c) => p + c.source.guaranteed, 0);
 		} else {
 			guaranteed = Math.min(...this.sources.filter(s => !s.source.drained).map(s => s.source.guaranteed));
+			guaranteed += this.sources.reduce((p, c) => p + c.newMessages, 0);
 		}
 		this._guaranteedSegment = sourcesSegments.slice(0, guaranteed); //.map(f => f.msg);
 		// this._guaranteedSegmentList = DoublyLinkedList.fromArray(this._guaranteedSegment);
@@ -95,7 +101,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 	private addSource(source: IListSource) {
 		const newMessagesHandler = async ({ messages }: { messages: IMessage[] }) => {
-			//
+			wrappedSource.newMessages += messages.length;
 		};
 
 		const segmentUpdateHandler = async () => {
@@ -104,6 +110,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 		const wrappedSource: ListWrappedSource = {
 			source,
+			newMessages: 0,
 			newMessagesHandler,
 			segmentUpdateHandler,
 		};
@@ -135,11 +142,13 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 		try {
 			await this.criticalSection.enter();
 			for (const source of this.sources) {
+				source.newMessages = 0;
 				source.source.on('messages', source.newMessagesHandler);
 				if (!source.source.has('guaranteedSegmentUpdated', source.segmentUpdateHandler)) {
 					source.source.on('guaranteedSegmentUpdated', source.segmentUpdateHandler);
 				}
 			}
+			this._paused = false;
 			await Promise.all(
 				this.sources.map(async source => {
 					if (source.source.paused) {
@@ -149,7 +158,6 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					}
 				}),
 			);
-			this._paused = false;
 		} finally {
 			await this.criticalSection.leave();
 		}

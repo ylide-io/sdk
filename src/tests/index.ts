@@ -1,7 +1,9 @@
+import { drainerTest } from './drainer';
 import { listsTest } from './lists';
 
 describe('Ylide', () => {
-	listsTest();
+	// listsTest();
+	drainerTest();
 });
 // (async () => {
 // 	const listStorage = new ListStorage<number>((a, b) => a - b);

@@ -1,6 +1,18 @@
 import { describe, it, before } from 'mocha';
 import { expect } from 'chai';
 import { ListStorage } from '../cross-chain/new-list/ListStorage';
+import { GenericListSource, ListSource } from '../cross-chain/new-list/ListSource';
+import { AscComparator } from '../cross-chain/new-list/types/AscComparator';
+import { IMessage, Uint256 } from '../types';
+import { AsyncEventEmitter } from '../cross-chain/new-list/utils/AsyncEventEmitter';
+import { EventEmitter } from 'eventemitter3';
+import asyncTimer from '../utils/asyncTimer';
+import { ListSourceMultiplexer } from '../cross-chain/new-list/ListSourceMultiplexer';
+import { SourceReadingSession } from '../cross-chain/new-list/SourceReadingSession';
+import { BlockchainSourceType } from '../cross-chain';
+import { ListSourceDrainer } from '../cross-chain/new-list/ListSourceDrainer';
+import { asyncDelay } from '../utils/asyncDelay';
+import { ScriptedSource, tou } from '../cross-chain/new-list/ScriptedSource';
 
 function printListStorage(ls: ListStorage<number>) {
 	console.log('-------------------------');
@@ -19,190 +31,22 @@ function assertListStorage(ls: ListStorage<number>, result: number[][]) {
 
 export function drainerTest() {
 	describe('Drainer', () => {
-		let listStorage: ListStorage<number>;
-		beforeEach(async () => {
-			listStorage = new ListStorage<number>((a, b) => a - b);
-		});
-		it('One segment', async () => {
-			await listStorage.putObjects([3, 2, 1]);
-			assertListStorage(listStorage, [[3, 2, 1]]);
-		});
-		it('Two segment', async () => {
-			await listStorage.putObjects([3, 2, 1]);
-			await listStorage.putObjects([9, 8, 7]);
-			assertListStorage(listStorage, [
-				[9, 8, 7],
-				[3, 2, 1],
-			]);
-		});
-		it('Two segment desc order', async () => {
-			await listStorage.putObjects([9, 8, 7]);
-			await listStorage.putObjects([3, 2, 1]);
-			assertListStorage(listStorage, [
-				[9, 8, 7],
-				[3, 2, 1],
-			]);
-		});
-		it('Two segments overlap', async () => {
-			await listStorage.putObjects([9, 8, 7, 3]);
-			await listStorage.putObjects([3, 2, 1]);
-			assertListStorage(listStorage, [[9, 8, 7, 3, 2, 1]]);
-		});
-		it('Two segments huge overlap', async () => {
-			await listStorage.putObjects([9, 8, 7, 6, 5, 4, 3]);
-			await listStorage.putObjects([5, 4, 3, 2, 1]);
-			assertListStorage(listStorage, [[9, 8, 7, 6, 5, 4, 3, 2, 1]]);
-		});
-		it('Two segments huge overlap asc order', async () => {
-			await listStorage.putObjects([5, 4, 3, 2, 1]);
-			await listStorage.putObjects([9, 8, 7, 6, 5, 4, 3]);
-			assertListStorage(listStorage, [[9, 8, 7, 6, 5, 4, 3, 2, 1]]);
-		});
-		it('Two segments ends overlap', async () => {
-			await listStorage.putObjects([3, 2, 1]);
-			await listStorage.putObjects([5, 4, 3]);
-			assertListStorage(listStorage, [[5, 4, 3, 2, 1]]);
-		});
-		it('Two segments ends overlap desc order', async () => {
-			await listStorage.putObjects([5, 4, 3]);
-			await listStorage.putObjects([3, 2, 1]);
-			assertListStorage(listStorage, [[5, 4, 3, 2, 1]]);
-		});
-		it('Four non-overlapping segments', async () => {
-			await listStorage.putObjects([20, 19, 18, 17]);
-			await listStorage.putObjects([15, 14, 13, 12]);
-			await listStorage.putObjects([10, 9, 8, 7]);
-			await listStorage.putObjects([5, 4, 3, 2]);
-			assertListStorage(listStorage, [
-				[20, 19, 18, 17],
-				[15, 14, 13, 12],
-				[10, 9, 8, 7],
-				[5, 4, 3, 2],
-			]);
-		});
-		it('Four non-overlapping segments random order', async () => {
-			await listStorage.putObjects([10, 9, 8, 7]);
-			await listStorage.putObjects([15, 14, 13, 12]);
-			await listStorage.putObjects([5, 4, 3, 2]);
-			await listStorage.putObjects([20, 19, 18, 17]);
-			assertListStorage(listStorage, [
-				[20, 19, 18, 17],
-				[15, 14, 13, 12],
-				[10, 9, 8, 7],
-				[5, 4, 3, 2],
-			]);
-		});
-		describe('FNOS', async () => {
-			beforeEach(async () => {
-				await listStorage.putObjects([20, 19, 18, 17]);
-				await listStorage.putObjects([15, 14, 13, 12]);
-				await listStorage.putObjects([10, 9, 8, 7]);
-				await listStorage.putObjects([5, 4, 3, 2]);
-			});
-			it('First before 0, last before, no contained', async () => {
-				await listStorage.putObjects([25, 24, 23, 22]);
-				assertListStorage(listStorage, [
-					[25, 24, 23, 22],
-					[20, 19, 18, 17],
-					[15, 14, 13, 12],
-					[10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First before 0, last inside, no contained', async () => {
-				await listStorage.putObjects([25, 24, 23, 22, 21, 20, 19]);
-				assertListStorage(listStorage, [
-					[25, 24, 23, 22, 21, 20, 19, 18, 17],
-					[15, 14, 13, 12],
-					[10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First before 0, last before, contained 1', async () => {
-				await listStorage.putObjects([25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15]);
-				assertListStorage(listStorage, [
-					[25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12],
-					[10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First before 0, last before, contained 2', async () => {
-				await listStorage.putObjects([25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10]);
-				assertListStorage(listStorage, [
-					[25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First before 0, last inside, contained 2', async () => {
-				await listStorage.putObjects([25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9]);
-				assertListStorage(listStorage, [
-					[25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First before 0, last after', async () => {
-				await listStorage.putObjects([
-					25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,
-				]);
-				assertListStorage(listStorage, [
-					[25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-				]);
-			});
-			it('First before 2, last before 2', async () => {
-				await listStorage.putObjects([29, 28, 27, 26]);
-				await listStorage.putObjects([24, 23, 22]);
-				assertListStorage(listStorage, [
-					[29, 28, 27, 26],
-					[24, 23, 22],
-					[20, 19, 18, 17],
-					[15, 14, 13, 12],
-					[10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First before 2, last inside 3', async () => {
-				await listStorage.putObjects([29, 28, 27, 26]);
-				await listStorage.putObjects([24, 23, 22, 21, 20]);
-				assertListStorage(listStorage, [
-					[29, 28, 27, 26],
-					[24, 23, 22, 21, 20, 19, 18, 17],
-					[15, 14, 13, 12],
-					[10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First inside, last inside', async () => {
-				await listStorage.putObjects([13, 12, 11, 10, 9]);
-				assertListStorage(listStorage, [
-					[20, 19, 18, 17],
-					[15, 14, 13, 12, 11, 10, 9, 8, 7],
-					[5, 4, 3, 2],
-				]);
-			});
-			it('First inside, last after', async () => {
-				await listStorage.putObjects([13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
-				assertListStorage(listStorage, [
-					[20, 19, 18, 17],
-					[15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2],
-				]);
-			});
-			it('First before 2, last after', async () => {
-				await listStorage.putObjects([13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
-				assertListStorage(listStorage, [
-					[20, 19, 18, 17],
-					[15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-				]);
-			});
-			it('First after, last after', async () => {
-				await listStorage.putObjects([1, 0, -1, -2, -3]);
-				assertListStorage(listStorage, [
-					[20, 19, 18, 17],
-					[15, 14, 13, 12],
-					[10, 9, 8, 7],
-					[5, 4, 3, 2],
-					[1, 0, -1, -2, -3],
-				]);
-			});
+		it('Simple - 1', async () => {
+			const s = new SourceReadingSession();
+			const a = new ScriptedSource('1 2 3 4 5 6', []);
+			const list = new ListSource(
+				s,
+				{ type: BlockchainSourceType.DIRECT, recipient: tou('123'), sender: null, blockchain: 'A' },
+				a,
+			);
+			const m = new ListSourceMultiplexer([list]);
+			const d = new ListSourceDrainer(m);
+			const firstPage = await d.resume();
+			console.log('firstPage: ', firstPage);
+			console.log('test: ', d.messages);
+			const secondPage = await d.readMore(10);
+			console.log('secondPage: ', secondPage);
+			console.log('test: ', d.messages);
 		});
 	});
 }

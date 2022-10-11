@@ -60,10 +60,10 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	async blockNewMessages() {
-		if (this._newMessagesBlocked === 0) {
+		this._newMessagesBlocked++;
+		if (this._newMessagesBlocked === 1) {
 			await this.newMessagesCriticalSection.enter();
 		}
-		this._newMessagesBlocked++;
 	}
 
 	async unblockNewMessages() {
@@ -124,6 +124,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			if (last.length < this._lastSize) {
 				this._drained = true;
 			}
+			this._paused = false;
 			if (last.length > 0) {
 				await this.storage.putObjects(last, true);
 				await this.emit('guaranteedSegmentUpdated');
@@ -131,7 +132,6 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			const lastMessage = this.guaranteedSegment?.head()?.getValue();
 			this.source.on('messages', this.handleNewMessages);
 			this.source.resume(lastMessage);
-			this._paused = false;
 		} finally {
 			await this.criticalSection.leave();
 		}
@@ -149,6 +149,10 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			const readSize = Math.max(this._minReadingSize, size);
 			await this.readMore(readSize);
 		}
+	}
+
+	private log(...args: any[]) {
+		console.log('LS: ', ...args);
 	}
 
 	async readMore(size: number) {

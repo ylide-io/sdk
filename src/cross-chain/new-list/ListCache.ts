@@ -16,25 +16,29 @@ interface DBInterface extends DBSchema {
 	};
 }
 
+const dev = true;
+
 export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;
 
-	constructor(private readonly group: string) {
-		//
-	}
+	constructor(private readonly group: string) {}
 
 	async save(listStorage: ListStorage<any>) {
-		const db = await this.getDB();
-		await db.put('group', { id: this.group, segments: listStorage.segments.map(s => s.toArray()) });
+		if (!dev) {
+			const db = await this.getDB();
+			await db.put('group', { id: this.group, segments: listStorage.segments.map(s => s.toArray()) });
+		}
 	}
 
 	async load(listStorage: ListStorage<any>) {
-		const db = await this.getDB();
-		const group = await db.get('group', this.group);
-		if (!group) {
-			return;
+		if (!dev) {
+			const db = await this.getDB();
+			const group = await db.get('group', this.group);
+			if (!group) {
+				return;
+			}
+			await listStorage.putObjectsSegments(group.segments, false);
 		}
-		await listStorage.putObjectsSegments(group.segments, false);
 	}
 
 	private async openDB() {

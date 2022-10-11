@@ -91,6 +91,10 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 		return m.senderAddress === this.subject.sender;
 	};
 
+	private log(...args: any[]) {
+		console.log('PLS: ', ...args);
+	}
+
 	private handleSourceGuaranteedSegmentUpdated = async () => {
 		if (this.sourceToFilter.guaranteedSegment) {
 			const filteredLastSegment = this.sourceToFilter.guaranteedSegment.toArray().filter(this.filter);
@@ -120,12 +124,12 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 			if (!this.sourceToFilter.has('guaranteedSegmentUpdated', this.handleSourceGuaranteedSegmentUpdated)) {
 				this.sourceToFilter.on('guaranteedSegmentUpdated', this.handleSourceGuaranteedSegmentUpdated);
 			}
+			this._paused = false;
 			if (this.sourceToFilter.paused) {
 				await this.sourceToFilter.resume();
 			} else {
 				await this.handleSourceGuaranteedSegmentUpdated();
 			}
-			this._paused = false;
 		} finally {
 			await this.criticalSection.leave();
 		}
