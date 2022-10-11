@@ -94,9 +94,10 @@ export class ListStorage<T> {
 				newSegment.insertFirst(first);
 				this.segments.push(newSegment);
 			} else {
+				// do nothing, as the same element is already inside the list
 				// inside
-				const insideSegment = this.segments[firstPos.segmentIdx];
-				insideSegment.insertBefore(first, firstPos.element);
+				// const insideSegment = this.segments[firstPos.segmentIdx];
+				// insideSegment.insertBefore(first, firstPos.element);
 			}
 		} else {
 			const first = descSortedConnectedValues.at(0)!;

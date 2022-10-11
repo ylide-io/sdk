@@ -7,6 +7,7 @@ import { CriticalSection } from './utils/CriticalSection';
 export interface ListWrappedSource {
 	source: IListSource;
 	newMessages: number;
+	gotUpdate: number;
 	newMessagesHandler: (params: { messages: IMessage[] }) => Promise<void>;
 	segmentUpdateHandler: () => Promise<void>;
 }
@@ -87,6 +88,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 	}
 
 	private async handleSourceGuaranteedSegmentUpdated(source: ListWrappedSource) {
+		source.gotUpdate++;
 		this.completeRebuild();
 		await this.emit('guaranteedSegmentUpdated');
 		// if (this.sourceToFilter.guaranteedSegment) {
@@ -111,6 +113,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 		const wrappedSource: ListWrappedSource = {
 			source,
 			newMessages: 0,
+			gotUpdate: 0,
 			newMessagesHandler,
 			segmentUpdateHandler,
 		};
@@ -158,6 +161,8 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					}
 				}),
 			);
+			this.completeRebuild();
+			await this.emit('guaranteedSegmentUpdated');
 		} finally {
 			await this.criticalSection.leave();
 		}
@@ -202,6 +207,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 				await Promise.all(
 					this.sources.filter(s => !s.source.drained).map(async s => s.source.readMore(readSize)),
 				);
+				this.completeRebuild();
 				// await this.sourceToFilter.readMore(readSize);
 				if (this.guaranteedSegment) {
 					const newGuaranteed = this.guaranteed;
@@ -213,6 +219,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					console.warn('ListSourceMultiplexer: Must be unreachable');
 				}
 			}
+			await this.emit('guaranteedSegmentUpdated');
 		} finally {
 			await this.criticalSection.leave();
 		}

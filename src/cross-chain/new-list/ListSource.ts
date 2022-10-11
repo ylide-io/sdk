@@ -132,6 +132,8 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			const lastMessage = this.guaranteedSegment?.head()?.getValue();
 			this.source.on('messages', this.handleNewMessages);
 			this.source.resume(lastMessage);
+		} catch (err) {
+			console.log('ListSource err: ', err);
 		} finally {
 			await this.criticalSection.leave();
 		}
@@ -193,6 +195,8 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 					await this.emit('guaranteedSegmentUpdated');
 				}
 			}
+		} catch (err) {
+			console.log('readNext err: ', err);
 		} finally {
 			await this.criticalSection.leave();
 		}

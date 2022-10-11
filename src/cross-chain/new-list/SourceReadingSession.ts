@@ -3,7 +3,7 @@ import { IMessage } from '../../types';
 import { BlockchainSource, BlockchainSourceType } from '../BlockchainSource';
 import { BlockchainListSource } from './BlockchainListSource';
 import { ListCache } from './ListCache';
-import { ListSource } from './ListSource';
+import { GenericListSource, ListSource } from './ListSource';
 import { ListStorage } from './ListStorage';
 import { PuppetListSource } from './PuppetListSource';
 import { Repository } from './Repository';
@@ -19,6 +19,10 @@ export class SourceReadingSession {
 	puppetListSourceRepository = new Repository<IBlockchainSourceSubject, PuppetListSource>(
 		this.sourceSubjectHash.bind(this),
 	);
+	sourceOptimizer:
+		| null
+		| ((subject: IBlockchainSourceSubject, reader: AbstractBlockchainController) => GenericListSource | null) =
+		null;
 
 	sourceSubjectHash(k: IBlockchainSourceSubject) {
 		if (k.type === BlockchainSourceType.BROADCAST) {
@@ -26,6 +30,11 @@ export class SourceReadingSession {
 		} else {
 			return `dm:${k.blockchain}:${k.sender}:${k.recipient}`;
 		}
+	}
+
+	getBlockchainListSource(subject: IBlockchainSourceSubject, reader: AbstractBlockchainController) {
+		const source = this.sourceOptimizer ? this.sourceOptimizer(subject, reader) : null;
+		return source ? source : new BlockchainListSource(reader, subject);
 	}
 
 	listSource(subject: IBlockchainSourceSubject, reader: AbstractBlockchainController): ListSource | PuppetListSource {
@@ -38,7 +47,7 @@ export class SourceReadingSession {
 				this.listSourceRepository.get(subject) ||
 				this.listSourceRepository.set(
 					subject,
-					new ListSource(this, subject, new BlockchainListSource(reader, subject)),
+					new ListSource(this, subject, this.getBlockchainListSource(subject, reader)),
 				)
 			);
 		} else {

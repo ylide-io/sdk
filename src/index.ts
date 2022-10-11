@@ -15,6 +15,7 @@ export * from './errors';
 export * from './keystore';
 export * from './storage';
 export * from './types';
+export * from './utils';
 
 export type WalletMap<T> = Record<string, T>;
 export type BlockchainMap<T> = Record<string, T>;
