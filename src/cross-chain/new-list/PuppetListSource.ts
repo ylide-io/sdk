@@ -175,6 +175,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 					// do nothing - source is empty, and now it is in the drained state.
 					// actually, this should never happen, because if the source is empty -
 					// it will get the drained state right after the resume, so this code should be unreachable indeed.
+					// tslint:disable-next-line
 					console.warn('PuppetListSource: Must be unreachable');
 				}
 			}

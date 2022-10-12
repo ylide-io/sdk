@@ -1,3 +1,4 @@
+/* tslint:disable */
 import { BlockchainSourceType } from './cross-chain';
 import { ListSource } from './cross-chain/new-list/ListSource';
 import { ListSourceDrainer } from './cross-chain/new-list/ListSourceDrainer';

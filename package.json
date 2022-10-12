@@ -58,12 +58,11 @@
 	},
 	"dependencies": {
 		"@ylide/smart-buffer": "0.0.9",
-		"datastructures-js": "^12.0.0",
-		"eventemitter3": "^4.0.7",
-		"idb": "^7.1.0",
-		"js-sha256": "^0.9.0",
-		"pako": "^2.0.4",
-		"promise-critical-section": "^0.0.2",
-		"tweetnacl": "^1.0.3"
+		"datastructures-js": "12.0.0",
+		"eventemitter3": "4.0.7",
+		"idb": "7.1.0",
+		"js-sha256": "0.9.0",
+		"pako": "2.0.4",
+		"tweetnacl": "1.0.3"
 	}
 }

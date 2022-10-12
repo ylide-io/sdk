@@ -224,8 +224,8 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 		} else if (!last || this.compare(msg, last) > 0) {
 			arr.push(msg);
 		} else {
-			console.error('Wtf');
-			debugger;
+			// console.error('Wtf');
+			// debugger;
 		}
 
 		const willBeInsertedBeforeTreeNode = this.msgs.upperBound(node);
@@ -412,7 +412,7 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 				}
 			} catch (err) {
 				source.noMoreAvailable = true;
-				console.error('Error loading messages: ', err);
+				// console.error('Error loading messages: ', err);
 				// Do nothing
 			}
 		}

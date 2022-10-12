@@ -92,6 +92,7 @@ export class ScriptedSource extends EventEmitter implements GenericListSource {
 		if (since) {
 			const idx = this.messagesScript.indexOf(since.createdAt);
 			if (idx < 0) {
+				// tslint:disable-next-line
 				debugger;
 			} else {
 				this.sinceMessagesIdx = idx;
@@ -124,7 +125,7 @@ export class ScriptedSource extends EventEmitter implements GenericListSource {
 
 	constructor(messagesArchive: string, newMessages: { delay: number; vals: number[] }[]) {
 		super();
-		this.messagesScript = messagesArchive.split(' ').map(t => parseInt(t));
+		this.messagesScript = messagesArchive.split(' ').map(t => parseInt(t, 10));
 		this.newMessagesScript = newMessages;
 		this.playNewMessages();
 	}

@@ -54,9 +54,12 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		}
 	}
 
-	on(event: WalletEvent.ACCOUNT_CHANGED, fn: (newAccount: IGenericAccount) => void, context?: any): this;
 	on(event: WalletEvent.BLOCKCHAIN_CHANGED, fn: (newBlockchain: string) => void, context?: any): this;
-	on(event: WalletEvent.LOGIN, fn: (newAccount: IGenericAccount) => void, context?: any): this;
+	on(
+		event: WalletEvent.LOGIN | WalletEvent.ACCOUNT_CHANGED,
+		fn: (newAccount: IGenericAccount) => void,
+		context?: any,
+	): this;
 	on(event: WalletEvent.LOGOUT, fn: () => void, context?: any): this;
 	on(event: WalletEvent, fn: (...args: any[]) => void, context?: any): this {
 		return super.on(event, fn, context);

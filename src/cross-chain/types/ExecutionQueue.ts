@@ -58,7 +58,7 @@ export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 				try {
 					await this.currentExecuting.executionPromise;
 				} catch (err) {
-					//np
+					// np
 				}
 			}
 		}
@@ -66,11 +66,13 @@ export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 
 	execute(request: ExecutionRequest): ExecutionObserver<ExecutionRequest, ExecutionResult> {
 		const wrap: ExecutionWrap<ExecutionRequest, ExecutionResult> = {
-			request: request,
+			request,
 			future: null,
 			executionPromise: null,
 			cancelled: false,
+			// tslint:disable-next-line
 			promiseResolve: () => {},
+			// tslint:disable-next-line
 			promiseReject: () => {},
 		};
 		const promise = new Promise<IExecutionFuture<ExecutionResult>>((resolve, reject) => {

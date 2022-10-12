@@ -12,7 +12,7 @@ export interface GenericListSource {
 	compare: AscComparator<IMessage>;
 
 	getBefore(entry: IMessage, limit: number): Promise<IMessage[]>;
-	getLast(limit: number, upToIncluding?: IMessage): Promise<IMessage[]>;
+	getLast(limit: number, upToIncluding?: IMessage, mutableParams?: any): Promise<IMessage[]>;
 
 	resume(since?: IMessage): void;
 	pause(): void;
@@ -28,10 +28,11 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	private criticalSection = new CriticalSection();
 	private newMessagesCriticalSection = new CriticalSection();
 
-	private _lastSize: number = 10;
+	private _lastSize: number = 2;
 	private _minReadingSize: number = 10;
 	private _paused: boolean = true;
 	private _drained: boolean = false;
+	private _drainedByError: boolean = false;
 	private _newMessagesBlocked = 0;
 
 	constructor(
@@ -69,6 +70,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	async unblockNewMessages() {
 		this._newMessagesBlocked--;
 		if (this._newMessagesBlocked < 0) {
+			// tslint:disable-next-line
 			console.error('Must never happen: < 0 new messages block');
 		}
 		if (this._newMessagesBlocked === 0) {
@@ -86,6 +88,10 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 
 	get drained() {
 		return this._drained;
+	}
+
+	get drainedByError() {
+		return this._drainedByError;
 	}
 
 	get guaranteed() {
@@ -124,7 +130,9 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 				await this.loadStorage();
 			}
 			const _lastMessage = this.guaranteedSegment?.head().getValue();
-			const last = await this.source.getLast(this._lastSize, _lastMessage);
+			const lastMutableParams = await this.cache.loadLastMutableParams();
+			const last = await this.source.getLast(this._lastSize, _lastMessage, lastMutableParams);
+			await this.cache.saveLastMutableParams(lastMutableParams);
 			if (last.length < this._lastSize) {
 				this._drained = true;
 			}
@@ -137,7 +145,13 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			this.source.on('messages', this.handleNewMessages);
 			this.source.resume(lastMessage);
 		} catch (err) {
-			console.log('ListSource err: ', err);
+			this._paused = false;
+			this._drainedByError = true;
+			this._drained = true;
+			await this.emit('guaranteedSegmentUpdated');
+			// tslint:disable-next-line
+			console.error('ListSource err: ', err);
+			// debugger;
 		} finally {
 			await this.criticalSection.leave();
 		}
@@ -200,7 +214,11 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 				}
 			}
 		} catch (err) {
-			console.log('readNext err: ', err);
+			// tslint:disable-next-line
+			console.error('readNext err: ', err);
+			this._drainedByError = true;
+			this._drained = true;
+			await this.emit('guaranteedSegmentUpdated');
 		} finally {
 			await this.criticalSection.leave();
 		}

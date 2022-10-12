@@ -69,7 +69,6 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 	private completeRebuild() {
 		this._guaranteedSegment = [];
 		if (!this.sources.length) {
-			// this._guaranteedSegmentList = DoublyLinkedList.fromArray(this._guaranteedSegment);
 			return;
 		}
 		const sourcesSegments = this.sources
@@ -83,22 +82,13 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 			guaranteed = Math.min(...this.sources.filter(s => !s.source.drained).map(s => s.source.guaranteed));
 			guaranteed += this.sources.reduce((p, c) => p + c.newMessages, 0);
 		}
-		this._guaranteedSegment = sourcesSegments.slice(0, guaranteed); //.map(f => f.msg);
-		// this._guaranteedSegmentList = DoublyLinkedList.fromArray(this._guaranteedSegment);
+		this._guaranteedSegment = sourcesSegments.slice(0, guaranteed);
 	}
 
 	private async handleSourceGuaranteedSegmentUpdated(source: ListWrappedSource) {
 		source.gotUpdate++;
 		this.completeRebuild();
 		await this.emit('guaranteedSegmentUpdated');
-		// if (this.sourceToFilter.guaranteedSegment) {
-		// 	const filteredLastSegment = this.sourceToFilter.guaranteedSegment.toArray().filter(this.filter);
-		// 	await this.storage.putObjects(filteredLastSegment, true);
-		// 	if (filteredLastSegment.length > 0) {
-		// 		this._guaranteedLastSegment = true;
-		// 		await this.emit('guaranteedSegmentUpdated');
-		// 	}
-		// }
 	}
 
 	private addSource(source: IListSource) {
@@ -120,18 +110,6 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 		this.sourceIndex.set(source, this.sources.push(wrappedSource) - 1);
 	}
-
-	// private removeSource(source: IListSource) {
-	// 	const idx = this.sourceIndex.get(source);
-	// 	if (idx === undefined) {
-	// 		return;
-	// 	}
-	// 	this.sources.splice(idx, 1);
-	// 	this.sourceIndex.clear();
-	// 	for (let i = 0; i < this.sources.length; i++) {
-	// 		this.sourceIndex.set(this.sources[i].source, i);
-	// 	}
-	// }
 
 	async blockNewMessages() {
 		await Promise.all(this.sources.map(async source => source.source.blockNewMessages()));
@@ -216,6 +194,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					// do nothing - source is empty, and now it is in the drained state.
 					// actually, this should never happen, because if the source is empty -
 					// it will get the drained state right after the resume, so this code should be unreachable indeed.
+					// tslint:disable-next-line
 					console.warn('ListSourceMultiplexer: Must be unreachable');
 				}
 			}

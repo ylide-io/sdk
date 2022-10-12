@@ -35,13 +35,13 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 		}
 	}
 
-	compare(a: IMessage, b: IMessage): number {
+	compare = (a: IMessage, b: IMessage): number => {
 		if (a.createdAt === b.createdAt) {
 			return this.reader.compareMessagesTime(a, b);
 		} else {
 			return a.createdAt - b.createdAt;
 		}
-	}
+	};
 
 	async getBefore(entry: IMessage, limit: number): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {

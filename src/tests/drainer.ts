@@ -1,3 +1,4 @@
+/* tslint:disable */
 import { describe, it, before } from 'mocha';
 import { expect } from 'chai';
 import { ListStorage } from '../cross-chain/new-list/ListStorage';

@@ -21,3 +21,6 @@ export function shrinkSubject(subject: IBlockchainSourceSubject): IBlockchainSou
 export function isWideSubject(subject: IBlockchainSourceSubject) {
 	return subject.type === BlockchainSourceType.DIRECT && !!subject.sender;
 }
+
+export * from './AsyncEventEmitter';
+export * from './CriticalSection';

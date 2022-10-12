@@ -9,6 +9,10 @@ interface DBInterface extends DBSchema {
 	// 		group: string;
 	// 	};
 	// };
+	groupLast: {
+		value: { id: string; lastMutableParams: any };
+		key: string;
+	};
 	group: {
 		value: { id: string; segments: any[][] };
 		key: string;
@@ -21,6 +25,25 @@ export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;
 
 	constructor(private readonly group: string) {}
+
+	async loadLastMutableParams() {
+		if (!dev) {
+			const db = await this.getDB();
+			const group = await db.get('groupLast', this.group);
+			if (!group) {
+				return {};
+			} else {
+				return group.lastMutableParams;
+			}
+		}
+	}
+
+	async saveLastMutableParams(params: any) {
+		if (!dev) {
+			const db = await this.getDB();
+			await db.put('groupLast', { id: this.group, lastMutableParams: params });
+		}
+	}
 
 	async save(listStorage: ListStorage<any>) {
 		if (!dev) {
@@ -41,7 +64,7 @@ export class ListCache<T> {
 	}
 
 	private async openDB() {
-		return await openDB<DBInterface>('ylide-storage', 1, {
+		return await openDB<DBInterface>('ylide-storage-A', 1, {
 			upgrade(db) {
 				// const messagesStore = db.createObjectStore('messages', {
 				// 	keyPath: 'id',
@@ -57,6 +80,9 @@ export class ListCache<T> {
 				// segmentsStore.createIndex('group', 'group');
 
 				const groupsStore = db.createObjectStore('group', {
+					keyPath: 'id',
+				});
+				const groupLastsStore = db.createObjectStore('groupLast', {
 					keyPath: 'id',
 				});
 			},
