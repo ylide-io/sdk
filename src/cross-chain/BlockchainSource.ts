@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { AbstractBlockchainController } from '../abstracts';
 import { IMessage, Uint256 } from '../types';
-import asyncTimer from '../utils/asyncTimer';
+import { asyncTimer } from '../utils/asyncTimer';
 import { GenericEntryPure, GenericSortedSource } from './list/CombinedList';
 
 export enum BlockchainSourceType {

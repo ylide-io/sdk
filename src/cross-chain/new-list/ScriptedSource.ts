@@ -1,7 +1,7 @@
 import EventEmitter from 'eventemitter3';
 import { IMessage, Uint256 } from '../../types';
 import { asyncDelay } from '../../utils/asyncDelay';
-import asyncTimer from '../../utils/asyncTimer';
+import { asyncTimer } from '../../utils/asyncTimer';
 import { GenericListSource } from './ListSource';
 import { AscComparator } from './types/AscComparator';
 

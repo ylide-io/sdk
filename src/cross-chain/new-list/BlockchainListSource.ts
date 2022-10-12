@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { AbstractBlockchainController } from '../../abstracts';
 import { IMessage, IMessageBase } from '../../types';
-import asyncTimer from '../../utils/asyncTimer';
+import { asyncTimer } from '../../utils/asyncTimer';
 import { BlockchainSourceType, ISourceSubject } from '../BlockchainSource';
 import { GenericListSource } from './ListSource';
 
@@ -15,7 +15,7 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 	constructor(
 		public readonly reader: AbstractBlockchainController,
 		public readonly subject: ISourceSubject,
-		protected _pullCycle: number = 5000,
+		protected _pullCycle: number = 20000,
 		public readonly limit = 50,
 		public readonly meta: any = null,
 	) {

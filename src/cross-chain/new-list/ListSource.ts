@@ -12,7 +12,7 @@ export interface GenericListSource {
 	compare: AscComparator<IMessage>;
 
 	getBefore(entry: IMessage, limit: number): Promise<IMessage[]>;
-	getLast(limit: number): Promise<IMessage[]>;
+	getLast(limit: number, upToIncluding?: IMessage): Promise<IMessage[]>;
 
 	resume(since?: IMessage): void;
 	pause(): void;
@@ -120,7 +120,11 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			if (!this.paused) {
 				return;
 			}
-			const last = await this.source.getLast(this._lastSize);
+			if (!this.guaranteedSegment) {
+				await this.loadStorage();
+			}
+			const _lastMessage = this.guaranteedSegment?.head().getValue();
+			const last = await this.source.getLast(this._lastSize, _lastMessage);
 			if (last.length < this._lastSize) {
 				this._drained = true;
 			}

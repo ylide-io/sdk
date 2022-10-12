@@ -5,7 +5,7 @@
  * @param preserveExecutionTime Should we exclude execution time from period time or not
  * @returns Function to dispose the timer
  */
-export default function asyncTimer(func: () => Promise<void>, time: number, preserveExecutionTime = true): () => void {
+export function asyncTimer(func: () => Promise<void>, time: number, preserveExecutionTime = true): () => void {
 	if (!preserveExecutionTime) {
 		const timerId = setInterval(func, time);
 		return () => clearInterval(timerId);

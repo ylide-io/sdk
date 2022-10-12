@@ -6,7 +6,6 @@ import { AscComparator } from '../cross-chain/new-list/types/AscComparator';
 import { IMessage, Uint256 } from '../types';
 import { AsyncEventEmitter } from '../cross-chain/new-list/utils/AsyncEventEmitter';
 import { EventEmitter } from 'eventemitter3';
-import asyncTimer from '../utils/asyncTimer';
 import { ListSourceMultiplexer } from '../cross-chain/new-list/ListSourceMultiplexer';
 import { SourceReadingSession } from '../cross-chain/new-list/SourceReadingSession';
 import { BlockchainSourceType } from '../cross-chain';
