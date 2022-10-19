@@ -50,17 +50,16 @@ So, our next step is to initialize Ylide, blockchain and wallet controllers:
 ```ts
 const ylide = new Ylide(keystore);
 
-provider = await Ylide.addWallet('everscale', 'everwallet');
+const blockchain = await Ylide.addBlockchain('everscale');
+const wallet = await Ylide.addWallet('everscale', 'everwallet');
 ```
-
-Now, you can access both controllers as properties of the `provider` object.
 
 ## Initializing communication key
 
 First of all, you should request access to the wallet account. Let's do this:
 
 ```ts
-const account = await provider.wallet.requestAuthentication();
+const account = await wallet.requestAuthentication();
 ```
 
 Now, we are ready for creation of our first communication key:
@@ -89,7 +88,7 @@ Key is ready and available for usage.
 First of all, let's check if this key had already been saved into the Ylide Registry:
 
 ```ts
-const pk = await provider.blockchainController.extractPublicKeyFromAddress(account.address);
+const pk = await blockchain.extractPublicKeyFromAddress(account.address);
 if (!pk) {
 	// There is no public key connected to this address in the Registry
 } else {
@@ -104,7 +103,7 @@ if (!pk) {
 If user's public key is not in the Registry - you should register it:
 
 ```ts
-await provider.wallet.attachPublicKey(key.publicKey);
+await wallet.attachPublicKey(key.publicKey);
 ```
 
 Now, user can send and receive messages using Ylide Protocol.
@@ -121,7 +120,7 @@ Now, send the message;
 
 ```ts
 const msgId = await ylide.sendMessage({
-	wallet: provider.wallet,
+	wallet,
 	sender: account,
 	content,
 	recipients: ['0:86c4c21b15f373d77e80d6449358cfe59fc9a03e756052ac52258d8dd0ceb977'],
@@ -135,7 +134,7 @@ Here we go. Message sent.
 First of all, let's retrieve messages metadata from the blockchain:
 
 ```ts
-const messages = await provider.blockchainController.retrieveMessageHistoryByDates(account.address);
+const messages = await blockchain.retrieveMessageHistoryByDates(account.address);
 ```
 
 Now, we have all the metadata: date, sender, recipient, key for decryption. But we hadn't loaded message content from the blockchain yet. So, let's do this:
@@ -143,7 +142,7 @@ Now, we have all the metadata: date, sender, recipient, key for decryption. But 
 ```ts
 const message = messages[0];
 
-const content = await provider.blockchainController.retrieveAndVerifyMessageContent(message);
+const content = await blockchain.retrieveAndVerifyMessageContent(message);
 if (!content || content.corrupted) {
 	throw new Error('Content not found or corrupted');
 }

@@ -154,7 +154,7 @@ export abstract class AbstractBlockchainController {
 	 * @param address - Recipient's wallet address
 	 * @return Decimal number in a string format
 	 */
-	abstract getBalance(address: string): Promise<string>;
+	abstract getBalance(address: string): Promise<{ original: string; number: number; e18: string }>;
 
 	/**
 	 * Method to get available non-Ylide encryption strategies for address
