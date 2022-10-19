@@ -18,7 +18,7 @@ import { SourceReadingSession } from '@ylide/sdk';
 const session = new SourceReadingSession();
 ```
 
-Some blockchain connectors support more optimized ways of retrieving messages history from blockchain. To use them, you can assign the `sourceOptimizer` property of `SourceReadingSession` instance.
+Some blockchain connectors support more optimized ways of retrieving message history from the blockchain. To use them, you can assign the `sourceOptimizer` property of the `SourceReadingSession` instance.
 
 For example, we can use such optimization for EVM-like blockchains:
 
@@ -32,7 +32,7 @@ session.sourceOptimizer = (subject, reader) => {
 };
 ```
 
-Let's setup some blockchain readers:
+Let's set up some blockchain readers:
 
 ```ts
 import { evmFactories, EVMNetwork, EVM_NAMES } from '@ylide/ethereum';
@@ -86,7 +86,7 @@ const polygonListSource = this.readingSession.listSource(
 So, now you have 3 message sources initialized. How to read them?
 
 ```ts
-// Multiplexer helps you to combine messages from a different sources into one unified sorted list.
+// Multiplexer helps you to combine messages from different sources into one unified sorted list.
 const multiplexer = new ListSourceMultiplexer([ethereumListSource, bnbListSource, polygonListSource]);
 
 // Drainer helps to paginate multiplexer and apply filters on top of it
@@ -95,11 +95,12 @@ const list = new ListSourceDrainer(multiplexer);
 // To apply some filter just call:
 list.resetFilter(m => m.msg.senderAddress.startsWith('0x1020')); // only messages from the addresses starting with 0x1020
 
-// To initialize new list just call:
+// To initialize a new list call:
 await list.resume();
 
-// To read next 10 messages of the list:
-await list.readMore(10);
+// To read the next 10 messages of the list:
+const msgs = await list.readMore(10);
+console.log('Current list messages: ', msgs);
 
 // To subscribe for new messages:
 list.on('messages', ({ messages }) => {
