@@ -1,12 +1,12 @@
 ## Mail lists
 
-In the real-world application you usually want to show to the user the list of his incoming mails. When you deal with a multi-chain world, it may be hard to retrieve all the messages from all chains in an optimal way. Moreover, you want to show it in a descending order (latest first) and be able to load messages gradually, not all at once.
+In the real-world application, you usually want to show to the user the list of her incoming emails. When you deal with a multi-chain world, it may be hard to retrieve all the messages from all chains in an optimal way. Moreover, you want to show it in descending order (latest first) and be able to load messages gradually, not all at once.
 
-Moreover, scanning blockchains again and again may be hard and expesive. Due to the immutable nature of the blockchains it seems reasonable to cache messages in some local storage.
+Moreover, scanning blockchains, again and again, may be hard and expensive. Due to the immutable nature of the blockchains, it seems reasonable to cache messages in some local storage.
 
 Moreover, sometimes we want to apply some filters over the messages list. For example - to hide some messages or to show only messages of a certain user.
 
-That's why we implemented a set of tools to facilitate work with messages list in Ylide.
+That’s why we implemented a set of tools to facilitate work with the messages list in Ylide.
 
 ### SourceReadingSession
 
