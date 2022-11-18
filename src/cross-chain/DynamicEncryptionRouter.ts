@@ -146,7 +146,7 @@ export class DynamicEncryptionRouter {
 	}
 
 	private static findBestEncryptionRouting(
-		recipients: { keyAddress: Uint256; address: Uint256 }[],
+		recipients: { keyAddress: Uint256; keyAddressOriginal: string; address: Uint256 }[],
 		recipientsMap: Record<Uint256, IAvailableStrategy[]>,
 		blockchainControllers: AbstractBlockchainController[],
 		preferredStrategy: string = 'ylide',

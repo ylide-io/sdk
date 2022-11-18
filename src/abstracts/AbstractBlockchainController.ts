@@ -40,6 +40,9 @@ export abstract class AbstractBlockchainController {
 		//
 	}
 
+	abstract blockchain(): string;
+	abstract blockchainGroup(): string;
+
 	abstract init(): Promise<void>;
 
 	/**

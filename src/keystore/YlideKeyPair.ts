@@ -88,7 +88,10 @@ export class YlideKeyPair {
 	 * @returns String to be signed using user's wallet
 	 */
 	static getMagicString(address: string, keyIndex: number, password: string) {
-		return `$ylide${address}${keyIndex}${password}ylide$`;
+		const magicString = new SmartBuffer(
+			sha256(sha256(sha256(sha256(sha256(sha256(sha256(`$ylide${address}${keyIndex}${password}ylide$`))))))),
+		).toBase64String();
+		return `I authorize this app to decrypt my messages in the Ylide Protocol for the following address: ${address}.\n\nI understand that if I provide my Ylide Password and this signature to any malicious app, the attacker would be able to read my messages.\n\nThis is not a transaction, and confirmation doesn’t cost you anything.\n\nNonce: ${magicString}`;
 	}
 
 	/**

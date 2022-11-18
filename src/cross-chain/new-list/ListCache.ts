@@ -64,7 +64,7 @@ export class ListCache<T> {
 	}
 
 	private async openDB() {
-		return await openDB<DBInterface>('ylide-storage-A', 1, {
+		return await openDB<DBInterface>('ylide-storage-C', 1, {
 			upgrade(db) {
 				// const messagesStore = db.createObjectStore('messages', {
 				// 	keyPath: 'id',

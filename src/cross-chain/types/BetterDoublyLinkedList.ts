@@ -1,4 +1,4 @@
-import { DoublyLinkedList, DoublyLinkedListNode } from 'datastructures-js';
+import { DoublyLinkedList, DoublyLinkedListNode } from '@datastructures-js/linked-list';
 
 export class BetterDoublyLinkedList<T> extends DoublyLinkedList<T> {
 	setHead(newHead: DoublyLinkedListNode<T> | null) {

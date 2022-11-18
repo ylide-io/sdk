@@ -65,6 +65,9 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		return super.on(event, fn, context);
 	}
 
+	abstract blockchainGroup(): string;
+	abstract wallet(): string;
+
 	abstract init(): Promise<void>;
 
 	abstract isMultipleAccountsSupported(): boolean;

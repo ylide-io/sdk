@@ -1,4 +1,5 @@
 export * from './BlockchainListSource';
+export * from './IndexerListSource';
 export * from './ListCache';
 export * from './ListSource';
 export * from './ListSourceDrainer';

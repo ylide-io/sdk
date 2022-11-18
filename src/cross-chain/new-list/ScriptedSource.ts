@@ -1,5 +1,5 @@
 import EventEmitter from 'eventemitter3';
-import { IMessage, Uint256 } from '../../types';
+import { IMessage, IMessageBase, Uint256 } from '../../types';
 import { asyncDelay } from '../../utils/asyncDelay';
 import { asyncTimer } from '../../utils/asyncTimer';
 import { GenericListSource } from './ListSource';
@@ -47,6 +47,10 @@ export class ScriptedSource extends EventEmitter implements GenericListSource {
 			this.sinceMessagesIdx += nm.vals.length;
 			this.log('new msgs put: ', nm.vals);
 		}
+	}
+
+	async getAfter(entry: IMessageBase, limit: number): Promise<IMessageBase[]> {
+		return [];
 	}
 
 	async getBefore(entry: IMessage, limit: number): Promise<IMessage[]> {

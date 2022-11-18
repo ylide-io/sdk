@@ -1,7 +1,9 @@
 import { AbstractBlockchainController } from '../../abstracts';
+import { IndexerHub } from '../../indexer/IndexerHub';
 import { IMessage } from '../../types';
 import { BlockchainSource, BlockchainSourceType } from '../BlockchainSource';
 import { BlockchainListSource } from './BlockchainListSource';
+import { IndexerListSource } from './IndexerListSource';
 import { ListCache } from './ListCache';
 import { GenericListSource, ListSource } from './ListSource';
 import { ListStorage } from './ListStorage';
@@ -10,6 +12,7 @@ import { Repository } from './Repository';
 import { IBlockchainSourceSubject } from './types/IBlockchainSourceSubject';
 
 export class SourceReadingSession {
+	indexerHub: IndexerHub = new IndexerHub();
 	//
 	cacheRepository = new Repository<IBlockchainSourceSubject, ListCache<IMessage>>(this.sourceSubjectHash.bind(this));
 	storageRepository = new Repository<IBlockchainSourceSubject, ListStorage<IMessage>>(
@@ -19,6 +22,11 @@ export class SourceReadingSession {
 	puppetListSourceRepository = new Repository<IBlockchainSourceSubject, PuppetListSource>(
 		this.sourceSubjectHash.bind(this),
 	);
+
+	constructor() {
+		//
+	}
+
 	sourceOptimizer:
 		| null
 		| ((subject: IBlockchainSourceSubject, reader: AbstractBlockchainController) => GenericListSource | null) =

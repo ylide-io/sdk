@@ -1,5 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
-import { AvlTree, DoublyLinkedListNode } from 'datastructures-js';
+import { AvlTree } from '@datastructures-js/binary-search-tree';
+import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
 import { BetterDoublyLinkedList } from './BetterDoublyLinkedList';
 import {
 	GenericSortedSource,

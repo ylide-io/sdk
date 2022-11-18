@@ -1,4 +1,4 @@
-import { DoublyLinkedList, DoublyLinkedListNode } from 'datastructures-js';
+import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
 import { BetterDoublyLinkedList } from '../types';
 import { ListCache } from './ListCache';
 import { AscComparator } from './types/AscComparator';

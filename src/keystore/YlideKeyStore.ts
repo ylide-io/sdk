@@ -156,6 +156,7 @@ export class YlideKeyStore extends EventEmitter {
 	 * Method to save keys to internal storage
 	 */
 	async save() {
+		await this.storage.clear();
 		await this.storage.storeJSON(this.key('init'), true);
 		await this.storage.storeJSON(this.key('keysLength'), this.keys.length);
 		for (let keyIdx = 0; keyIdx < this.keys.length; keyIdx++) {

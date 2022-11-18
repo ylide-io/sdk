@@ -1,4 +1,4 @@
-import { DoublyLinkedList } from 'datastructures-js';
+import { DoublyLinkedList } from '@datastructures-js/linked-list';
 import { IMessage } from '../../../types';
 import { AsyncEventEmitter } from '../utils/AsyncEventEmitter';
 import { IBlockchainSourceSubject } from './IBlockchainSourceSubject';

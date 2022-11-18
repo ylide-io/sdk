@@ -12,6 +12,7 @@ export * from './content';
 export * from './cross-chain';
 export * from './crypto';
 export * from './errors';
+export * from './indexer';
 export * from './keystore';
 export * from './storage';
 export * from './types';

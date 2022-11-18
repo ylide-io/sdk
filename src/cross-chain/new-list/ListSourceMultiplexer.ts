@@ -1,4 +1,3 @@
-import { DoublyLinkedList } from 'datastructures-js';
 import { IMessage } from '../../types';
 import { IListSource } from './types/IListSource';
 import { AsyncEventEmitter } from './utils/AsyncEventEmitter';
