@@ -11,8 +11,8 @@ import { everscaleBlockchainFactory, everscaleWalletFactory } from '@ylide/evers
 Afterward, you should register them in the `Ylide` singleton:
 
 ```ts
-Ylide.registerBlockchain(everscaleBlockchainFactory);
-Ylide.registerWallet(everscaleWalletFactory);
+Ylide.registerBlockchainFactory(everscaleBlockchainFactory);
+Ylide.registerWalletFactory(everscaleWalletFactory);
 ```
 
 You can easily verify availability of EverWallet in user's browser:
@@ -50,8 +50,8 @@ So, our next step is to initialize Ylide, blockchain and wallet controllers:
 ```ts
 const ylide = new Ylide(keystore);
 
-const blockchain = await Ylide.addBlockchain('everscale');
-const wallet = await Ylide.addWallet('everscale', 'everwallet');
+const blockchain = await ylide.addBlockchain('everscale');
+const wallet = await ylide.addWallet('everscale', 'everwallet');
 ```
 
 ## Initializing communication key
