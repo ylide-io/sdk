@@ -12,19 +12,28 @@ import { Repository } from './Repository';
 import { IBlockchainSourceSubject } from './types/IBlockchainSourceSubject';
 
 export class SourceReadingSession {
-	indexerHub: IndexerHub = new IndexerHub();
+	public indexerHub: IndexerHub;
 	//
-	cacheRepository = new Repository<IBlockchainSourceSubject, ListCache<IMessage>>(this.sourceSubjectHash.bind(this));
-	storageRepository = new Repository<IBlockchainSourceSubject, ListStorage<IMessage>>(
-		this.sourceSubjectHash.bind(this),
-	);
-	listSourceRepository = new Repository<IBlockchainSourceSubject, ListSource>(this.sourceSubjectHash.bind(this));
-	puppetListSourceRepository = new Repository<IBlockchainSourceSubject, PuppetListSource>(
-		this.sourceSubjectHash.bind(this),
-	);
+	public cacheRepository: Repository<IBlockchainSourceSubject, ListCache<IMessage>>;
+	public storageRepository: Repository<IBlockchainSourceSubject, ListStorage<IMessage>>;
+	public listSourceRepository: Repository<IBlockchainSourceSubject, ListSource>;
+	public puppetListSourceRepository: Repository<IBlockchainSourceSubject, PuppetListSource>;
 
 	constructor() {
+		this.indexerHub = new IndexerHub();
 		//
+		this.cacheRepository = new Repository<IBlockchainSourceSubject, ListCache<IMessage>>(
+			this.sourceSubjectHash.bind(this),
+		);
+		this.storageRepository = new Repository<IBlockchainSourceSubject, ListStorage<IMessage>>(
+			this.sourceSubjectHash.bind(this),
+		);
+		this.listSourceRepository = new Repository<IBlockchainSourceSubject, ListSource>(
+			this.sourceSubjectHash.bind(this),
+		);
+		this.puppetListSourceRepository = new Repository<IBlockchainSourceSubject, PuppetListSource>(
+			this.sourceSubjectHash.bind(this),
+		);
 	}
 
 	sourceOptimizer:
