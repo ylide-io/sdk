@@ -216,8 +216,8 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 
 		const sourceIdx = this.sourceIndex.get(msg.source)!;
 		const source = this.sources[sourceIdx];
-		const first = source.array.at(0);
-		const last = source.array.at(-1);
+		const first = source.array[0];
+		const last = source.array[source.array.length - 1];
 		const arr = source.array;
 
 		if (!first || this.compare(msg, first) < 0) {
@@ -395,7 +395,7 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 			}
 		}
 		for (const source of notLoaded) {
-			const lastMessage = source.array.at(-1);
+			const lastMessage = source.array[source.array.length - 1];
 			try {
 				const newMessages = lastMessage
 					? await source.source.getBefore(lastMessage, this.pageSize)

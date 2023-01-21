@@ -1,3 +1,4 @@
+export * from './ExternalPublicKey';
 export * from './IExtraEncryptionStratery';
 export * from './IGenericAccount';
 export * from './IMessage';

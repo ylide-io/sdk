@@ -1,8 +1,8 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../cross-chain';
-import { IMessage, Uint256 } from '../types';
+import { IMessage, IMessageContent, Uint256 } from '../types';
 
-const IS_DEV = true;
+const IS_DEV = false;
 
 const endpoints = IS_DEV
 	? ['http://localhost:8495']
@@ -85,8 +85,34 @@ export class IndexerHub {
 		}
 	}
 
-	async requestMultipleKeys(addresses: string[]) {
+	async requestMultipleKeys(addresses: string[]): Promise<
+		Record<
+			string,
+			Record<
+				string,
+				{
+					block: number;
+					keyVersion: number;
+					publicKey: Uint8Array;
+					timestamp: number;
+				} | null
+			>
+		>
+	> {
 		const data = await this.request('/multi-keys', { addresses });
+		return data;
+	}
+
+	async requestKeysHistory(address: string): Promise<
+		{
+			blockchain: string;
+			block: number;
+			keyVersion: number;
+			publicKey: Uint8Array;
+			timestamp: number;
+		}[]
+	> {
+		const data = await this.request('/keys-history', { address });
 		return data;
 	}
 
@@ -144,6 +170,15 @@ export class IndexerHub {
 		return data.map((m: any) => ({
 			...m,
 			key: new Uint8Array(m.key),
+		}));
+	}
+
+	async requestMessageParts({ blockchain, msgId }: { blockchain: string; msgId: Uint256 }): Promise<any> {
+		const data = await this.request(`/content/${blockchain}`, {
+			msgId,
+		});
+		return data.map((m: any) => ({
+			...m,
 		}));
 	}
 }

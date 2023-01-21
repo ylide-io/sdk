@@ -106,7 +106,7 @@ export class DynamicEncryptionRouter {
 					strategies.push({
 						type: 'ylide',
 						blockchainController,
-						data: { ylide: true as true, publicKey: ylideKey },
+						data: { ylide: true as true, publicKey: ylideKey.publicKey },
 					});
 				}
 				const nativeStrategies = await blockchainController.getExtraEncryptionStrategiesFromAddress(

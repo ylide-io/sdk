@@ -7,6 +7,7 @@ import {
 	IMessageContent,
 	IMessageCorruptedContent,
 } from '..';
+import { ExternalYlidePublicKey } from '../types/ExternalPublicKey';
 import { Uint256 } from '../types/Uint256';
 import { AbstractNameService } from './AbstractNameService';
 
@@ -149,7 +150,7 @@ export abstract class AbstractBlockchainController {
 	 *
 	 * @param address - Recipient's wallet address
 	 */
-	abstract extractPublicKeyFromAddress(address: string): Promise<PublicKey | null>;
+	abstract extractPublicKeyFromAddress(address: string): Promise<ExternalYlidePublicKey | null>;
 
 	/**
 	 * Method to get balance of the address. Currency used is the same which is used to pay for the Ylide tx in this blockchain
