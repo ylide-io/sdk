@@ -1,24 +1,24 @@
-/* tslint:disable */
-import { describe, it, before } from 'mocha';
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { ListStorage } from '../cross-chain/new-list/ListStorage';
 
-function printListStorage(ls: ListStorage<number>) {
-	console.log('-------------------------');
-	for (const segment of ls.segments) {
-		let s = ``;
-		for (let c = segment.head(); c !== null; c = c.getNext()) {
-			s += `${c !== segment.head() ? ', ' : ''}${c.getValue()}`;
-		}
-		console.log(`[${s}]`);
-	}
-}
+// function printListStorage(ls: ListStorage<number>) {
+// 	console.log('-------------------------');
+// 	for (const segment of ls.segments) {
+// 		let s = ``;
+// 		for (let c = segment.head(); c !== null; c = c.getNext()) {
+// 			s += `${c !== segment.head() ? ', ' : ''}${c.getValue()}`;
+// 		}
+// 		console.log(`[${s}]`);
+// 	}
+// }
 
-function assertListStorage(ls: ListStorage<number>, result: number[][]) {
+const assertListStorage = (ls: ListStorage<number>, result: number[][]) => {
 	expect(ls.segments.length).equal(result.length, 'Wrong segments count');
-}
+};
 
-export function listsTest() {
+export const listsTest = () => {
 	describe('Lists', () => {
 		let listStorage: ListStorage<number>;
 		beforeEach(async () => {
@@ -206,4 +206,4 @@ export function listsTest() {
 			});
 		});
 	});
-}
+};

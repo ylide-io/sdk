@@ -16,6 +16,7 @@ export class YlideUnencryptedKeyPair {
 
 	/**
 	 * Method to encrypt some data for a certain recipient
+	 *
 	 * @param data Data to encrypt
 	 * @param theirPublicKey Recipient's public key
 	 * @returns Encrypted bytes
@@ -26,6 +27,7 @@ export class YlideUnencryptedKeyPair {
 
 	/**
 	 * Method to decrypt data sent from a certain sender
+	 *
 	 * @param data Encrypted data
 	 * @param theirPublicKey Sender's public key
 	 * @returns Decrypted data

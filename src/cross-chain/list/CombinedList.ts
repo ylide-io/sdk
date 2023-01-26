@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { EventEmitter } from 'eventemitter3';
 import { AvlTree } from '@datastructures-js/binary-search-tree';
 import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
@@ -73,7 +74,7 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 	private windowFirstMessage: DoublyLinkedListNode<GenericEntry<T, S>> | null = null;
 	private windowLastMessage: DoublyLinkedListNode<GenericEntry<T, S>> | null = null;
 
-	private pageSize: number = 10;
+	private pageSize = 10;
 
 	private generalWindow: GenericEntry<T, S>[] = [];
 	private filteredWindow: GenericEntry<T, S>[] = [];
@@ -365,7 +366,7 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 		await Promise.all(this.sources.map(async source => source.source.init()));
 	}
 
-	private getOverlook(source: WrappedSource<T, S>, maxOverlook: number = 0) {
+	private getOverlook(source: WrappedSource<T, S>, maxOverlook = 0) {
 		if (!source.firstLastWindow.last) {
 			return source.array.length;
 		}
@@ -447,7 +448,7 @@ export class CombinedList<T, S extends GenericSortedSource<T>> extends EventEmit
 	}
 
 	private _processCurrentPage() {
-		let cursor = this.windowLastMessage ? this.windowLastMessage!.getNext() : this.list.head();
+		let cursor = this.windowLastMessage ? this.windowLastMessage.getNext() : this.list.head();
 		let was = false;
 		let gWas = false;
 		for (let i = 0; i < this.pageSize; i++) {

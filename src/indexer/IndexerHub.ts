@@ -1,6 +1,6 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../cross-chain';
-import { IMessage, IMessageContent, Uint256 } from '../types';
+import { IMessage, Uint256 } from '../types';
 
 const IS_DEV = false;
 
@@ -15,7 +15,7 @@ const endpoints = IS_DEV
 	  ];
 
 export class IndexerHub {
-	private endpoint: string = '';
+	private endpoint = '';
 	private lastTryTimestamps: Record<string, number> = {};
 
 	private cs: CriticalSection = new CriticalSection();
@@ -62,7 +62,7 @@ export class IndexerHub {
 				}
 			}
 		} finally {
-			await this.cs.leave();
+			this.cs.leave();
 		}
 		// tslint:disable-next-line
 		// console.error(`All indexer endpoints were unavailable. Switched back to the direct blockchain reading`);
@@ -100,7 +100,43 @@ export class IndexerHub {
 		>
 	> {
 		const data = await this.request('/multi-keys', { addresses });
-		return data;
+		return Object.keys(data).reduce(
+			(p, addr) => ({
+				...p,
+				[addr]: Object.keys(data[addr]).reduce(
+					(p2, bc) => ({
+						...p2,
+						[bc]: data[addr][bc]
+							? {
+									...data[addr][bc],
+									publicKey: SmartBuffer.ofHexString(data[addr][bc].publicKey).bytes,
+							  }
+							: null,
+					}),
+					{} as Record<
+						string,
+						{
+							block: number;
+							keyVersion: number;
+							publicKey: Uint8Array;
+							timestamp: number;
+						} | null
+					>,
+				),
+			}),
+			{} as Record<
+				string,
+				Record<
+					string,
+					{
+						block: number;
+						keyVersion: number;
+						publicKey: Uint8Array;
+						timestamp: number;
+					} | null
+				>
+			>,
+		);
 	}
 
 	async requestKeysHistory(address: string): Promise<

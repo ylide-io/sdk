@@ -46,6 +46,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to deserialize `YlideKeyPair` from raw bytes
+	 *
 	 * @param bytes Raw Ylide key bytes
 	 * @returns Instance of `YlideKeyPair`
 	 */
@@ -65,6 +66,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to serialize `YlideKeyPair` to raw bytes
+	 *
 	 * @returns Raw Ylide key bytes
 	 */
 	toBytes(): Uint8Array {
@@ -81,6 +83,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to generate dynamic magic string for signing
+	 *
 	 * @see [Initialization of communication keys](https://ylide-io.github.io/sdk/handbook/basics#keys-init)
 	 * @param address User's address
 	 * @param keyIndex Index of this key
@@ -96,6 +99,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to encrypt key by password
+	 *
 	 * @param key Raw private key bytes
 	 * @param password Password to encrypt
 	 * @returns Encrypted bytes
@@ -106,6 +110,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to decrypt key using password
+	 *
 	 * @param key Raw encrypted private key bytes
 	 * @param password Password to decrypt
 	 * @returns Raw private key
@@ -116,6 +121,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Fabric to create new communication key for user
+	 *
 	 * @param address User's address
 	 * @param password Ylide password
 	 * @param deriver Deriver callback to get signature of magic string
@@ -138,6 +144,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to decrypt internally stored private key
+	 *
 	 * @param password Ylide password
 	 * @returns Raw private key
 	 */
@@ -151,6 +158,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to switch from encrypted storage to plaintext storage of the key
+	 *
 	 * @param password Ylide password
 	 */
 	async storeUnencrypted(password: string) {
@@ -164,19 +172,21 @@ export class YlideKeyPair {
 
 	/**
 	 * Method to switch from plaintext storage to encrypted storage of the key
+	 *
 	 * @param password Ylide password
 	 */
 	async storeEncrypted(password: string) {
-		if (this._isEncrypted) {
+		if (this._isEncrypted || !this._keypair) {
 			return;
 		}
-		this.keydata = YlideKeyPair.encryptKeyByPassword(this._keypair!.secretKey, password);
+		this.keydata = YlideKeyPair.encryptKeyByPassword(this._keypair.secretKey, password);
 		this._keypair = null;
 		this._isEncrypted = true;
 	}
 
 	/**
 	 * Method to decrypt `YlideKeyPair` into `YlideUnencryptedKeyPair` which can be used for sending/reading messages
+	 *
 	 * @param reason Reason for accessing communication key
 	 * @returns `YlideUnencryptedKeyPair` instance
 	 */
@@ -198,6 +208,7 @@ export class YlideKeyPair {
 
 	/**
 	 * Method for boxed execution of a function with provided decrypted communication key. Right after the execution key is removed from memory.
+	 *
 	 * @param reason Reason for accessing communication key
 	 * @param processor Async callback which uses decrypted key
 	 */

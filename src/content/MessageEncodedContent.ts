@@ -23,6 +23,7 @@ import { MessageContent } from '.';
 export class MessageEncodedContent {
 	/**
 	 * Method to compress arbitrary bytes
+	 *
 	 * @param bytes Bytes you want to compress
 	 * @returns Bytes of compression result
 	 */
@@ -32,6 +33,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to decompress bytes
+	 *
 	 * @param bytes Compressed bytes you want to decompress
 	 * @returns Bytes of decompression result
 	 */
@@ -41,6 +43,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to encode (compress & encrypt) raw message content bytes
+	 *
 	 * @param content Bytes of the content you want to encode
 	 * @returns Encoded content and key used for encryption
 	 */
@@ -62,6 +65,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to decode raw message content bytes
+	 *
 	 * @param content Encoded (compressed & encrypted) message content bytes
 	 * @param key Symmetric key used for encryption
 	 * @returns Decoded message content bytes
@@ -77,6 +81,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to get bytes of message content
+	 *
 	 * @param content `MessageContent` instance to convert into bytes
 	 * @returns Raw bytes of message content
 	 */
@@ -86,6 +91,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to get message content instance from raw message content bytes
+	 *
 	 * @param bytes Raw bytes of message content
 	 * @returns Instance of `MessageContent` ancestor
 	 */
@@ -99,6 +105,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to encode `MessageContent` instance
+	 *
 	 * @param content `MessageContent` instance
 	 * @returns Bytes of encoded message
 	 */
@@ -108,6 +115,7 @@ export class MessageEncodedContent {
 
 	/**
 	 * Method to decode raw message content bytes into `MessageContent` instance
+	 *
 	 * @param encodedContent Raw encoded message content
 	 * @param key Symmetric key used for encryption
 	 * @returns Instance of `MessageContent` ancestor

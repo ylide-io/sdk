@@ -1,7 +1,7 @@
 import { BlockchainSourceType } from '../../BlockchainSource';
 import { IBlockchainSourceSubject } from '../types/IBlockchainSourceSubject';
 
-export function shrinkSubject(subject: IBlockchainSourceSubject): IBlockchainSourceSubject {
+export const shrinkSubject = (subject: IBlockchainSourceSubject): IBlockchainSourceSubject => {
 	if (subject.type === BlockchainSourceType.BROADCAST) {
 		return {
 			type: BlockchainSourceType.BROADCAST,
@@ -16,11 +16,11 @@ export function shrinkSubject(subject: IBlockchainSourceSubject): IBlockchainSou
 			sender: null,
 		};
 	}
-}
+};
 
-export function isWideSubject(subject: IBlockchainSourceSubject) {
+export const isWideSubject = (subject: IBlockchainSourceSubject) => {
 	return subject.type === BlockchainSourceType.DIRECT && !!subject.sender;
-}
+};
 
 export * from './AsyncEventEmitter';
 export * from './CriticalSection';

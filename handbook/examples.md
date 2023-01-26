@@ -134,7 +134,7 @@ Here we go. Message sent.
 First of all, let's retrieve messages metadata from the blockchain:
 
 ```ts
-const messages = await blockchain.retrieveMessageHistoryByDates(account.address);
+const messages = await blockchain.retrieveMessageHistoryDescByDates(account.address);
 ```
 
 Now, we have all the metadata: date, sender, recipient, key for decryption. But we hadn't loaded message content from the blockchain yet. So, let's do this:

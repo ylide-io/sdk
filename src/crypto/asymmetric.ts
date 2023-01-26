@@ -1,4 +1,3 @@
-import SmartBuffer from '@ylide/smart-buffer';
 import nacl from 'tweetnacl';
 import { packSymmetricalyEncryptedData, unpackSymmetricalyEncryptedData } from '.';
 
@@ -11,11 +10,11 @@ import { packSymmetricalyEncryptedData, unpackSymmetricalyEncryptedData } from '
  * @param theirPublicKey Recipient's public key
  * @returns Encrypted data
  */
-export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) {
+export const asymmetricEncrypt = (data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) => {
 	const nonce = nacl.randomBytes(24);
 	const encData = nacl.box(data, nonce, theirPublicKey, mySecretKey);
 	return packSymmetricalyEncryptedData(encData, nonce);
-}
+};
 
 /**
  * @category Crypto
@@ -26,7 +25,7 @@ export function asymmetricEncrypt(data: Uint8Array, mySecretKey: Uint8Array, the
  * @param theirPublicKey Sender's public key
  * @returns Decrypted data
  */
-export function asymmetricDecrypt(data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) {
+export const asymmetricDecrypt = (data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) => {
 	const { nonce, encData } = unpackSymmetricalyEncryptedData(data);
 
 	const decData = nacl.box.open(encData, nonce, theirPublicKey, mySecretKey);
@@ -34,4 +33,4 @@ export function asymmetricDecrypt(data: Uint8Array, mySecretKey: Uint8Array, the
 		throw new Error('Invalid box or key');
 	}
 	return decData;
-}
+};

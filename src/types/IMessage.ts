@@ -1,14 +1,14 @@
-import { IGenericAccount } from './IGenericAccount';
 import { Uint256 } from './Uint256';
 
 /**
  * @category Content
  * @description Interface representing base message metadata and content
  */
-export interface IMessageBase {
+export interface IMessage<M = any> {
 	isBroadcast: boolean;
 
-	msgId: Uint256;
+	msgId: string;
+
 	createdAt: number;
 	senderAddress: string;
 	recipientAddress: Uint256;
@@ -16,14 +16,7 @@ export interface IMessageBase {
 
 	key: Uint8Array;
 
-	readonly $$blockchainMetaDontUseThisField: any;
-	// userspaceMeta: any;
-
-	// isContentDecrypted: boolean;
-	// decryptedContent: Uint8Array | null;
-
-	// isContentLoaded: boolean;
-	// contentLink: IMessageContent | null;
+	readonly $$meta: M;
 }
 
 /**
@@ -81,9 +74,3 @@ export interface IMessageContent {
 	parts: number;
 	content: Uint8Array;
 }
-
-/**
- * @category Content
- * @description Type representing a certain message
- */
-export type IMessage = IMessageBase;

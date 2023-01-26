@@ -11,7 +11,7 @@ export class AsyncEventEmitter {
 			if (shouldWait) {
 				await handler(data);
 			} else {
-				handler(data);
+				void handler(data);
 			}
 		}
 	}

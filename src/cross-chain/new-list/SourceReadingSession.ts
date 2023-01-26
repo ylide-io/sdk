@@ -1,9 +1,8 @@
 import { AbstractBlockchainController } from '../../abstracts';
 import { IndexerHub } from '../../indexer/IndexerHub';
 import { IMessage } from '../../types';
-import { BlockchainSource, BlockchainSourceType } from '../BlockchainSource';
+import { BlockchainSourceType } from '../BlockchainSource';
 import { BlockchainListSource } from './BlockchainListSource';
-import { IndexerListSource } from './IndexerListSource';
 import { ListCache } from './ListCache';
 import { GenericListSource, ListSource } from './ListSource';
 import { ListStorage } from './ListStorage';
@@ -43,9 +42,9 @@ export class SourceReadingSession {
 
 	sourceSubjectHash(k: IBlockchainSourceSubject) {
 		if (k.type === BlockchainSourceType.BROADCAST) {
-			return `bc:${k.blockchain}:${k.sender}`;
+			return `bc:${k.blockchain}:${k.sender || 'null'}`;
 		} else {
-			return `dm:${k.blockchain}:${k.sender}:${k.recipient}`;
+			return `dm:${k.blockchain}:${k.sender || 'null'}:${k.recipient || 'null'}`;
 		}
 	}
 

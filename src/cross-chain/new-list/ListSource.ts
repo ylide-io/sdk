@@ -29,11 +29,11 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	private criticalSection = new CriticalSection();
 	private newMessagesCriticalSection = new CriticalSection();
 
-	private _lastSize: number = 2;
-	private _minReadingSize: number = 10;
-	private _paused: boolean = true;
-	private _drained: boolean = false;
-	private _drainedByError: boolean = false;
+	private _lastSize = 2;
+	private _minReadingSize = 10;
+	private _paused = true;
+	private _drained = false;
+	private _drainedByError = false;
 	private _newMessagesBlocked = 0;
 
 	constructor(
@@ -71,11 +71,11 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	async unblockNewMessages() {
 		this._newMessagesBlocked--;
 		if (this._newMessagesBlocked < 0) {
-			// tslint:disable-next-line
+			// eslint-disable-next-line
 			console.error('Must never happen: < 0 new messages block');
 		}
 		if (this._newMessagesBlocked === 0) {
-			await this.newMessagesCriticalSection.leave();
+			this.newMessagesCriticalSection.leave();
 		}
 	}
 
@@ -113,9 +113,9 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 		await this.newMessagesCriticalSection.enter();
 		const connectedMessages = this.connectToStart(messages);
 		await this.storage.putObjects(connectedMessages, true);
-		this.emit('messages', { messages }, false);
+		void this.emit('messages', { messages }, false);
 		await this.emit('guaranteedSegmentUpdated');
-		await this.newMessagesCriticalSection.leave();
+		this.newMessagesCriticalSection.leave();
 	};
 
 	async resume() {
@@ -143,6 +143,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 				await this.emit('guaranteedSegmentUpdated');
 			}
 			const lastMessage = this.guaranteedSegment?.head()?.getValue();
+			// eslint-disable-next-line @typescript-eslint/no-misused-promises
 			this.source.on('messages', this.handleNewMessages);
 			this.source.resume(lastMessage);
 		} catch (err) {
@@ -150,16 +151,17 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			this._drainedByError = true;
 			this._drained = true;
 			await this.emit('guaranteedSegmentUpdated');
-			// tslint:disable-next-line
+			// eslint-disable-next-line
 			console.error('ListSource err: ', err);
 			// debugger;
 		} finally {
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 		}
 	}
 
 	pause() {
 		this.source.pause();
+		// eslint-disable-next-line @typescript-eslint/no-misused-promises
 		this.source.off('messages', this.handleNewMessages);
 		this._paused = true;
 	}
@@ -199,11 +201,12 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 				if (last.length > 0) {
 					await this.storage.putObjects(last, true);
 					await this.emit('guaranteedSegmentUpdated');
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const lastMessage = this.guaranteedSegment!.head()?.getValue();
 					this.source.resume(lastMessage);
 				}
 			} else {
-				const lastInSegment = this.guaranteedSegment.tail()!.getValue();
+				const lastInSegment = this.guaranteedSegment.tail()?.getValue();
 				const readSize = Math.max(this._minReadingSize, reducedSize);
 				const newOnes = await this.source.getBefore(lastInSegment, readSize);
 				if (newOnes.length < readSize) {
@@ -215,13 +218,13 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 				}
 			}
 		} catch (err) {
-			// tslint:disable-next-line
+			// eslint-disable-next-line
 			console.error('readNext err: ', err);
 			this._drainedByError = true;
 			this._drained = true;
 			await this.emit('guaranteedSegmentUpdated');
 		} finally {
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 		}
 	}
 }

@@ -29,8 +29,8 @@ export class MessagesList extends CombinedList<IMessage, GenericSortedSource<IMe
 				addReader: (
 					reader: AbstractBlockchainController,
 					subject: ISourceSubject,
-					pullPeriod: number = 10000,
-					limit: number = 50,
+					pullPeriod = 10000,
+					limit = 50,
 					meta: any = null,
 				) => {
 					const source = new BlockchainSource(reader, subject, pullPeriod, limit, meta);

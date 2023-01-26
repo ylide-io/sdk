@@ -83,7 +83,7 @@ export class ListStorage<T> {
 		if (descSortedConnectedValues.length === 0) {
 			// do nothing
 		} else if (descSortedConnectedValues.length === 1) {
-			const first = descSortedConnectedValues[0]!;
+			const first = descSortedConnectedValues[0];
 			const firstPos = this.getPos(first);
 			if (firstPos.type === 'before') {
 				const newSegment = new BetterDoublyLinkedList<T>();
@@ -100,8 +100,8 @@ export class ListStorage<T> {
 				// insideSegment.insertBefore(first, firstPos.element);
 			}
 		} else {
-			const first = descSortedConnectedValues[0]!;
-			const last = descSortedConnectedValues[descSortedConnectedValues.length - 1]!;
+			const first = descSortedConnectedValues[0];
+			const last = descSortedConnectedValues[descSortedConnectedValues.length - 1];
 			const firstPos = this.getPos(first);
 			const lastPos = this.getPos(last);
 			if (firstPos.type === 'after') {

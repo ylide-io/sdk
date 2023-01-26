@@ -11,6 +11,7 @@ export class MessageContentV3 extends MessageContent {
 
 	/**
 	 * Private constructor for instantiating `MessageContentV3` instance
+	 *
 	 * @param isPlain Is message plaintext of formatted
 	 * @param subjectBytes Bytes of the subject text
 	 * @param bytes Bytes of the content text
@@ -29,6 +30,7 @@ export class MessageContentV3 extends MessageContent {
 
 	/**
 	 * Factory method for creating plaintext message content
+	 *
 	 * @param subject Message subject in plaintext
 	 * @param text Message content in plaintext
 	 * @returns `MessageContentV3` instance
@@ -44,6 +46,7 @@ export class MessageContentV3 extends MessageContent {
 
 	/**
 	 * Factory method for creating formatted message content
+	 *
 	 * @param subject Message subject in plaintext
 	 * @param text Message content in serializeable object
 	 * @returns `MessageContentV3` instance
@@ -63,6 +66,7 @@ export class MessageContentV3 extends MessageContent {
 
 	/**
 	 * Factory method to extract `MessageContentV3` data from raw bytes
+	 *
 	 * @param bytes Bytes array
 	 * @returns Deserialized data
 	 */

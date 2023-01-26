@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { EventEmitter } from 'eventemitter3';
 import { AvlTree } from '@datastructures-js/binary-search-tree';
 import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
@@ -21,9 +22,9 @@ export class GenericSortedMergedList<T, S extends GenericSortedSource<T>> extend
 	private windowFirstMessage: DoublyLinkedListNode<GenericEntry<T, S>> | null = null;
 	private windowLastMessage: DoublyLinkedListNode<GenericEntry<T, S>> | null = null;
 
-	private pageSize: number = 10;
-	private windowStart: number = 0;
-	private windowFilled: number = 0;
+	private pageSize = 10;
+	private windowStart = 0;
+	private windowFilled = 0;
 
 	private window: GenericEntry<T, S>[] = [];
 

@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { AbstractBlockchainController } from '../../abstracts';
 import { IndexerHub } from '../../indexer/IndexerHub';
-import { IMessage, IMessageBase, Uint256 } from '../../types';
+import { IMessage, Uint256 } from '../../types';
 import { asyncTimer } from '../../utils/asyncTimer';
 import { BlockchainSourceType, ISourceSubject } from '../BlockchainSource';
 import { GenericListSource } from './ListSource';
@@ -10,7 +10,7 @@ import { GenericListSource } from './ListSource';
  * @internal
  */
 export class IndexerListSource extends EventEmitter implements GenericListSource {
-	protected pullTimer: any;
+	protected pullTimer: (() => void) | null = null;
 	protected lastMessage: IMessage | null = null;
 
 	constructor(
@@ -31,7 +31,7 @@ export class IndexerListSource extends EventEmitter implements GenericListSource
 		}
 	}
 
-	resume(since?: IMessageBase | undefined): void {
+	resume(since?: IMessage | undefined): void {
 		this.lastMessage = since || null;
 		if (!this.pullTimer) {
 			this.pullTimer = asyncTimer(this.pull.bind(this), this._pullCycle);
@@ -46,7 +46,7 @@ export class IndexerListSource extends EventEmitter implements GenericListSource
 		}
 	};
 
-	async retrieveMessageHistoryByBounds(
+	async retrieveMessageHistoryDesc(
 		sender: string | null,
 		recipient: Uint256 | null,
 		fromMessage?: IMessage,
@@ -55,8 +55,8 @@ export class IndexerListSource extends EventEmitter implements GenericListSource
 	): Promise<IMessage[]> {
 		const msgs = await this.indexerHub.requestMessages({
 			blockchain: this.reader.blockchain(),
-			fromBlock: fromMessage ? fromMessage.$$blockchainMetaDontUseThisField.block.number : null,
-			toBlock: toMessage ? toMessage.$$blockchainMetaDontUseThisField.block.number : null,
+			fromBlock: fromMessage ? Number(fromMessage.$$meta.block.number) : null,
+			toBlock: toMessage ? Number(toMessage.$$meta.block.number) : null,
 			sender,
 			recipient,
 			type: 'DIRECT',
@@ -80,7 +80,7 @@ export class IndexerListSource extends EventEmitter implements GenericListSource
 			const subject = this.subject;
 			return await this.indexerHub.retryingOperation(
 				async () => {
-					return await this.retrieveMessageHistoryByBounds(
+					return await this.retrieveMessageHistoryDesc(
 						subject.sender,
 						subject.recipient,
 						undefined,
@@ -102,7 +102,7 @@ export class IndexerListSource extends EventEmitter implements GenericListSource
 			const subject = this.subject;
 			return await this.indexerHub.retryingOperation(
 				async () => {
-					return await this.retrieveMessageHistoryByBounds(
+					return await this.retrieveMessageHistoryDesc(
 						subject.sender,
 						subject.recipient,
 						entry,
@@ -124,7 +124,7 @@ export class IndexerListSource extends EventEmitter implements GenericListSource
 			const subject = this.subject;
 			return await this.indexerHub.retryingOperation(
 				async () => {
-					return await this.retrieveMessageHistoryByBounds(
+					return await this.retrieveMessageHistoryDesc(
 						subject.sender,
 						subject.recipient,
 						undefined,

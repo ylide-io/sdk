@@ -3,6 +3,7 @@ import { AbstractWalletController } from './abstracts/AbstractWalletController';
 import { MessageContainer, MessageContent, MessageEncodedContent, MessageKey } from './content';
 import { DynamicEncryptionRouter } from './cross-chain/DynamicEncryptionRouter';
 import { sha256 } from './crypto';
+import { IndexerHub } from './indexer';
 import { YlideKeyStore } from './keystore';
 import { IGenericAccount, IMessage, IMessageContent, PublicKeyType, ServiceCode } from './types';
 import { Uint256, uint256ToUint8Array, uint8ArrayToUint256 } from './types/Uint256';
@@ -44,6 +45,7 @@ export class Ylide {
 
 	/**
 	 * Use this method to register all available blockchain wallets to Ylide.
+	 *
 	 * @example
 	 * ```ts
 	 * import { Ylide } from '@ylide/sdk';
@@ -62,6 +64,7 @@ export class Ylide {
 
 	/**
 	 * Use this method to register all available blockchain blockchains to Ylide.
+	 *
 	 * @example
 	 * ```ts
 	 * import { Ylide } from '@ylide/sdk';
@@ -78,6 +81,7 @@ export class Ylide {
 
 	/**
 	 * Method to check availability of a certain blockchain for reading messages
+	 *
 	 * @example
 	 * ```ts
 	 * Ylide.isBlockchainRegistered('everscale'); // return true if `Ylide.registerBlockchain` was called with this blockchain controller factory before
@@ -90,6 +94,7 @@ export class Ylide {
 
 	/**
 	 * Method to check availability of a certain blockchain for sending messages
+	 *
 	 * @example
 	 * ```ts
 	 * Ylide.isWalletRegistered('everscale', 'everwallet'); // return true if `Ylide.registerWallet` was called with this wallet factory before
@@ -102,6 +107,7 @@ export class Ylide {
 
 	/**
 	 * Method to get blockchain controller factory for a certain blockchain
+	 *
 	 * @param blockchain Name of blockchain
 	 */
 	static getBlockchainControllerFactory(blockchain: string) {
@@ -110,6 +116,7 @@ export class Ylide {
 
 	/**
 	 * Method to get wallet controller factory for a certain blockchain and wallet type
+	 *
 	 * @param blockchainGroup Name of the blockchain group
 	 * @param wallet Name of in-browser wallet
 	 */
@@ -125,6 +132,7 @@ export class Ylide {
 
 	/**
 	 * Method to get registered wallet controllers
+	 *
 	 * @example
 	 * ```ts
 	 * const ethereumWallets = Ylide.walletsList.filter(t => t.blockchain === 'ethereum');
@@ -144,6 +152,7 @@ export class Ylide {
 
 	/**
 	 * Method to get registered blockchain controllers
+	 *
 	 * @example
 	 * ```ts
 	 * const ethereumChains = Ylide.blockchainsList.filter(t => t.blockchain === 'ethereum');
@@ -158,6 +167,7 @@ export class Ylide {
 
 	/**
 	 * Method to get a list of registered wallet controllers that are available in the user's browser (wallets installed)
+	 *
 	 * @example
 	 * ```ts
 	 * const availableWallets = await Ylide.getAvailableWallets();
@@ -183,6 +193,7 @@ export class Ylide {
 
 	/**
 	 * Method to get a list of registered blockchain controllers
+	 *
 	 * @example
 	 * ```ts
 	 * const availableBlockchains = await Ylide.getAvailableBlockchains();
@@ -194,6 +205,7 @@ export class Ylide {
 
 	/**
 	 * Method to instantiate both wallet and blockchain controllers with the same options
+	 *
 	 * @example
 	 * ```ts
 	 * const wallet = await Ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
@@ -213,6 +225,7 @@ export class Ylide {
 
 	/**
 	 * Method to instantiate blockchain controller
+	 *
 	 * @example
 	 * ```ts
 	 * const blockchainController = await Ylide.instantiateBlockchain('everscale', { dev: false });
@@ -268,6 +281,7 @@ export class Ylide {
 	async sendMessage(
 		{ wallet, sender, content, recipients, serviceCode = ServiceCode.SDK, copyOfSent = true }: SendMessageArgs,
 		walletOptions?: any,
+		indexer: IndexerHub | null = null,
 	) {
 		const { encodedContent, key } = MessageEncodedContent.encodeContent(content);
 		const actualRecipients = recipients.map(r => {
@@ -288,7 +302,12 @@ export class Ylide {
 				address: Ylide.getSentAddress(wallet.addressToUint256(sender.address)),
 			});
 		}
-		const route = await DynamicEncryptionRouter.findEncyptionRoute(actualRecipients, this.blockchains);
+		const route = await DynamicEncryptionRouter.findEncyptionRoute(
+			actualRecipients,
+			this.blockchains,
+			'ylide',
+			indexer,
+		);
 		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
 		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encodedContent);
 		return wallet.publishMessage(sender, container, processedRecipients, walletOptions);
@@ -333,7 +352,7 @@ export class Ylide {
 
 	async decryptMessageContent(recipient: IGenericAccount, msg: IMessage, content: IMessageContent) {
 		const receipientKeyAddress = recipient.address;
-		const unpackedContent = await MessageContainer.unpackContainter(content.content);
+		const unpackedContent = MessageContainer.unpackContainter(content.content);
 		let decryptedContent;
 		if (unpackedContent.isEncoded) {
 			const msgKey = MessageKey.fromBytes(msg.key);
@@ -357,7 +376,10 @@ export class Ylide {
 				if (accountIdx === -1) {
 					throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
 				}
-				const account = walletAccounts[accountIdx].account!;
+				const account = walletAccounts[accountIdx].account;
+				if (!account) {
+					throw new Error(`Account of this message recipient ${receipientKeyAddress} is not available`);
+				}
 				const wallet = walletAccounts[accountIdx].wallet;
 				symmKey = await wallet.decryptMessageKey(account, publicKey, msgKey.encryptedMessageKey);
 			}
@@ -376,8 +398,8 @@ export class Ylide {
 		};
 	}
 
-	async decryptBroadcastContent(msg: IMessage, content: IMessageContent) {
-		const unpackedContent = await MessageContainer.unpackContainter(content.content);
+	decryptBroadcastContent(msg: IMessage, content: IMessageContent) {
+		const unpackedContent = MessageContainer.unpackContainter(content.content);
 		if (unpackedContent.isEncoded) {
 			throw new Error(`Can't decode encrypted content`);
 		}

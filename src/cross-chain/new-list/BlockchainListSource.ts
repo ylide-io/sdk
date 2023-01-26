@@ -1,6 +1,6 @@
 import { EventEmitter } from 'eventemitter3';
 import { AbstractBlockchainController } from '../../abstracts';
-import { IMessage, IMessageBase } from '../../types';
+import { IMessage } from '../../types';
 import { asyncTimer } from '../../utils/asyncTimer';
 import { BlockchainSourceType, ISourceSubject } from '../BlockchainSource';
 import { GenericListSource } from './ListSource';
@@ -9,7 +9,7 @@ import { GenericListSource } from './ListSource';
  * @internal
  */
 export class BlockchainListSource extends EventEmitter implements GenericListSource {
-	protected pullTimer: any;
+	protected pullTimer: (() => void) | null = null;
 	protected lastMessage: IMessage | null = null;
 
 	constructor(
@@ -28,7 +28,7 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 		}
 	}
 
-	resume(since?: IMessageBase | undefined): void {
+	resume(since?: IMessage | undefined): void {
 		this.lastMessage = since || null;
 		if (!this.pullTimer) {
 			this.pullTimer = asyncTimer(this.pull.bind(this), this._pullCycle);
@@ -45,7 +45,7 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 
 	async getBefore(entry: IMessage, limit: number): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {
-			return await this.reader.retrieveMessageHistoryByBounds(
+			return await this.reader.retrieveMessageHistoryDesc(
 				this.subject.sender,
 				this.subject.recipient,
 				undefined,
@@ -53,13 +53,13 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 				limit,
 			);
 		} else {
-			return await this.reader.retrieveBroadcastHistoryByBounds(this.subject.sender, undefined, entry, limit);
+			return await this.reader.retrieveBroadcastHistoryDesc(this.subject.sender, undefined, entry, limit);
 		}
 	}
 
 	async getAfter(entry: IMessage, limit: number): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {
-			return await this.reader.retrieveMessageHistoryByBounds(
+			return await this.reader.retrieveMessageHistoryDesc(
 				this.subject.sender,
 				this.subject.recipient,
 				entry,
@@ -67,13 +67,13 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 				limit,
 			);
 		} else {
-			return await this.reader.retrieveBroadcastHistoryByBounds(this.subject.sender, entry, undefined, limit);
+			return await this.reader.retrieveBroadcastHistoryDesc(this.subject.sender, entry, undefined, limit);
 		}
 	}
 
 	async getLast(limit: number): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {
-			return await this.reader.retrieveMessageHistoryByBounds(
+			return await this.reader.retrieveMessageHistoryDesc(
 				this.subject.sender,
 				this.subject.recipient,
 				undefined,
@@ -81,7 +81,7 @@ export class BlockchainListSource extends EventEmitter implements GenericListSou
 				limit,
 			);
 		} else {
-			return await this.reader.retrieveBroadcastHistoryByBounds(this.subject.sender, undefined, undefined, limit);
+			return await this.reader.retrieveBroadcastHistoryDesc(this.subject.sender, undefined, undefined, limit);
 		}
 	}
 

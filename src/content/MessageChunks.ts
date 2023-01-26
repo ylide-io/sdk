@@ -3,6 +3,7 @@ import SmartBuffer from '@ylide/smart-buffer';
 export class MessageChunks {
 	/**
 	 * Helper method to split long bytes array into smaller ones
+	 *
 	 * @param bytes Original bytes array
 	 * @param chunkSize Max size of one chunk
 	 * @returns Bytes splitted into chunks, each chunk is less or equal `chunkSize`
@@ -18,6 +19,7 @@ export class MessageChunks {
 
 	/**
 	 * Helper method to concat chunks byte arrays into one
+	 *
 	 * @param chunks Chunks of bytes
 	 * @returns Concatenation result
 	 */

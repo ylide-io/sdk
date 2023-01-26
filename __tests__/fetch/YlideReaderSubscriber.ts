@@ -70,7 +70,7 @@ export class Ylideblockchainsubscriber extends EventEmitter {
 			const reader = this.activeblockchains[readerBlockchain];
 
 			for (const address of addresses) {
-				const messages = await reader.retrieveMessageHistoryByDates(address, options);
+				const messages = await reader.retrieveMessageHistoryDescByDates(address, options);
 				if (messages.length) {
 					this.emit('messages', { blockchain: readerBlockchain, address, messages });
 					for (const message of messages) {

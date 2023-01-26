@@ -91,6 +91,7 @@ export class BetterDoublyLinkedList<T> extends DoublyLinkedList<T> {
 
 	/**
 	 * Adds a node at the end of the list.
+	 *
 	 * @public
 	 * @param {any} value
 	 * @returns {DoublyLinkedListNode}

@@ -91,6 +91,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 
 	/**
 	 * Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString (usually containing Ylide password)
+	 *
 	 * @param account Account for which you request signature
 	 * @param magicString - string which consists of some fixed part and dynamic part like Ylide password
 	 */
@@ -98,6 +99,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 
 	/**
 	 * TODO
+	 *
 	 * @param account Account for which you request the private communication key
 	 */
 	abstract requestYlidePrivateKey(account: IGenericAccount): Promise<Uint8Array | null>;

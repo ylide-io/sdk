@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import nacl from 'tweetnacl';
 import { AbstractBlockchainController } from '../abstracts';
 import { MessageKey } from '../content';
 import { symmetricEncrypt } from '../crypto';
+import { IndexerHub } from '../indexer';
 import { IExtraEncryptionStrateryEntry, PublicKey, PublicKeyType } from '../types';
 import { Uint256 } from '../types/Uint256';
 
@@ -19,17 +21,19 @@ export class DynamicEncryptionRouter {
 			address: Uint256;
 		}[],
 		blockchainControllers: AbstractBlockchainController[],
-		preferredStrategy: string = 'ylide',
+		preferredStrategy = 'ylide',
+		indexer: IndexerHub | null,
 	) {
 		const recipientsMap = await this.identifyEncryptionStrategies(
 			recipients.map(r => ({ address: r.keyAddress, original: r.keyAddressOriginal })),
 			blockchainControllers,
+			indexer,
 		);
 		return this.findBestEncryptionRouting(recipients, recipientsMap, blockchainControllers, preferredStrategy);
 	}
 
 	private static panic(): never {
-		throw 0;
+		throw new Error('Panic');
 	}
 
 	static async executeEncryption(
@@ -87,8 +91,38 @@ export class DynamicEncryptionRouter {
 	private static async identifyEncryptionStrategies(
 		recipients: { address: Uint256; original: string }[],
 		blockchainControllers: AbstractBlockchainController[],
+		indexer: IndexerHub | null,
 	) {
 		const recipientsMap: Record<Uint256, IAvailableStrategy[]> = {};
+		let ylideKeys: Record<
+			string,
+			Record<
+				string,
+				{
+					block: number;
+					keyVersion: number;
+					publicKey: Uint8Array;
+					timestamp: number;
+				} | null
+			>
+		> = {};
+		let indexedResult = false;
+		if (indexer) {
+			try {
+				ylideKeys = await indexer.retryingOperation(
+					async () => {
+						const result = await indexer.requestMultipleKeys(recipients.map(r => r.original));
+						indexedResult = true;
+						return result;
+					},
+					async () => {
+						return {};
+					},
+				);
+			} catch (err) {
+				// indexer is not available, no-op
+			}
+		}
 		for (const recipient of recipients) {
 			for (const blockchainController of blockchainControllers) {
 				if (!blockchainController.isAddressValid(recipient.original)) {
@@ -98,7 +132,20 @@ export class DynamicEncryptionRouter {
 				const strategies = [];
 				let ylideKey;
 				try {
-					ylideKey = await blockchainController.extractPublicKeyFromAddress(recipient.original);
+					if (indexedResult) {
+						const kkey = ylideKeys[recipient.original]?.[blockchainController.blockchain()];
+						if (kkey) {
+							ylideKey = {
+								keyVersion: kkey.keyVersion,
+								publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, kkey.publicKey),
+								timestamp: kkey.timestamp,
+							};
+						} else {
+							ylideKey = null;
+						}
+					} else {
+						ylideKey = await blockchainController.extractPublicKeyFromAddress(recipient.original);
+					}
 				} catch (err) {
 					ylideKey = null;
 				}
@@ -106,7 +153,7 @@ export class DynamicEncryptionRouter {
 					strategies.push({
 						type: 'ylide',
 						blockchainController,
-						data: { ylide: true as true, publicKey: ylideKey.publicKey },
+						data: { ylide: true as const, publicKey: ylideKey.publicKey },
 					});
 				}
 				const nativeStrategies = await blockchainController.getExtraEncryptionStrategiesFromAddress(
@@ -149,7 +196,7 @@ export class DynamicEncryptionRouter {
 		recipients: { keyAddress: Uint256; keyAddressOriginal: string; address: Uint256 }[],
 		recipientsMap: Record<Uint256, IAvailableStrategy[]>,
 		blockchainControllers: AbstractBlockchainController[],
-		preferredStrategy: string = 'ylide',
+		preferredStrategy = 'ylide',
 	) {
 		const usedStrategies: Record<string, boolean> = {};
 		const selectedStrategyMap: Record<Uint256, IAvailableStrategy | null> = {};

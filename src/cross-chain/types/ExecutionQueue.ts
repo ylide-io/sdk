@@ -29,7 +29,7 @@ export type Executor<ExecutionRequest = any, ExecutionResult = any> = (
 export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 	readonly queue: ExecutionWrap<ExecutionRequest, ExecutionResult>[] = [];
 	readonly executor: Executor<ExecutionRequest, ExecutionResult>;
-	private _isExecuting: boolean = false;
+	private _isExecuting = false;
 	private currentExecuting: null | ExecutionWrap<ExecutionRequest, ExecutionResult> = null;
 
 	constructor(executor: Executor<ExecutionRequest, ExecutionResult>) {
@@ -70,9 +70,9 @@ export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 			future: null,
 			executionPromise: null,
 			cancelled: false,
-			// tslint:disable-next-line
+			// eslint-disable-next-line @typescript-eslint/no-empty-function
 			promiseResolve: () => {},
-			// tslint:disable-next-line
+			// eslint-disable-next-line @typescript-eslint/no-empty-function
 			promiseReject: () => {},
 		};
 		const promise = new Promise<IExecutionFuture<ExecutionResult>>((resolve, reject) => {
@@ -80,7 +80,7 @@ export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 			wrap.promiseReject = reject;
 		});
 		this.queue.push(wrap);
-		this.tickQueue();
+		void this.tickQueue();
 		return {
 			request,
 			promise,
@@ -92,11 +92,11 @@ export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 		if (this._isExecuting) {
 			return;
 		}
-		if (!this.queue.length) {
+		const current = this.queue.shift();
+		if (!current) {
 			return;
 		}
 		this._isExecuting = true;
-		const current = this.queue.shift()!;
 		this.currentExecuting = current;
 		if (current.cancelled) {
 			current.future = {
@@ -127,6 +127,6 @@ export class ExecutionQueue<ExecutionRequest = any, ExecutionResult = any> {
 				this.currentExecuting = null;
 			}
 		}
-		this.tickQueue();
+		void this.tickQueue();
 	}
 }

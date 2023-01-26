@@ -1,4 +1,3 @@
-import SmartBuffer from '@ylide/smart-buffer';
 import { AbstractStorage } from './AbstractStorage';
 
 /**
@@ -19,14 +18,18 @@ export class BrowserIframeStorage extends AbstractStorage {
 
 	private op<T = any>(type: string, data: any, objectToTransfer?: Transferable | null) {
 		return new Promise<T>(resolve => {
-			const reqId = Math.random() * 100000000 + '.' + Math.random() * 100000000;
+			const reqId = String(Math.random() * 100000000) + '.' + String(Math.random() * 100000000);
 			this.reqs[reqId] = resolve;
 			this.sendMessage(type, { reqId, ...data }, objectToTransfer);
 		});
 	}
 
 	private sendMessage(type: string, data?: any, objectToTransfer?: Transferable | null) {
-		this.iframe!.contentWindow!.postMessage(
+		if (!this.iframe || !this.iframe.contentWindow) {
+			return;
+		}
+
+		this.iframe.contentWindow.postMessage(
 			{
 				type,
 				data,

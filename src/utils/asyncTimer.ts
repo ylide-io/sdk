@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /**
  * Helper to run async function periodically with the ability to preserve execution time
+ *
  * @param func Async function to run periodically
  * @param time Time between subsequent runs
  * @param preserveExecutionTime Should we exclude execution time from period time or not
  * @returns Function to dispose the timer
  */
-export function asyncTimer(func: () => Promise<void>, time: number, preserveExecutionTime = true): () => void {
+export const asyncTimer = (func: () => Promise<void>, time: number, preserveExecutionTime = true): (() => void) => {
 	if (!preserveExecutionTime) {
 		const timerId = setInterval(func, time);
 		return () => clearInterval(timerId);
@@ -30,4 +32,4 @@ export function asyncTimer(func: () => Promise<void>, time: number, preserveExec
 		}
 		stop = true;
 	};
-}
+};

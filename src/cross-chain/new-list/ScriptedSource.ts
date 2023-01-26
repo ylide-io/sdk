@@ -1,19 +1,20 @@
 import EventEmitter from 'eventemitter3';
-import { IMessage, IMessageBase, Uint256 } from '../../types';
+import { IMessage, Uint256 } from '../../types';
 import { asyncDelay } from '../../utils/asyncDelay';
 import { asyncTimer } from '../../utils/asyncTimer';
 import { GenericListSource } from './ListSource';
 import { AscComparator } from './types/AscComparator';
 
-export function tou(arg0: string): Uint256 {
+export const tou = (arg0: string): Uint256 => {
 	return arg0 as Uint256;
-}
+};
 
 const m = (n: number): IMessage => {
 	return {
 		isBroadcast: false,
 
-		msgId: tou(String(n)),
+		msgId: `MM${n}`,
+
 		createdAt: n,
 		senderAddress: n % 10 === 0 ? '456' : '789',
 		recipientAddress: tou('recipient'),
@@ -21,16 +22,16 @@ const m = (n: number): IMessage => {
 
 		key: new Uint8Array(),
 
-		$$blockchainMetaDontUseThisField: null,
+		$$meta: null,
 	};
 };
 
 export class ScriptedSource extends EventEmitter implements GenericListSource {
-	public _isPaused: boolean = true;
+	public _isPaused = true;
 	public sinceMessagesIdx = 0;
 	public messagesScript: number[];
 	public newMessagesScript: { delay: number; vals: number[] }[];
-	public pullTimer: any;
+	public pullTimer: (() => void) | null = null;
 
 	private log(...args: any[]) {
 		// console.log('SS: ', ...args);
@@ -49,7 +50,7 @@ export class ScriptedSource extends EventEmitter implements GenericListSource {
 		}
 	}
 
-	async getAfter(entry: IMessageBase, limit: number): Promise<IMessageBase[]> {
+	async getAfter(entry: IMessage, limit: number): Promise<IMessage[]> {
 		return [];
 	}
 
@@ -96,7 +97,7 @@ export class ScriptedSource extends EventEmitter implements GenericListSource {
 		if (since) {
 			const idx = this.messagesScript.indexOf(since.createdAt);
 			if (idx < 0) {
-				// tslint:disable-next-line
+				// eslint-disable-next-line no-debugger
 				debugger;
 			} else {
 				this.sinceMessagesIdx = idx;
@@ -131,6 +132,6 @@ export class ScriptedSource extends EventEmitter implements GenericListSource {
 		super();
 		this.messagesScript = messagesArchive.split(' ').map(t => parseInt(t, 10));
 		this.newMessagesScript = newMessages;
-		this.playNewMessages();
+		void this.playNewMessages();
 	}
 }

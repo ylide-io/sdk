@@ -5,9 +5,9 @@ import { CriticalSection } from './utils/CriticalSection';
 export class ListSourceDrainer extends AsyncEventEmitter {
 	private criticalSection = new CriticalSection();
 	private _messages: IMessageWithSource[] = [];
-	private _filled: number = 0;
+	private _filled = 0;
 	private _isReading = false;
-	private _paused: boolean = true;
+	private _paused = true;
 	private _minReadingSize = 10;
 	private _filter: null | ((m: IMessageWithSource) => void) = null;
 
@@ -34,7 +34,7 @@ export class ListSourceDrainer extends AsyncEventEmitter {
 			this._messages = this.source.guaranteedSegment.filter(this.filter);
 			if (!this._isReading) {
 				this._filled += this._messages.length - beforeSize;
-				this.emit('messages', { messages: this.messages.slice() }, false);
+				void this.emit('messages', { messages: this.messages.slice() }, false);
 			}
 		}
 	};
@@ -143,7 +143,7 @@ export class ListSourceDrainer extends AsyncEventEmitter {
 			this._isReading = false;
 			await this.source.unblockNewMessages();
 			this.log('readMore 11');
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 			this.log('readMore 12');
 		}
 	}

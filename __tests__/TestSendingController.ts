@@ -71,7 +71,7 @@ export class TestWalletController extends AbstractWalletController {
 	}
 
 	// message history block
-	async retrieveMessageHistoryByDates(
+	async retrieveMessageHistoryDescByDates(
 		recipientAddress: string,
 		options?: RetrievingMessagesOptions,
 	): Promise<IMessage[]> {

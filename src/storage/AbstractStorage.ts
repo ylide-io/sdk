@@ -11,6 +11,7 @@ export abstract class AbstractStorage {
 	abstract init(): Promise<boolean>;
 	/**
 	 * Method to store arbitrary bytes array
+	 *
 	 * @param key Key for indexation
 	 * @param str Value to store
 	 */
@@ -18,6 +19,7 @@ export abstract class AbstractStorage {
 
 	/**
 	 * Method to store arbitrary string
+	 *
 	 * @param key Key for indexation
 	 * @param str Value to store
 	 */
@@ -27,6 +29,7 @@ export abstract class AbstractStorage {
 
 	/**
 	 * Method to store arbitrary serializeable object
+	 *
 	 * @param key Key for indexation
 	 * @param str Value to store
 	 */
@@ -36,18 +39,21 @@ export abstract class AbstractStorage {
 
 	/**
 	 * Method to read arbitrary bytes by key
+	 *
 	 * @param key Key to retrieve
 	 */
 	abstract readBytes(key: string): Promise<Uint8Array | null>;
 
 	/**
 	 * Method to clear all key-value storage
+	 *
 	 * @returns Boolean indicating whether operation was successful
 	 */
 	abstract clear(): Promise<boolean>;
 
 	/**
 	 * Method to read string by key
+	 *
 	 * @param key Key to retrieve
 	 */
 	async readString(key: string): Promise<string | null> {
@@ -60,11 +66,12 @@ export abstract class AbstractStorage {
 
 	/**
 	 * Method to read object by key
+	 *
 	 * @param key Key to retrieve
 	 */
 	async readJSON<T>(key: string): Promise<T | null> {
 		try {
-			return JSON.parse((await this.readString(key)) || 'null');
+			return JSON.parse((await this.readString(key)) || 'null') as T;
 		} catch (err) {
 			return null;
 		}

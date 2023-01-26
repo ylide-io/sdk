@@ -74,6 +74,7 @@ export class MessageContainer {
 
 	/**
 	 * Method to unpack container of version 5.
+	 *
 	 * @param buf Message content bytes
 	 * @returns Metadata of the container and message content
 	 */
@@ -96,6 +97,7 @@ export class MessageContainer {
 
 	/**
 	 * Method to unpack container of version 5.
+	 *
 	 * @param buf Message content bytes
 	 * @returns Metadata of the container and message content
 	 */

@@ -16,8 +16,8 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	private criticalSection = new CriticalSection();
 
 	private _minReadingSize = 10;
-	private _paused: boolean = true;
-	private _guaranteedLastSegment: boolean = false;
+	private _paused = true;
+	private _guaranteedLastSegment = false;
 
 	constructor(
 		public readonly readingSession: SourceReadingSession,
@@ -114,7 +114,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 		const connectedMessages = this.connectToStart(filteredMessages);
 		await this.storage.putObjects(connectedMessages, true);
 		this._guaranteedLastSegment = true;
-		this.emit('messages', { messages: filteredMessages }, false);
+		void this.emit('messages', { messages: filteredMessages }, false);
 	};
 
 	async resume() {
@@ -131,7 +131,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 				await this.handleSourceGuaranteedSegmentUpdated();
 			}
 		} finally {
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 		}
 	}
 
@@ -175,12 +175,12 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 					// do nothing - source is empty, and now it is in the drained state.
 					// actually, this should never happen, because if the source is empty -
 					// it will get the drained state right after the resume, so this code should be unreachable indeed.
-					// tslint:disable-next-line
+					// eslint-disable-next-line no-console
 					console.warn('PuppetListSource: Must be unreachable');
 				}
 			}
 		} finally {
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 		}
 	}
 }

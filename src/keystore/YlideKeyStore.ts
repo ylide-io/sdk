@@ -108,6 +108,7 @@ export class YlideKeyStore extends EventEmitter {
 
 	/**
 	 * Method to remove key from internal storage
+	 *
 	 * @param key `YlideKey` instance
 	 */
 	async delete(key: YlideKey) {
@@ -172,6 +173,7 @@ export class YlideKeyStore extends EventEmitter {
 
 	/**
 	 * Method to retrieve key for certain address
+	 *
 	 * @param address User's address
 	 * @returns Key reference or `null` if nothing was found.
 	 */

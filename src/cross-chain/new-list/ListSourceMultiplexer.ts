@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { IMessage } from '../../types';
 import { IListSource } from './types/IListSource';
 import { AsyncEventEmitter } from './utils/AsyncEventEmitter';
@@ -22,8 +23,8 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 	private criticalSection = new CriticalSection();
 
-	private _minReadingSize: number = 10;
-	private _paused: boolean = true;
+	private _minReadingSize = 10;
+	private _paused = true;
 	private _guaranteedSegment: IMessageWithSource[] = [];
 
 	constructor(sources: IListSource[]) {
@@ -141,7 +142,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 			this.completeRebuild();
 			await this.emit('guaranteedSegmentUpdated');
 		} finally {
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 		}
 	}
 
@@ -193,13 +194,13 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					// do nothing - source is empty, and now it is in the drained state.
 					// actually, this should never happen, because if the source is empty -
 					// it will get the drained state right after the resume, so this code should be unreachable indeed.
-					// tslint:disable-next-line
+					// eslint-disable-next-line
 					console.warn('ListSourceMultiplexer: Must be unreachable');
 				}
 			}
 			await this.emit('guaranteedSegmentUpdated');
 		} finally {
-			await this.criticalSection.leave();
+			this.criticalSection.leave();
 		}
 	}
 }

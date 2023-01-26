@@ -13,14 +13,14 @@ export class CriticalSection {
 
 			if (!this._busy) {
 				this._busy = true;
-				this._queue.shift()!();
+				this._queue.shift()?.();
 			}
 		});
 	}
 
 	leave() {
 		if (this._queue.length) {
-			this._queue.shift()!();
+			this._queue.shift()?.();
 		} else {
 			this._busy = false;
 		}

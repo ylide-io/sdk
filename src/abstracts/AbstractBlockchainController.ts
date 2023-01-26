@@ -1,6 +1,5 @@
 import {
 	MessageKey,
-	PublicKey,
 	IExtraEncryptionStrateryBulk,
 	IExtraEncryptionStrateryEntry,
 	IMessage,
@@ -37,10 +36,6 @@ import { AbstractNameService } from './AbstractNameService';
  * ```
  */
 export abstract class AbstractBlockchainController {
-	constructor(options?: any) {
-		//
-	}
-
 	abstract blockchain(): string;
 	abstract blockchainGroup(): string;
 
@@ -67,26 +62,41 @@ export abstract class AbstractBlockchainController {
 	abstract addressToUint256(address: string): Uint256;
 
 	/**
+	 * Method to check if this msgId is valid for this blockchain controller
+	 *
+	 * @param msgId - Msg ID to check
+	 * @return `true` if msgId is valid for this blockchain
+	 */
+	abstract isValidMsgId(msgId: string): boolean;
+
+	/**
+	 * Method to get message by msgId
+	 *
+	 * @param msgId - Push ID to check
+	 */
+	abstract getMessageByPushId(msgId: string): Promise<IMessage | null>;
+
+	/**
 	 * Method to retrieve recipient rules for getting messages
 	 *
-	 * @param address - Address of the wallet you want to retrieve rules of
+	 * @param recipient - Address of the wallet you want to retrieve rules of
 	 */
-	abstract getRecipientReadingRules(address: Uint256): Promise<any>;
+	abstract getRecipientReadingRules(recipient: Uint256): Promise<any>;
 
-	/**
-	 * Method to retrieve sent messages from this blockchain for a certain recipient
-	 *
-	 * @param recipient - Address of the recipient
-	 * @param fromTimestamp - Start time (not included) for filtering messages history
-	 * @param toTimestamp - End time (included) for filtering messages history
-	 */
-	abstract retrieveMessageHistoryByTime(
-		sender: Uint256 | null,
-		recipient: Uint256 | null,
-		fromTimestamp?: number,
-		toTimestamp?: number,
-		limit?: number,
-	): Promise<IMessage[]>;
+	// /**
+	//  * Method to retrieve sent messages from this blockchain for a certain recipient
+	//  *
+	//  * @param recipient - Address of the recipient
+	//  * @param fromTimestamp - Start time (not included) for filtering messages history
+	//  * @param toTimestamp - End time (included) for filtering messages history
+	//  */
+	// abstract retrieveMessageHistoryDescByTime(
+	// 	sender: Uint256 | null,
+	// 	recipient: Uint256 | null,
+	// 	fromTimestamp?: number,
+	// 	toTimestamp?: number,
+	// 	limit?: number,
+	// ): Promise<IMessage[]>;
 
 	/**
 	 * Method to retrieve sent messages from this blockchain for a certain recipient
@@ -95,7 +105,7 @@ export abstract class AbstractBlockchainController {
 	 * @param fromMessage - Start message (not included) for filtering messages history
 	 * @param toMessage - End message (not included) for filtering messages history
 	 */
-	abstract retrieveMessageHistoryByBounds(
+	abstract retrieveMessageHistoryDesc(
 		sender: string | null,
 		recipient: Uint256 | null,
 		fromMessage?: IMessage,
@@ -103,19 +113,19 @@ export abstract class AbstractBlockchainController {
 		limit?: number,
 	): Promise<IMessage[]>;
 
-	/**
-	 * Method to retrieve broadcasted messages from this blockchain of a certain sender
-	 *
-	 * @param sender - Address of the sender
-	 * @param fromTimestamp - Start time (not included) for filtering messages history
-	 * @param toTimestamp - End time (included) for filtering messages history
-	 */
-	abstract retrieveBroadcastHistoryByTime(
-		sender: string | null,
-		fromTimestamp?: number,
-		toTimestamp?: number,
-		limit?: number,
-	): Promise<IMessage[]>;
+	// /**
+	//  * Method to retrieve broadcasted messages from this blockchain of a certain sender
+	//  *
+	//  * @param sender - Address of the sender
+	//  * @param fromTimestamp - Start time (not included) for filtering messages history
+	//  * @param toTimestamp - End time (included) for filtering messages history
+	//  */
+	// abstract retrieveBroadcastHistoryDescByTime(
+	// 	sender: string | null,
+	// 	fromTimestamp?: number,
+	// 	toTimestamp?: number,
+	// 	limit?: number,
+	// ): Promise<IMessage[]>;
 
 	/**
 	 * Method to retrieve broadcasted messages from this blockchain of a certain sender
@@ -124,26 +134,26 @@ export abstract class AbstractBlockchainController {
 	 * @param fromMessage - Start message (not included) for filtering messages history
 	 * @param toMessage - End message (not included) for filtering messages history
 	 */
-	abstract retrieveBroadcastHistoryByBounds(
+	abstract retrieveBroadcastHistoryDesc(
 		sender: string | null,
 		fromMessage?: IMessage,
 		toMessage?: IMessage,
 		limit?: number,
 	): Promise<IMessage[]>;
 
-	/**
-	 * Method to retrieve and verify integrity of the encrypted content of a certain message
-	 *
-	 * @param msg - Message metadata
-	 */
-	abstract retrieveAndVerifyMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null>;
+	// /**
+	//  * Method to retrieve and verify integrity of the encrypted content of a certain message
+	//  *
+	//  * @param msg - Message metadata
+	//  */
+	// abstract retrieveAndVerifyMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null>;
 
 	/**
-	 * Method to retrieve the encrypted content of a certain message without deep integrity check
+	 * Method to retrieve and verify the encrypted content of a certain message without deep integrity check
 	 *
-	 * @param msgId - Message ID
+	 * @param msg - Message to retrieve content of
 	 */
-	abstract retrieveMessageContentByMsgId(msgId: Uint256): Promise<IMessageContent | IMessageCorruptedContent | null>;
+	abstract retrieveMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null>;
 
 	/**
 	 * Method to get public key of the recipient by address. If key is not registered - you will get `null`.
@@ -158,7 +168,7 @@ export abstract class AbstractBlockchainController {
 	 * @param address - Recipient's wallet address
 	 * @return Decimal number in a string format
 	 */
-	abstract getBalance(address: string): Promise<{ original: string; number: number; e18: string }>;
+	abstract getBalance(address: string): Promise<{ original: string; numeric: number; e18: string }>;
 
 	/**
 	 * Method to get available non-Ylide encryption strategies for address
