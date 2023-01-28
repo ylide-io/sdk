@@ -5,7 +5,11 @@ import {
 	IMessage,
 	IMessageContent,
 	IMessageCorruptedContent,
+	ISourceSubject,
+	IBlockchainSourceSubject,
+	SourceReadingSession,
 } from '..';
+import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
 import { ExternalYlidePublicKey } from '../types/ExternalPublicKey';
 import { Uint256 } from '../types/Uint256';
 import { AbstractNameService } from './AbstractNameService';
@@ -46,10 +50,10 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract defaultNameService(): AbstractNameService | null;
 
-	/**
-	 * Method to get whether reading by individual sender is possible or not
-	 */
-	abstract isReadingBySenderAvailable(): boolean;
+	// /**
+	//  * Method to get whether reading by individual sender is possible or not
+	//  */
+	// abstract isReadingBySenderAvailable(): boolean;
 
 	/**
 	 * Method to check address validity in this blockchain
@@ -72,9 +76,9 @@ export abstract class AbstractBlockchainController {
 	/**
 	 * Method to get message by msgId
 	 *
-	 * @param msgId - Push ID to check
+	 * @param msgId - Msg ID to check
 	 */
-	abstract getMessageByPushId(msgId: string): Promise<IMessage | null>;
+	abstract getMessageByMsgId(msgId: string): Promise<IMessage | null>;
 
 	/**
 	 * Method to retrieve recipient rules for getting messages
@@ -98,20 +102,27 @@ export abstract class AbstractBlockchainController {
 	// 	limit?: number,
 	// ): Promise<IMessage[]>;
 
-	/**
-	 * Method to retrieve sent messages from this blockchain for a certain recipient
-	 *
-	 * @param recipient - Address of the recipient
-	 * @param fromMessage - Start message (not included) for filtering messages history
-	 * @param toMessage - End message (not included) for filtering messages history
-	 */
-	abstract retrieveMessageHistoryDesc(
-		sender: string | null,
-		recipient: Uint256 | null,
-		fromMessage?: IMessage,
-		toMessage?: IMessage,
-		limit?: number,
-	): Promise<IMessage[]>;
+	abstract getBlockchainSourceSubjects(subject: ISourceSubject): IBlockchainSourceSubject[];
+
+	abstract ininiateMessagesSource(
+		readingSession: SourceReadingSession,
+		subject: IBlockchainSourceSubject,
+	): LowLevelMessagesSource;
+
+	// /**
+	//  * Method to retrieve sent messages from this blockchain for a certain recipient
+	//  *
+	//  * @param recipient - Address of the recipient
+	//  * @param fromMessage - Start message (not included) for filtering messages history
+	//  * @param toMessage - End message (not included) for filtering messages history
+	//  */
+	// abstract retrieveMessageHistoryDesc(
+	// 	sender: string | null,
+	// 	recipient: Uint256 | null,
+	// 	fromMessage?: IMessage,
+	// 	toMessage?: IMessage,
+	// 	limit?: number,
+	// ): Promise<IMessage[]>;
 
 	// /**
 	//  * Method to retrieve broadcasted messages from this blockchain of a certain sender
@@ -127,19 +138,19 @@ export abstract class AbstractBlockchainController {
 	// 	limit?: number,
 	// ): Promise<IMessage[]>;
 
-	/**
-	 * Method to retrieve broadcasted messages from this blockchain of a certain sender
-	 *
-	 * @param sender - Address of the sender
-	 * @param fromMessage - Start message (not included) for filtering messages history
-	 * @param toMessage - End message (not included) for filtering messages history
-	 */
-	abstract retrieveBroadcastHistoryDesc(
-		sender: string | null,
-		fromMessage?: IMessage,
-		toMessage?: IMessage,
-		limit?: number,
-	): Promise<IMessage[]>;
+	// /**
+	//  * Method to retrieve broadcasted messages from this blockchain of a certain sender
+	//  *
+	//  * @param sender - Address of the sender
+	//  * @param fromMessage - Start message (not included) for filtering messages history
+	//  * @param toMessage - End message (not included) for filtering messages history
+	//  */
+	// abstract retrieveBroadcastHistoryDesc(
+	// 	sender: string | null,
+	// 	fromMessage?: IMessage,
+	// 	toMessage?: IMessage,
+	// 	limit?: number,
+	// ): Promise<IMessage[]>;
 
 	// /**
 	//  * Method to retrieve and verify integrity of the encrypted content of a certain message
@@ -161,6 +172,13 @@ export abstract class AbstractBlockchainController {
 	 * @param address - Recipient's wallet address
 	 */
 	abstract extractPublicKeyFromAddress(address: string): Promise<ExternalYlidePublicKey | null>;
+
+	/**
+	 * Method to get public keys history of the recipient by address.
+	 *
+	 * @param address - Recipient's wallet address
+	 */
+	abstract extractPublicKeysHistoryByAddress(address: string): Promise<ExternalYlidePublicKey[]>;
 
 	/**
 	 * Method to get balance of the address. Currency used is the same which is used to pay for the Ylide tx in this blockchain

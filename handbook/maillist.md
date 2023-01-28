@@ -27,7 +27,7 @@ session.sourceOptimizer = (subject, reader) => {
 	if (reader instanceof EthereumBlockchainController) {
 		return new EthereumListSource(reader, subject, 30000); // pull every 30 seconds
 	} else {
-		return new BlockchainListSource(reader, subject, 10000); // pull every 10 seconds
+		return new BlockchainMessagesSource(reader, subject, 10000); // pull every 10 seconds
 	}
 };
 ```

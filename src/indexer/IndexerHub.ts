@@ -1,5 +1,5 @@
 import SmartBuffer from '@ylide/smart-buffer';
-import { CriticalSection } from '../cross-chain';
+import { CriticalSection } from '../common';
 import { IMessage, Uint256 } from '../types';
 
 const IS_DEV = false;
