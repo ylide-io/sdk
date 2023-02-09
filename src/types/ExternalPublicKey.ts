@@ -4,6 +4,7 @@ export interface ExternalYlidePublicKey {
 	keyVersion: YlidePublicKeyVersion;
 	publicKey: PublicKey;
 	timestamp: number;
+	registrar: number;
 }
 
 export enum YlidePublicKeyVersion {

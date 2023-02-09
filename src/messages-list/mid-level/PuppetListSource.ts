@@ -21,7 +21,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	constructor(
 		public readonly readingSession: SourceReadingSession,
 		public readonly subject: IBlockchainSourceSubject,
-		public readonly sourceToFilter: ListSource,
+		public readonly sourceToFilter: IListSource,
 	) {
 		super();
 		if (!isWideSubject(subject)) {
@@ -38,8 +38,16 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 			this.readingSession.storageRepository.get(subject) ||
 			this.readingSession.storageRepository.set(
 				subject,
-				new ListStorage<IMessage>(this.sourceToFilter.source.compare.bind(this.sourceToFilter), this.cache),
+				new ListStorage<IMessage>(
+					`Storage over ${this.getName()}`,
+					this.sourceToFilter.compare.bind(this.sourceToFilter),
+					this.cache,
+				),
 			);
+	}
+
+	getName() {
+		return `PuppetListSource "${this.subject.id}" over (${this.sourceToFilter.getName()})`;
 	}
 
 	compare(a: IMessage, b: IMessage) {

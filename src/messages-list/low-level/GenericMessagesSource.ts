@@ -11,6 +11,7 @@ export class GenericMessagesSource extends EventEmitter implements LowLevelMessa
 	protected lastMessage: IMessage | null = null;
 
 	constructor(
+		private name: string,
 		private compareMessagesTime: (a: IMessage, b: IMessage) => number,
 		private retrieveHistoryDesc: (
 			fromMessage: IMessage | null,
@@ -19,9 +20,12 @@ export class GenericMessagesSource extends EventEmitter implements LowLevelMessa
 		) => Promise<IMessage[]>,
 		protected _pullCycle: number = 20000,
 		public readonly limit = 50,
-		public readonly meta: any = null,
 	) {
 		super();
+	}
+
+	getName() {
+		return this.name;
 	}
 
 	pause() {
@@ -46,11 +50,11 @@ export class GenericMessagesSource extends EventEmitter implements LowLevelMessa
 	};
 
 	async getBefore(entry: IMessage, limit: number): Promise<IMessage[]> {
-		return await this.retrieveHistoryDesc(null, entry, limit);
+		return await this.retrieveHistoryDesc(entry, null, limit);
 	}
 
 	async getAfter(entry: IMessage, limit: number): Promise<IMessage[]> {
-		return await this.retrieveHistoryDesc(entry, null, limit);
+		return await this.retrieveHistoryDesc(null, entry, limit);
 	}
 
 	async getLast(limit: number): Promise<IMessage[]> {
@@ -63,7 +67,7 @@ export class GenericMessagesSource extends EventEmitter implements LowLevelMessa
 			: await this.getLast(this.limit);
 		if (messages.length) {
 			this.lastMessage = messages[0];
-			this.emit('messages', { meta: this.meta, messages });
+			this.emit('messages', { messages });
 		}
 	}
 }

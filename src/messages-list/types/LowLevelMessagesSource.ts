@@ -11,8 +11,8 @@ export interface LowLevelMessagesSource {
 	resume(since?: IMessage): void;
 	pause(): void;
 
-	meta: any;
+	getName(): string;
 
-	on(event: 'messages', callback: (params: { meta: any; messages: IMessage[] }) => void): void;
-	off(event: 'messages', callback: (params: { meta: any; messages: IMessage[] }) => void): void;
+	on(event: 'messages', callback: (params: { messages: IMessage[] }) => void): void;
+	off(event: 'messages', callback: (params: { messages: IMessage[] }) => void): void;
 }

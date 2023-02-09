@@ -50,10 +50,10 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract defaultNameService(): AbstractNameService | null;
 
-	// /**
-	//  * Method to get whether reading by individual sender is possible or not
-	//  */
-	// abstract isReadingBySenderAvailable(): boolean;
+	/**
+	 * Method to get whether reading by individual sender is possible or not
+	 */
+	abstract isReadingBySenderAvailable(): boolean;
 
 	/**
 	 * Method to check address validity in this blockchain
@@ -104,10 +104,7 @@ export abstract class AbstractBlockchainController {
 
 	abstract getBlockchainSourceSubjects(subject: ISourceSubject): IBlockchainSourceSubject[];
 
-	abstract ininiateMessagesSource(
-		readingSession: SourceReadingSession,
-		subject: IBlockchainSourceSubject,
-	): LowLevelMessagesSource;
+	abstract ininiateMessagesSource(subject: IBlockchainSourceSubject): LowLevelMessagesSource;
 
 	// /**
 	//  * Method to retrieve sent messages from this blockchain for a certain recipient

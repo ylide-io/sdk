@@ -85,7 +85,7 @@ export class ListSourceDrainer extends AsyncEventEmitter {
 	}
 
 	private log(...args: any[]) {
-		// console.log('LSD: ', ...args);
+		console.log('LSD: ', ...args);
 	}
 
 	async readMore(size: number) {

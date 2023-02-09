@@ -6,6 +6,7 @@ import { SourceReadingSession } from '../SourceReadingSession';
 import { IBlockchainSourceSubject } from '../types/IBlockchainSourceSubject';
 import { IListSource } from '../types/IListSource';
 import { LowLevelMessagesSource } from '../types/LowLevelMessagesSource';
+import { validateDesc } from '../..';
 
 export class ListSource extends AsyncEventEmitter implements IListSource {
 	private readonly cache: ListCache<IMessage>;
@@ -37,9 +38,17 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 		if (storage) {
 			this.storage = storage;
 		} else {
-			this.storage = new ListStorage<IMessage>(this.source.compare.bind(this.source), this.cache);
+			this.storage = new ListStorage<IMessage>(
+				`Storage over ${this.getName()}`,
+				this.source.compare.bind(this.source),
+				this.cache,
+			);
 			this.readingSession.storageRepository.set(subject, this.storage);
 		}
+	}
+
+	getName() {
+		return `ListSource "${this.subject.id}" over (${this.source.getName()})`;
 	}
 
 	compare(a: IMessage, b: IMessage) {
@@ -118,6 +127,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			const _lastMessage = this.guaranteedSegment?.head().getValue();
 			const lastMutableParams = await this.cache.loadLastMutableParams();
 			const last = await this.source.getLast(this._lastSize, _lastMessage, lastMutableParams);
+			this.validateDesc(last);
 			await this.cache.saveLastMutableParams(lastMutableParams);
 			if (last.length < this._lastSize) {
 				this._drained = true;
@@ -160,11 +170,16 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	private log(...args: any[]) {
-		// console.log('LS: ', ...args);
+		console.log('LS: ', ...args);
+	}
+
+	private validateDesc(vals: IMessage[]) {
+		return validateDesc(this.getName(), vals, this.compare.bind(this));
 	}
 
 	async readMore(size: number) {
 		try {
+			this.log('readMore', size);
 			const availableNow = this.guaranteed;
 			await this.criticalSection.enter();
 			const reducedSize = size - (this.guaranteed - availableNow);
@@ -177,30 +192,44 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			if (this._drained) {
 				return;
 			}
+			this.log('readMore', reducedSize);
 			if (!this.guaranteedSegment) {
 				const readSize = Math.max(this._minReadingSize, reducedSize);
+				this.log('readMore12', readSize);
 				const last = await this.source.getLast(readSize);
+				this.validateDesc(last);
+				this.log('readMore13', last.length);
 				if (last.length < readSize) {
 					this._drained = true;
 				}
 				if (last.length > 0) {
+					this.log('readMore14', last.length);
 					await this.storage.putObjects(last, true);
+					this.log('readMore15', last.length);
 					await this.emit('guaranteedSegmentUpdated');
 					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 					const lastMessage = this.guaranteedSegment!.head()?.getValue();
+					this.log('readMore16', lastMessage);
 					this.source.resume(lastMessage);
 				}
 			} else {
+				this.log('readMore2', reducedSize);
 				const lastInSegment = this.guaranteedSegment.tail()?.getValue();
 				const readSize = Math.max(this._minReadingSize, reducedSize);
+				this.log('readMore3', readSize);
 				const newOnes = await this.source.getBefore(lastInSegment, readSize);
+				this.validateDesc(newOnes);
 				if (newOnes.length < readSize) {
 					this._drained = true;
 				}
+				this.log('readMore4', newOnes.length);
 				if (newOnes.length > 0) {
-					await this.storage.putObjects([lastInSegment, ...newOnes], true);
+					const objects = [lastInSegment, ...newOnes];
+					this.validateDesc(objects);
+					await this.storage.putObjects(objects, true);
 					await this.emit('guaranteedSegmentUpdated');
 				}
+				this.log('readMore5', newOnes.length);
 			}
 		} catch (err) {
 			// eslint-disable-next-line

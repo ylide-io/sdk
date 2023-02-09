@@ -19,7 +19,7 @@ interface DBInterface extends DBSchema {
 	};
 }
 
-const dev = false;
+const dev = true;
 
 export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;

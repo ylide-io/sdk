@@ -5,6 +5,7 @@ import { IListSource } from '../types/IListSource';
 
 export interface ListWrappedSource {
 	source: IListSource;
+	meta: any;
 	newMessages: number;
 	gotUpdate: number;
 	newMessagesHandler: (params: { messages: IMessage[] }) => Promise<void>;
@@ -13,7 +14,13 @@ export interface ListWrappedSource {
 
 export interface IMessageWithSource {
 	msg: IMessage;
+	meta: any;
 	source: IListSource;
+}
+
+export interface ISourceWithMeta {
+	source: IListSource;
+	meta?: any;
 }
 
 export class ListSourceMultiplexer extends AsyncEventEmitter {
@@ -26,9 +33,9 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 	private _paused = true;
 	private _guaranteedSegment: IMessageWithSource[] = [];
 
-	constructor(sources: IListSource[]) {
+	constructor(sources: ISourceWithMeta[]) {
 		super();
-		sources.forEach(s => this.addSource(s));
+		sources.forEach(s => this.addSource(s.source, s.meta));
 	}
 
 	get guaranteedSegment() {
@@ -62,18 +69,22 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 	}
 
 	private log(...args: any[]) {
-		// console.log('LSM: ', ...args);
+		console.log('LSM: ', ...args);
 	}
 
 	private completeRebuild() {
+		this.log('completeRebuild()');
 		this._guaranteedSegment = [];
 		if (!this.sources.length) {
 			return;
 		}
 		const sourcesSegments = this.sources
-			.map(s => (s.source.guaranteedSegment?.toArray() || []).map(m => ({ msg: m, source: s.source })))
+			.map(s =>
+				(s.source.guaranteedSegment?.toArray() || []).map(m => ({ msg: m, meta: s.meta, source: s.source })),
+			)
 			.flat();
 		sourcesSegments.sort((a, b) => this.compare(b, a));
+		this.log('sourcesSegments', sourcesSegments);
 		let guaranteed = 0;
 		if (this.sources.every(s => s.source.drained)) {
 			guaranteed = this.sources.reduce((p, c) => p + c.source.guaranteed, 0);
@@ -82,6 +93,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 			guaranteed += this.sources.reduce((p, c) => p + c.newMessages, 0);
 		}
 		this._guaranteedSegment = sourcesSegments.slice(0, guaranteed);
+		this.log('guaranteedSegment', this._guaranteedSegment);
 	}
 
 	private async handleSourceGuaranteedSegmentUpdated(source: ListWrappedSource) {
@@ -90,7 +102,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 		await this.emit('guaranteedSegmentUpdated');
 	}
 
-	private addSource(source: IListSource) {
+	private addSource(source: IListSource, meta?: any) {
 		const newMessagesHandler = async ({ messages }: { messages: IMessage[] }) => {
 			wrappedSource.newMessages += messages.length;
 		};
@@ -101,6 +113,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 		const wrappedSource: ListWrappedSource = {
 			source,
+			meta,
 			newMessages: 0,
 			gotUpdate: 0,
 			newMessagesHandler,
@@ -120,6 +133,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 	async resume() {
 		try {
+			this.log('resume()');
 			await this.criticalSection.enter();
 			for (const source of this.sources) {
 				source.newMessages = 0;
@@ -128,6 +142,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					source.source.on('guaranteedSegmentUpdated', source.segmentUpdateHandler);
 				}
 			}
+			this.log('sources', this.sources);
 			this._paused = false;
 			await Promise.all(
 				this.sources.map(async source => {
@@ -138,6 +153,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					}
 				}),
 			);
+			this.log('sources', this.sources);
 			this.completeRebuild();
 			await this.emit('guaranteedSegmentUpdated');
 		} finally {
@@ -165,6 +181,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 
 	async readMore(size: number) {
 		try {
+			this.log('readMore()', size);
 			const availableNow = this.guaranteed;
 			await this.criticalSection.enter();
 			const reducedSize = size - (this.guaranteed - availableNow);
@@ -177,6 +194,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 			if (this.drained) {
 				return;
 			}
+			this.log('readMore() - reducedSize', reducedSize);
 			let read = 0;
 			while (read < reducedSize && !this.drained) {
 				const wasGuaranteed = this.guaranteed;
@@ -197,6 +215,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 					console.warn('ListSourceMultiplexer: Must be unreachable');
 				}
 			}
+			this.log('readMore() - read', read);
 			await this.emit('guaranteedSegmentUpdated');
 		} finally {
 			this.criticalSection.leave();

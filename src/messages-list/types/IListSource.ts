@@ -16,6 +16,8 @@ export interface IListSource extends AsyncEventEmitter {
 	readMore(size: number): Promise<void>;
 	compare(a: IMessage, b: IMessage): number;
 
+	getName(): string;
+
 	guaranteedSegment: DoublyLinkedList<IMessage> | null;
 	paused: boolean;
 	drained: boolean;

@@ -95,6 +95,7 @@ export class IndexerHub {
 					keyVersion: number;
 					publicKey: Uint8Array;
 					timestamp: number;
+					registrar: number;
 				} | null
 			>
 		>
@@ -120,6 +121,7 @@ export class IndexerHub {
 							keyVersion: number;
 							publicKey: Uint8Array;
 							timestamp: number;
+							registrar: number;
 						} | null
 					>,
 				),
@@ -133,6 +135,7 @@ export class IndexerHub {
 						keyVersion: number;
 						publicKey: Uint8Array;
 						timestamp: number;
+						registrar: number;
 					} | null
 				>
 			>,
@@ -146,6 +149,7 @@ export class IndexerHub {
 			keyVersion: number;
 			publicKey: Uint8Array;
 			timestamp: number;
+			registrar: number;
 		}[]
 	> {
 		const data = await this.request('/keys-history', { address });
@@ -162,6 +166,7 @@ export class IndexerHub {
 							[bc]: {
 								...data[bc],
 								publicKey: SmartBuffer.ofHexString(data[bc].publicKey).bytes,
+								registrar: 0,
 							},
 					  }
 					: {}),
@@ -174,6 +179,7 @@ export class IndexerHub {
 				keyVersion: number;
 				publicKey: Uint8Array;
 				timestamp: number;
+				registrar: number;
 			}
 		>;
 	}

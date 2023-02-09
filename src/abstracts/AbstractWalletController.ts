@@ -1,5 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import { MessageKey, AbstractBlockchainController, PublicKey, IGenericAccount } from '..';
+import { MessageKey, AbstractBlockchainController, PublicKey, IGenericAccount, IMessage } from '..';
 import { Uint256 } from '../types/Uint256';
 
 export enum WalletEvent {
@@ -13,6 +13,14 @@ export type SwitchAccountCallback = (
 	currentAccount: IGenericAccount | null,
 	needAccount: IGenericAccount,
 ) => Promise<void>;
+
+export interface SendMailResult {
+	pushes: { recipient: Uint256, push: IMessage }[];
+}
+
+export interface SendBroadcastResult {
+	pushes: { push: IMessage }[];
+}
 
 /**
  * @description It's an abstract class designated to define an interface to send messages through blockchain and publish public keys
@@ -111,14 +119,14 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * @param contentData - raw bytes content to publish
 	 * @param recipients - array of recipients (address-public key pairs)
 	 */
-	abstract publishMessage(
+	abstract sendMail(
 		me: IGenericAccount,
 		contentData: Uint8Array,
 		recipients: { address: Uint256; messageKey: MessageKey }[],
 		options?: any,
-	): Promise<Uint256 | null>;
+	): Promise<SendMailResult>;
 
-	abstract broadcastMessage(me: IGenericAccount, contentData: Uint8Array, options?: any): Promise<Uint256 | null>;
+	abstract sendBroadcast(me: IGenericAccount, contentData: Uint8Array, options?: any): Promise<SendBroadcastResult>;
 
 	/**
 	 * Method to connect user's public key with his address

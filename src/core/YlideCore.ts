@@ -2,6 +2,7 @@ import {
 	AbstractBlockchainController,
 	AbstractWalletController,
 	BlockchainControllerFactory,
+	BlockchainSourceType,
 	DynamicEncryptionRouter,
 	ExternalYlidePublicKey,
 	IGenericAccount,
@@ -16,6 +17,7 @@ import {
 	MessageKey,
 	PublicKey,
 	PublicKeyType,
+	PuppetListSource,
 	ServiceCode,
 	sha256,
 	SourceReadingSession,
@@ -92,6 +94,7 @@ export class YlideCore {
 										keyVersion: kkey.keyVersion,
 										publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, kkey.publicKey),
 										timestamp: kkey.timestamp,
+										registrar: kkey.registrar,
 								  }
 								: null;
 						}
@@ -258,28 +261,45 @@ export class YlideCore {
 					if (source) {
 						sources.push(source);
 					} else {
-						const originalSource = blockchainController.ininiateMessagesSource(
-							readingSession,
-							blockchainSubject,
-						);
-						if (this.indexerBlockchains.includes(blockchainController.blockchain())) {
-							const indexerLowLevel = new IndexerMessagesSource(
-								originalSource,
-								this.indexer,
-								blockchainController.compareMessagesTime.bind(blockchainController),
-								blockchainSubject,
-							);
-							const indexerListSource = new ListSource(
-								readingSession,
-								blockchainSubject,
-								indexerLowLevel,
-							);
-							readingSession.setListSource(blockchainSubject, indexerListSource);
-							sources.push(indexerListSource);
+						if (
+							blockchainSubject.type === BlockchainSourceType.DIRECT &&
+							blockchainSubject.sender &&
+							!blockchainController.isReadingBySenderAvailable()
+						) {
+							const shrinkedSubject = {
+								...blockchainSubject,
+								sender: null,
+							};
+							let originalList = readingSession.getListSource(shrinkedSubject);
+							if (!originalList) {
+								const originalSource = blockchainController.ininiateMessagesSource(shrinkedSubject);
+								originalList = new ListSource(readingSession, shrinkedSubject, originalSource);
+								readingSession.setListSource(shrinkedSubject, originalList);
+							}
+							const filteredList = new PuppetListSource(readingSession, blockchainSubject, originalList);
+							readingSession.setListSource(blockchainSubject, filteredList);
+							sources.push(filteredList);
 						} else {
-							const listSource = new ListSource(readingSession, blockchainSubject, originalSource);
-							readingSession.setListSource(blockchainSubject, listSource);
-							sources.push(listSource);
+							const originalSource = blockchainController.ininiateMessagesSource(blockchainSubject);
+							if (this.indexerBlockchains.includes(blockchainController.blockchain())) {
+								const indexerLowLevel = new IndexerMessagesSource(
+									originalSource,
+									this.indexer,
+									blockchainController.compareMessagesTime.bind(blockchainController),
+									blockchainSubject,
+								);
+								const indexerListSource = new ListSource(
+									readingSession,
+									blockchainSubject,
+									indexerLowLevel,
+								);
+								readingSession.setListSource(blockchainSubject, indexerListSource);
+								sources.push(indexerListSource);
+							} else {
+								const listSource = new ListSource(readingSession, blockchainSubject, originalSource);
+								readingSession.setListSource(blockchainSubject, listSource);
+								sources.push(listSource);
+							}
 						}
 					}
 				}
@@ -319,7 +339,7 @@ export class YlideCore {
 		);
 		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
 		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encodedContent);
-		return wallet.publishMessage(sender, container, processedRecipients, walletOptions);
+		return wallet.sendMail(sender, container, processedRecipients, walletOptions);
 	}
 
 	async broadcastMessage(
@@ -328,7 +348,7 @@ export class YlideCore {
 	) {
 		const { nonEncodedContent } = MessageEncodedContent.packContent(content);
 		const container = MessageContainer.packContainer(serviceCode, false, [], nonEncodedContent);
-		return wallet.broadcastMessage(sender, container, walletOptions);
+		return wallet.sendBroadcast(sender, container, walletOptions);
 	}
 
 	async getMessageControllers(

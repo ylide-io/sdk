@@ -19,9 +19,12 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 		public readonly subject: IBlockchainSourceSubject,
 		protected _pullCycle: number = 7000,
 		public readonly limit = 50,
-		public readonly meta: any = null,
 	) {
 		super();
+	}
+
+	getName(): string {
+		return `IndexerSource over ${this.originalSource.getName()}`;
 	}
 
 	pause() {
@@ -146,7 +149,7 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 			: await this.getLast(this.limit);
 		if (messages.length) {
 			this.lastMessage = messages[0];
-			this.emit('messages', { meta: this.meta, subject: this.subject, messages });
+			this.emit('messages', { subject: this.subject, messages });
 		}
 	}
 }
