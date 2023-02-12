@@ -5,7 +5,7 @@ import SmartBuffer from '@ylide/smart-buffer';
 export class BitPackWriter {
 	private buffer = '';
 
-	writeBits(value: number, bitLength: number) {
+	writeBits(value: number | bigint, bitLength: number) {
 		if (bitLength > 32) {
 			throw new Error('Cannot write more than 32 bits at once');
 		}
@@ -26,35 +26,39 @@ export class BitPackWriter {
 	}
 
 	writeUint8(value: number) {
-		this.writeBits(value, 8);
+		this.writeBits(BigInt(value), 8);
 	}
 
 	writeUint16(value: number) {
-		this.writeBits(value, 16);
+		this.writeBits(BigInt(value), 16);
 	}
 
 	writeUint32(value: number) {
-		this.writeBits(value, 32);
+		this.writeBits(BigInt(value), 32);
+	}
+
+	writeUint64(value: bigint) {
+		this.writeBits(value, 64);
 	}
 
 	writeUintVariableSize(value: number) {
 		if (value < 256) {
-			this.writeBits(0, 2);
-			this.writeBits(value, 8);
+			this.writeBits(0n, 2);
+			this.writeBits(BigInt(value), 8);
 		} else if (value < 65536) {
-			this.writeBits(1, 2);
-			this.writeBits(value, 16);
+			this.writeBits(1n, 2);
+			this.writeBits(BigInt(value), 16);
 		} else if (value < 16777216) {
-			this.writeBits(2, 2);
-			this.writeBits(value, 24);
+			this.writeBits(2n, 2);
+			this.writeBits(BigInt(value), 24);
 		} else {
-			this.writeBits(3, 2);
-			this.writeBits(value, 32);
+			this.writeBits(3n, 2);
+			this.writeBits(BigInt(value), 32);
 		}
 	}
 
 	writeBit(value: number) {
-		this.writeBits(value, 1);
+		this.writeBits(BigInt(value), 1);
 	}
 
 	writeBytes(bytes: Uint8Array) {
@@ -133,6 +137,13 @@ export class BitPackReader {
 
 	readUint32() {
 		return this.readBits(32);
+	}
+
+	readUint64() {
+		const hi = this.readBits(32);
+		const lo = this.readBits(32);
+		// eslint-disable-next-line no-bitwise
+		return (BigInt(hi) << 32n) | BigInt(lo);
 	}
 
 	readBit() {

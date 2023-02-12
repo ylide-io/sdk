@@ -7,7 +7,6 @@ import {
 	IMessageCorruptedContent,
 	ISourceSubject,
 	IBlockchainSourceSubject,
-	SourceReadingSession,
 } from '..';
 import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
 import { ExternalYlidePublicKey } from '../types/ExternalPublicKey';
