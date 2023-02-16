@@ -2,13 +2,6 @@ import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { ListStorage } from './ListStorage';
 
 interface DBInterface extends DBSchema {
-	// messages: {
-	// 	value: { id: string; group: string; obj: any };
-	// 	key: string;
-	// 	indexes: {
-	// 		group: string;
-	// 	};
-	// };
 	groupLast: {
 		value: { id: string; lastMutableParams: any };
 		key: string;
@@ -19,7 +12,7 @@ interface DBInterface extends DBSchema {
 	};
 }
 
-const dev = true;
+const DISABLED = true;
 
 export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;
@@ -27,7 +20,7 @@ export class ListCache<T> {
 	constructor(private readonly group: string) {}
 
 	async loadLastMutableParams() {
-		if (!dev) {
+		if (!DISABLED) {
 			const db = await this.getDB();
 			const group = await db.get('groupLast', this.group);
 			if (!group) {
@@ -39,21 +32,21 @@ export class ListCache<T> {
 	}
 
 	async saveLastMutableParams(params: any) {
-		if (!dev) {
+		if (!DISABLED) {
 			const db = await this.getDB();
 			await db.put('groupLast', { id: this.group, lastMutableParams: params });
 		}
 	}
 
 	async save(listStorage: ListStorage<any>) {
-		if (!dev) {
+		if (!DISABLED) {
 			const db = await this.getDB();
 			await db.put('group', { id: this.group, segments: listStorage.segments.map(s => s.toArray()) });
 		}
 	}
 
 	async load(listStorage: ListStorage<any>) {
-		if (!dev) {
+		if (!DISABLED) {
 			const db = await this.getDB();
 			const group = await db.get('group', this.group);
 			if (!group) {
@@ -66,19 +59,6 @@ export class ListCache<T> {
 	private async openDB() {
 		return await openDB<DBInterface>('ylide-storage-C', 1, {
 			upgrade: db => {
-				// const messagesStore = db.createObjectStore('messages', {
-				// 	keyPath: 'id',
-				// });
-				// // messagesStore.createIndex('time', 'time');
-				// messagesStore.createIndex('group', 'group');
-
-				// // ----------------------
-
-				// const segmentsStore = db.createObjectStore('segments', {
-				// 	keyPath: 'idx',
-				// });
-				// segmentsStore.createIndex('group', 'group');
-
 				const groupsStore = db.createObjectStore('group', {
 					keyPath: 'id',
 				});

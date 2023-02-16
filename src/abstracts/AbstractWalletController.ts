@@ -1,5 +1,12 @@
 import { EventEmitter } from 'eventemitter3';
-import { MessageKey, AbstractBlockchainController, PublicKey, IGenericAccount, IMessage } from '..';
+import {
+	MessageKey,
+	AbstractBlockchainController,
+	PublicKey,
+	IGenericAccount,
+	IMessage,
+	YlidePublicKeyVersion,
+} from '..';
 import { Uint256 } from '../types/Uint256';
 
 export enum WalletEvent {
@@ -15,7 +22,7 @@ export type SwitchAccountCallback = (
 ) => Promise<void>;
 
 export interface SendMailResult {
-	pushes: { recipient: Uint256, push: IMessage }[];
+	pushes: { recipient: Uint256; push: IMessage }[];
 }
 
 export interface SendBroadcastResult {
@@ -134,7 +141,13 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * @param account Account for which connection should occur
 	 * @param publicKey - public key to attach to user's address
 	 */
-	abstract attachPublicKey(account: IGenericAccount, publicKey: Uint8Array, options?: any): Promise<void>;
+	abstract attachPublicKey(
+		account: IGenericAccount,
+		publicKey: Uint8Array,
+		keyVersion: YlidePublicKeyVersion,
+		registrar: number,
+		options?: any,
+	): Promise<void>;
 
 	/**
 	 * Method to convert address to 32 bytes array
