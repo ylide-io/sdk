@@ -6,7 +6,8 @@ export const shrinkSubject = (subject: IBlockchainSourceSubject): IBlockchainSou
 			type: BlockchainSourceType.BROADCAST,
 			blockchain: subject.blockchain,
 			id: subject.id,
-			sender: subject.sender,
+			feedId: subject.feedId,
+			sender: null,
 		};
 	} else {
 		return {

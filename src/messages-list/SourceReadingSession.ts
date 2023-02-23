@@ -24,7 +24,7 @@ export class SourceReadingSession {
 
 	public sourceSubjectHash(k: IBlockchainSourceSubject) {
 		if (k.type === BlockchainSourceType.BROADCAST) {
-			return `bc:${k.blockchain}:${k.id}:${k.sender}`;
+			return `bc:${k.blockchain}:${k.id}:${k.feedId}:${k.sender || 'null'}`;
 		} else {
 			return `dm:${k.blockchain}:${k.id}:${k.recipient}:${k.sender || 'null'}`;
 		}
@@ -37,38 +37,4 @@ export class SourceReadingSession {
 	setListSource(subject: IBlockchainSourceSubject, source: IListSource) {
 		this.listSourceRepository.set(subject, source);
 	}
-
-	// listSources(subject: ISourceSubject, reader: AbstractBlockchainController): (ListSource | PuppetListSource)[] {
-
-	// getBlockchainMessagesSource(subject: IBlockchainSourceSubject, reader: AbstractBlockchainController) {
-	// 	return new BlockchainMessagesSource(reader, subject);
-	// }
-
-	// listSources(subject: ISourceSubject, reader: AbstractBlockchainController): (ListSource | PuppetListSource)[] {
-	// 	if (
-	// 		subject.type === BlockchainSourceType.BROADCAST ||
-	// 		subject.sender === null ||
-	// 		reader.isReadingBySenderAvailable()
-	// 	) {
-	// 		return (
-	// 			this.listSourceRepository.get(subject) ||
-	// 			this.listSourceRepository.set(
-	// 				subject,
-	// 				new ListSource(this, subject, this.getBlockchainMessagesSource(subject, reader)),
-	// 			)
-	// 		);
-	// 	} else {
-	// 		const originalListSource = this.listSource(
-	// 			{
-	// 				...subject,
-	// 				sender: null,
-	// 			},
-	// 			reader,
-	// 		) as ListSource;
-	// 		return (
-	// 			this.puppetListSourceRepository.get(subject) ||
-	// 			this.puppetListSourceRepository.set(subject, new PuppetListSource(this, subject, originalListSource))
-	// 		);
-	// 	}
-	// }
 }

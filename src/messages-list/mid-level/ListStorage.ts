@@ -86,7 +86,7 @@ export class ListStorage<T> {
 	}
 
 	private log(...args: any[]) {
-		console.log('LSt: ', ...args);
+		// console.log('LSt: ', ...args);
 	}
 
 	private _put(descSortedConnectedValues: T[]) {

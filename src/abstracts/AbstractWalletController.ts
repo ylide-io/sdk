@@ -133,7 +133,12 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		options?: any,
 	): Promise<SendMailResult>;
 
-	abstract sendBroadcast(me: IGenericAccount, contentData: Uint8Array, options?: any): Promise<SendBroadcastResult>;
+	abstract sendBroadcast(
+		me: IGenericAccount,
+		feedId: Uint256,
+		contentData: Uint8Array,
+		options?: any,
+	): Promise<SendBroadcastResult>;
 
 	/**
 	 * Method to connect user's public key with his address

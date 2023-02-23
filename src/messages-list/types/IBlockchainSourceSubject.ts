@@ -8,12 +8,13 @@ export enum BlockchainSourceType {
 export type ISourceSubject =
 	| {
 			type: BlockchainSourceType.BROADCAST;
-			sender: string;
+			feedId: Uint256;
+			sender: string | null;
 	  }
 	| {
 			type: BlockchainSourceType.DIRECT;
-			sender: string | null;
 			recipient: Uint256;
+			sender: string | null;
 	  };
 
 export type IBlockchainSourceSubject = ISourceSubject & {

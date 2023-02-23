@@ -6,6 +6,7 @@ import { Uint256 } from './Uint256';
  */
 export interface IMessage<M = any> {
 	isBroadcast: boolean;
+	feedId: Uint256;
 
 	msgId: string;
 

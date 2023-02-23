@@ -69,7 +69,7 @@ export class ListSourceMultiplexer extends AsyncEventEmitter {
 	}
 
 	private log(...args: any[]) {
-		console.log('LSM: ', ...args);
+		// console.log('LSM: ', ...args);
 	}
 
 	private completeRebuild() {

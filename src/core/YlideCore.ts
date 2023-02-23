@@ -43,6 +43,7 @@ export interface SendMessageArgs {
 export interface BroadcastMessageArgs {
 	wallet: AbstractWalletController;
 	sender: IGenericAccount;
+	feedId: Uint256;
 	content: MessageContent;
 	serviceCode?: number;
 }
@@ -261,11 +262,7 @@ export class YlideCore {
 					if (source) {
 						sources.push(source);
 					} else {
-						if (
-							blockchainSubject.type === BlockchainSourceType.DIRECT &&
-							blockchainSubject.sender &&
-							!blockchainController.isReadingBySenderAvailable()
-						) {
+						if (blockchainSubject.sender && !blockchainController.isReadingBySenderAvailable()) {
 							const shrinkedSubject = {
 								...blockchainSubject,
 								sender: null,
@@ -343,12 +340,12 @@ export class YlideCore {
 	}
 
 	async broadcastMessage(
-		{ wallet, sender, content, serviceCode = ServiceCode.SDK }: BroadcastMessageArgs,
+		{ feedId, wallet, sender, content, serviceCode = ServiceCode.SDK }: BroadcastMessageArgs,
 		walletOptions?: any,
 	) {
 		const { nonEncodedContent } = MessageEncodedContent.packContent(content);
 		const container = MessageContainer.packContainer(serviceCode, false, [], nonEncodedContent);
-		return wallet.sendBroadcast(sender, container, walletOptions);
+		return wallet.sendBroadcast(sender, feedId, container, walletOptions);
 	}
 
 	async getMessageControllers(
