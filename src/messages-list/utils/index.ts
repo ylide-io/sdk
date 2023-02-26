@@ -3,6 +3,7 @@ import { BlockchainSourceType, IBlockchainSourceSubject, ISourceSubject } from '
 export const shrinkSubject = (subject: IBlockchainSourceSubject): IBlockchainSourceSubject => {
 	if (subject.type === BlockchainSourceType.BROADCAST) {
 		return {
+			namespace: subject.namespace,
 			type: BlockchainSourceType.BROADCAST,
 			blockchain: subject.blockchain,
 			id: subject.id,
@@ -11,6 +12,7 @@ export const shrinkSubject = (subject: IBlockchainSourceSubject): IBlockchainSou
 		};
 	} else {
 		return {
+			namespace: subject.namespace,
 			type: BlockchainSourceType.DIRECT,
 			blockchain: subject.blockchain,
 			id: subject.id,

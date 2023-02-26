@@ -96,14 +96,14 @@ export class MessageContainer {
 	}
 
 	/**
-	 * Method to unpack container of version 5.
+	 * Method to unpack container of version 6.
 	 *
 	 * @param buf Message content bytes
 	 * @returns Metadata of the container and message content
 	 */
 	static unpackContainerV6(buf: SmartBuffer) {
 		const serviceCode = buf.readUint32();
-		const isEncoded = buf.readUint8();
+		const isEncoded = buf.readUint8() === 1;
 		const keysLength = buf.readUint8();
 		const senderPublicKeys: PublicKey[] = [];
 		for (let i = 0; i < keysLength; i++) {

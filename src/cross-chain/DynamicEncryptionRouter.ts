@@ -3,7 +3,7 @@ import nacl from 'tweetnacl';
 import { AbstractBlockchainController } from '../abstracts';
 import { MessageKey } from '../content';
 import { YlideCore } from '../core';
-import { symmetricEncrypt } from '../crypto';
+import { symmetricEncrypt, sha256 } from '../crypto';
 import { IExtraEncryptionStrateryEntry, PublicKey, PublicKeyType } from '../types';
 import { Uint256 } from '../types/Uint256';
 
@@ -36,6 +36,10 @@ export class DynamicEncryptionRouter {
 		throw new Error('Panic');
 	}
 
+	static getPublicKeySignature(publicKey: PublicKey) {
+		return new Uint32Array(sha256(publicKey.bytes).slice(0, 4).buffer)[0];
+	}
+
 	static async executeEncryption(
 		route: ReturnType<typeof DynamicEncryptionRouter['findBestEncryptionRouting']>,
 		key: Uint8Array,
@@ -52,6 +56,7 @@ export class DynamicEncryptionRouter {
 						address: entity.recipients[idx].address,
 						messageKey: new MessageKey(
 							pkIdx,
+							entry.ylide ? this.getPublicKeySignature(entry.publicKey) : this.panic(),
 							entry.ylide
 								? symmetricEncrypt(
 										key,

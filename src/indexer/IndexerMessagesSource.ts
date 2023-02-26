@@ -62,6 +62,7 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 			sender,
 			recipient,
 			type: 'DIRECT',
+			namespace: this.subject.namespace,
 			limit: limit || 10,
 		});
 

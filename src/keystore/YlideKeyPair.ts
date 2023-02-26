@@ -90,11 +90,24 @@ export class YlideKeyPair {
 	 * @param password Ylide password
 	 * @returns String to be signed using user's wallet
 	 */
-	static getMagicString(address: string, keyIndex: number, password: string) {
+	static getMagicStringV2(address: string, keyIndex: number, password: string) {
 		const magicString = new SmartBuffer(
 			sha256(sha256(sha256(sha256(sha256(sha256(sha256(`$ylide${address}${keyIndex}${password}ylide$`))))))),
 		).toBase64String();
 		return `I authorize this app to decrypt my messages in the Ylide Protocol for the following address: ${address}.\n\nI understand that if I provide my Ylide Password and this signature to any malicious app, the attacker would be able to read my messages.\n\nThis is not a transaction, and confirmation doesn’t cost you anything.\n\nNonce: ${magicString}`;
+	}
+
+	/**
+	 * Method to generate deprecated old unsecure dynamic magic string for signing
+	 *
+	 * @see [Initialization of communication keys](https://ylide-io.github.io/sdk/handbook/basics#keys-init)
+	 * @param address User's address
+	 * @param keyIndex Index of this key
+	 * @param password Ylide password
+	 * @returns String to be signed using user's wallet
+	 */
+	static getMagicStringV1(address: string, keyIndex: number, password: string) {
+		return `$ylide${address}${keyIndex}${password}ylide$`;
 	}
 
 	/**
@@ -119,28 +132,28 @@ export class YlideKeyPair {
 		return symmetricDecrypt(keydata, sha256(password));
 	}
 
-	/**
-	 * Fabric to create new communication key for user
-	 *
-	 * @param address User's address
-	 * @param password Ylide password
-	 * @param deriver Deriver callback to get signature of magic string
-	 * @returns Instance of `YlideKeyPair`
-	 */
-	static async create(address: string, password: string, deriver: (magicString: string) => Promise<Uint8Array>) {
-		const keyIndex = 1;
-		const magicString = this.getMagicString(address, keyIndex, password);
-		const secretKey = await deriver(magicString);
-		if (secretKey.length !== 32) {
-			throw new Error('Secret key must have 32 bytes');
-		}
+	// /**
+	//  * Fabric to create new communication key for user
+	//  *
+	//  * @param address User's address
+	//  * @param password Ylide password
+	//  * @param deriver Deriver callback to get signature of magic string
+	//  * @returns Instance of `YlideKeyPair`
+	//  */
+	// static async create(address: string, password: string, deriver: (magicString: string) => Promise<Uint8Array>) {
+	// 	const keyIndex = 1;
+	// 	const magicString = this.getMagicStringV2(address, keyIndex, password);
+	// 	const secretKey = await deriver(magicString);
+	// 	if (secretKey.length !== 32) {
+	// 		throw new Error('Secret key must have 32 bytes');
+	// 	}
 
-		return new YlideKeyPair(address, {
-			isEncrypted: true,
-			keydata: this.encryptKeyByPassword(secretKey, password),
-			publicKey: nacl.box.keyPair.fromSecretKey(secretKey).publicKey,
-		});
-	}
+	// 	return new YlideKeyPair(address, {
+	// 		isEncrypted: true,
+	// 		keydata: this.encryptKeyByPassword(secretKey, password),
+	// 		publicKey: nacl.box.keyPair.fromSecretKey(secretKey).publicKey,
+	// 	});
+	// }
 
 	/**
 	 * Method to decrypt internally stored private key

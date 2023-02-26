@@ -82,7 +82,37 @@ export class YlideKeyStore extends EventEmitter {
 			blockchainGroup,
 			wallet,
 			address,
-			YlideKeyPair.getMagicString(address, 1, password),
+			YlideKeyPair.getMagicStringV2(address, 1, password),
+		);
+		if (!secretKey) {
+			throw new YlideError(YlideErrorType.USER_CANCELLED);
+		}
+		return new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
+	}
+
+	/**
+	 * Method to construct new Ylide communication key without storing it.
+	 *
+	 * @param reason Reason for password/derivation request
+	 * @param blockchainGroup Blockchain group name
+	 * @param wallet Wallet name
+	 * @param address User's address
+	 * @param password Ylide password
+	 * @returns `YlideKeyPair` instance
+	 */
+	async constructKeypairV1(
+		reason: string,
+		blockchainGroup: string,
+		wallet: string,
+		address: string,
+		password: string,
+	) {
+		const secretKey = await this.options.onDeriveRequest(
+			reason,
+			blockchainGroup,
+			wallet,
+			address,
+			YlideKeyPair.getMagicStringV1(address, 1, password),
 		);
 		if (!secretKey) {
 			throw new YlideError(YlideErrorType.USER_CANCELLED);
@@ -184,5 +214,14 @@ export class YlideKeyStore extends EventEmitter {
 		} else {
 			return keyEntry.keypair;
 		}
+	}
+
+	/**
+	 * Method to retrieve all keys for certain address
+	 * @param address User's address
+	 * @returns Array of key references or empty array if nothing was found.
+	 */
+	getAll(address: string) {
+		return this.keys.filter(t => t.address === address);
 	}
 }

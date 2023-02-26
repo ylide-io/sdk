@@ -6,8 +6,8 @@ export class BitPackWriter {
 	private buffer = '';
 
 	writeBits(value: number | bigint, bitLength: number) {
-		if (bitLength > 32) {
-			throw new Error('Cannot write more than 32 bits at once');
+		if (bitLength > 64) {
+			throw new Error('Cannot write more than 64 bits at once');
 		}
 		if (bitLength < 0) {
 			throw new Error('Cannot write negative bits');

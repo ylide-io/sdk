@@ -2,6 +2,7 @@ export enum YlideErrorType {
 	USER_CANCELLED = 'user_cancelled',
 	ACCOUNT_UNREACHABLE = 'account_unreachable',
 	NOT_SUPPORTED = 'not_supported',
+	KEY_NOT_DERIVED = 'key_not_derived',
 }
 
 export class YlideError extends Error {

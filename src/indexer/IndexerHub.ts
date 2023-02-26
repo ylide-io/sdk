@@ -1,6 +1,6 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../common';
-import { IMessage, Uint256 } from '../types';
+import { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../types';
 
 const IS_DEV = false;
 
@@ -21,13 +21,14 @@ export class IndexerHub {
 	private cs: CriticalSection = new CriticalSection();
 
 	async retryingOperation<T>(callback: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
+		let lastErr;
 		if (this.endpoint) {
 			try {
 				return await callback();
 			} catch (err) {
 				this.lastTryTimestamps[this.endpoint] = Date.now();
 				// tslint:disable-next-line
-				// console.error(`Endpoint ${this.endpoint} is unavailable due to the error: `, err);
+				console.error(`Endpoint ${this.endpoint} is unavailable due to the error: `, err);
 				this.endpoint = '';
 			}
 		}
@@ -50,7 +51,7 @@ export class IndexerHub {
 							return await callback();
 						} catch (err) {
 							// tslint:disable-next-line
-							// console.error(`Endpoint ${this.endpoint} is unavailable due to the error: `, err);
+							console.error(`Endpoint ${this.endpoint} is unavailable due to the error: `, err);
 							this.lastTryTimestamps[this.endpoint] = Date.now();
 							this.endpoint = '';
 						}
@@ -58,14 +59,14 @@ export class IndexerHub {
 				} catch (err) {
 					this.lastTryTimestamps[tempEndpoint] = Date.now();
 					// tslint:disable-next-line
-					// console.error(`Endpoint ${tempEndpoint} is unavailable due to the error: `, err);
+					console.error(`Endpoint ${tempEndpoint} is unavailable due to the error: `, err);
 				}
 			}
 		} finally {
 			this.cs.leave();
 		}
 		// tslint:disable-next-line
-		// console.error(`All indexer endpoints were unavailable. Switched back to the direct blockchain reading`);
+		// console.error(`All indexer endpoints were unavailable. Switched back to the direct blockchain reading: `, lastErr);
 		return fallback();
 	}
 
@@ -142,17 +143,20 @@ export class IndexerHub {
 		);
 	}
 
-	async requestKeysHistory(address: string): Promise<
-		{
-			blockchain: string;
-			block: number;
-			keyVersion: number;
-			publicKey: Uint8Array;
-			timestamp: number;
-			registrar: number;
-		}[]
+	async requestKeysHistory(addresses: string[]): Promise<
+		Record<
+			string,
+			{
+				blockchain: string;
+				block: number;
+				keyVersion: number;
+				publicKey: Uint8Array;
+				timestamp: number;
+				registrar: number;
+			}[]
+		>
 	> {
-		const data = await this.request('/keys-history', { address });
+		const data = await this.request('/keys-history', { addresses });
 		return data;
 	}
 
@@ -191,6 +195,7 @@ export class IndexerHub {
 		sender,
 		recipient,
 		type,
+		namespace,
 		limit,
 	}: {
 		blockchain: string;
@@ -199,6 +204,7 @@ export class IndexerHub {
 		sender: string | null;
 		recipient: Uint256 | null;
 		type: 'DIRECT' | 'BROADCAST';
+		namespace: string | undefined;
 		limit: number;
 	}): Promise<IMessage[]> {
 		const data = await this.request(`/${blockchain}`, {
@@ -207,6 +213,7 @@ export class IndexerHub {
 			sender,
 			recipient,
 			type,
+			namespace,
 			limit,
 		});
 		return data.map((m: any) => ({
@@ -215,12 +222,23 @@ export class IndexerHub {
 		}));
 	}
 
-	async requestMessageParts({ blockchain, msgId }: { blockchain: string; msgId: Uint256 }): Promise<any> {
+	async requestContent({
+		blockchain,
+		msgId,
+	}: {
+		blockchain: string;
+		msgId: string;
+	}): Promise<IMessageCorruptedContent | IMessageContent | null> {
 		const data = await this.request(`/content/${blockchain}`, {
 			msgId,
 		});
-		return data.map((m: any) => ({
-			...m,
-		}));
+		if (!data || data.corrupted) {
+			return data;
+		} else {
+			return {
+				...data,
+				content: SmartBuffer.ofBase64String(data.content).bytes,
+			};
+		}
 	}
 }
