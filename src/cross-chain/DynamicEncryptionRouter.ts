@@ -2,6 +2,7 @@
 import nacl from 'tweetnacl';
 import { AbstractBlockchainController } from '../abstracts';
 import { MessageKey } from '../content';
+import { MessageSecureContext } from '../content/MessageSecureContext';
 import { YlideCore } from '../core';
 import { symmetricEncrypt, sha256 } from '../crypto';
 import { IExtraEncryptionStrateryEntry, PublicKey, PublicKeyType } from '../types';
@@ -42,7 +43,7 @@ export class DynamicEncryptionRouter {
 
 	static async executeEncryption(
 		route: ReturnType<typeof DynamicEncryptionRouter['findBestEncryptionRouting']>,
-		key: Uint8Array,
+		secureContext: MessageSecureContext,
 	) {
 		const ylideEphemeral = nacl.box.keyPair.fromSecretKey(nacl.randomBytes(32));
 		const ylideEphemeralPublic = PublicKey.fromBytes(PublicKeyType.YLIDE, ylideEphemeral.publicKey);
@@ -59,7 +60,7 @@ export class DynamicEncryptionRouter {
 							entry.ylide ? this.getPublicKeySignature(entry.publicKey) : this.panic(),
 							entry.ylide
 								? symmetricEncrypt(
-										key,
+										secureContext.key,
 										nacl.box.before(entry.publicKey.bytes, ylideEphemeral.secretKey),
 								  )
 								: this.panic(),
@@ -77,7 +78,7 @@ export class DynamicEncryptionRouter {
 					entries,
 					bulk,
 					pkIdx,
-					key,
+					secureContext.key,
 				);
 				result.push(
 					...temp.map((t, idx) => ({

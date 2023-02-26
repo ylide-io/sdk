@@ -1,5 +1,13 @@
 import SmartBuffer from '@ylide/smart-buffer';
-import { PublicKey } from '../types';
+import { PublicKey, ServiceCode } from '../types';
+
+export interface IUnpackedMessageContainer {
+	version: number;
+	serviceCode: ServiceCode;
+	senderPublicKeys: PublicKey[];
+	messageBlob: Uint8Array;
+	isEncoded: boolean;
+}
 
 /**
  * @category Content
@@ -31,7 +39,7 @@ export class MessageContainer {
 	 *
 	 * @param serviceCode Service code of an app used to send message. Used for analytics, could be left zero-filled.
 	 * @param senderPublicKey Public key of message sender
-	 * @param contentBytes Content bytes of the message (usually the result of `MessageContent.toBytes()`)
+	 * @param messageBlobBytes Raw bytes of the message blob (usually the result of `MessageBlob.encode`)
 	 * @param chunkSize Max size of one chunk
 	 * @returns Wrapped content splet into chunks
 	 */
@@ -39,10 +47,10 @@ export class MessageContainer {
 		serviceCode: number,
 		isEncoded: boolean,
 		senderPublicKeys: PublicKey[],
-		contentBytes: Uint8Array,
+		messageBlobBytes: Uint8Array,
 	) {
 		const keysSize = senderPublicKeys.reduce((p, c) => p + c.getPackedSize(), 0);
-		const buf = SmartBuffer.ofSize(1 + 4 + 1 + 1 + keysSize + 4 + contentBytes.length);
+		const buf = SmartBuffer.ofSize(1 + 4 + 1 + 1 + keysSize + 4 + messageBlobBytes.length);
 		buf.writeUint8(this.VERSION);
 		buf.writeUint32(serviceCode);
 		buf.writeUint8(isEncoded ? 1 : 0);
@@ -50,7 +58,7 @@ export class MessageContainer {
 		for (const senderPublicKey of senderPublicKeys) {
 			senderPublicKey.toPackedBytesInBuffer(buf);
 		}
-		buf.writeBytes32Length(contentBytes);
+		buf.writeBytes32Length(messageBlobBytes);
 		return buf.bytes;
 	}
 
@@ -60,7 +68,7 @@ export class MessageContainer {
 	 * @param bytes Raw bytes message container
 	 * @returns Instance of `MessageContent` class ancestor
 	 */
-	static unpackContainter(bytes: Uint8Array) {
+	static unpackContainter(bytes: Uint8Array): IUnpackedMessageContainer {
 		const buf = new SmartBuffer(bytes);
 		const version = buf.readUint8();
 		if (version === 0x06) {
@@ -78,19 +86,19 @@ export class MessageContainer {
 	 * @param buf Message content bytes
 	 * @returns Metadata of the container and message content
 	 */
-	static unpackContainerV5(buf: SmartBuffer) {
+	static unpackContainerV5(buf: SmartBuffer): IUnpackedMessageContainer {
 		const serviceCode = buf.readUint32();
 		const keysLength = buf.readUint8();
 		const senderPublicKeys: PublicKey[] = [];
 		for (let i = 0; i < keysLength; i++) {
 			senderPublicKeys.push(PublicKey.fromPackedBytesInBuffer(buf));
 		}
-		const content = buf.readBytes32Length();
+		const messageBlob = buf.readBytes32Length();
 		return {
 			version: 0x05,
 			serviceCode,
 			senderPublicKeys,
-			content,
+			messageBlob,
 			isEncoded: true,
 		};
 	}
@@ -101,7 +109,7 @@ export class MessageContainer {
 	 * @param buf Message content bytes
 	 * @returns Metadata of the container and message content
 	 */
-	static unpackContainerV6(buf: SmartBuffer) {
+	static unpackContainerV6(buf: SmartBuffer): IUnpackedMessageContainer {
 		const serviceCode = buf.readUint32();
 		const isEncoded = buf.readUint8() === 1;
 		const keysLength = buf.readUint8();
@@ -109,12 +117,12 @@ export class MessageContainer {
 		for (let i = 0; i < keysLength; i++) {
 			senderPublicKeys.push(PublicKey.fromPackedBytesInBuffer(buf));
 		}
-		const content = buf.readBytes32Length();
+		const messageBlob = buf.readBytes32Length();
 		return {
 			version: 0x06,
 			serviceCode,
 			senderPublicKeys,
-			content,
+			messageBlob,
 			isEncoded,
 		};
 	}

@@ -10,11 +10,13 @@ import {
 	IMessageContent,
 	IMessageCorruptedContent,
 	ISourceSubject,
+	IUnpackedMessageContainer,
 	ListSource,
 	MessageContainer,
 	MessageContent,
-	MessageEncodedContent,
+	MessageContentV3,
 	MessageKey,
+	MessagePackedContent,
 	PublicKey,
 	PublicKeyType,
 	PuppetListSource,
@@ -30,6 +32,9 @@ import {
 	YlideKey,
 	YlideKeyStore,
 } from '..';
+import { MessageBlob } from '../content/MessageBlob';
+import { MessageContentV4 } from '../content/MessageContentV4';
+import { MessageSecureContext } from '../content/MessageSecureContext';
 import { IndexerHub } from '../indexer';
 import { IndexerMessagesSource } from '../indexer/IndexerMessagesSource';
 import { YlideControllers } from './YlideControllers';
@@ -39,6 +44,7 @@ export interface SendMessageArgs {
 	sender: IGenericAccount;
 	content: MessageContent;
 	recipients: string[];
+	secureContext?: MessageSecureContext;
 	namespace?: string;
 	serviceCode?: number;
 	copyOfSent?: boolean;
@@ -265,7 +271,7 @@ export class YlideCore {
 			controller: this.controllers.blockchainsMap[factory.blockchain],
 		}));
 
-		let indexerResult: Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]> = {};
+		const indexerResult: Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]> = {};
 
 		// if (this.indexerBlockchains.length) {
 		// 	indexerResult = await this.indexer.retryingOperation(
@@ -296,7 +302,7 @@ export class YlideCore {
 		// 	);
 		// }
 
-		const toReadFromBlockchain = blockchains; //.filter(b => !this.indexerBlockchains.includes(b.factory.blockchain));
+		const toReadFromBlockchain = blockchains; // .filter(b => !this.indexerBlockchains.includes(b.factory.blockchain));
 
 		const readFromBlockchains = async (
 			fromBlockchains: { factory: BlockchainControllerFactory; controller: AbstractBlockchainController }[],
@@ -401,13 +407,17 @@ export class YlideCore {
 			sender,
 			content,
 			recipients,
+			secureContext,
 			namespace,
 			serviceCode = ServiceCode.SDK,
 			copyOfSent = true,
 		}: SendMessageArgs,
 		walletOptions?: any,
 	) {
-		const { encodedContent, key } = MessageEncodedContent.encodeContent(content);
+		if (!secureContext) {
+			secureContext = MessageSecureContext.create();
+		}
+		const encryptedMessageBlob = MessageBlob.encodeAndPackAndEncrypt(secureContext, content);
 		const actualRecipients = recipients.map(r => {
 			const bc = this.controllers.blockchains.find(b => b.isAddressValid(r));
 			if (!bc) {
@@ -432,8 +442,11 @@ export class YlideCore {
 			this.controllers.blockchains,
 			'ylide',
 		);
-		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(route, key);
-		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encodedContent);
+		const { publicKeys, processedRecipients } = await DynamicEncryptionRouter.executeEncryption(
+			route,
+			secureContext,
+		);
+		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encryptedMessageBlob);
 		return wallet.sendMail(
 			sender,
 			container,
@@ -446,8 +459,8 @@ export class YlideCore {
 		{ feedId, wallet, sender, content, namespace, serviceCode = ServiceCode.SDK }: BroadcastMessageArgs,
 		walletOptions?: any,
 	) {
-		const { nonEncodedContent } = MessageEncodedContent.packContent(content);
-		const container = MessageContainer.packContainer(serviceCode, false, [], nonEncodedContent);
+		const encodedMessageBlob = MessageBlob.encodeAndPack(content);
+		const container = MessageContainer.packContainer(serviceCode, false, [], encodedMessageBlob);
 		return wallet.sendBroadcast(sender, feedId, container, Object.assign({ namespace }, walletOptions || {}));
 	}
 
@@ -497,89 +510,105 @@ export class YlideCore {
 		return null;
 	}
 
-	async decryptMessageContent(recipient: IGenericAccount, msg: IMessage, content: IMessageContent) {
+	async getMessageSecureContext(
+		recipient: IGenericAccount,
+		msg: IMessage,
+		unpackedContainer: IUnpackedMessageContainer,
+	) {
 		const receipientKeyAddress = recipient.address;
-		const unpackedContent = MessageContainer.unpackContainter(content.content);
-		let decryptedContent;
-		if (unpackedContent.isEncoded) {
-			const msgKey = MessageKey.fromBytes(msg.key);
-			const publicKey = unpackedContent.senderPublicKeys[msgKey.publicKeyIndex];
-			let symmKey: Uint8Array | null = null;
-			if (publicKey.type === PublicKeyType.YLIDE) {
-				const ylideKeys = this.keystore.getAll(receipientKeyAddress);
-				const keySignature = msgKey.decryptingPublicKeySignature;
-				const keysToCheck: YlideKey[] = [];
-				if (keySignature) {
-					keysToCheck.push(
-						...ylideKeys.filter(
-							k =>
-								DynamicEncryptionRouter.getPublicKeySignature(
-									PublicKey.fromBytes(PublicKeyType.YLIDE, k.keypair.publicKey),
-								) === keySignature,
-						),
-					);
-				} else {
-					keysToCheck.push(...ylideKeys);
-				}
-				if (!ylideKeys.length) {
-					throw new YlideError(YlideErrorType.KEY_NOT_DERIVED, { signature: keySignature });
-				}
-				for (const ylideKey of keysToCheck) {
-					try {
-						await ylideKey.keypair.execute('read mail', async keypair => {
-							symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
-						});
-					} catch (err) {
-						// wrong key, try next
-					}
-				}
+
+		const msgKey = MessageKey.fromBytes(msg.key);
+		const publicKey = unpackedContainer.senderPublicKeys[msgKey.publicKeyIndex];
+
+		let symmKey: Uint8Array | null = null;
+		if (publicKey.type === PublicKeyType.YLIDE) {
+			const ylideKeys = this.keystore.getAll(receipientKeyAddress);
+			const keySignature = msgKey.decryptingPublicKeySignature;
+			const keysToCheck: YlideKey[] = [];
+			if (keySignature) {
+				keysToCheck.push(
+					...ylideKeys.filter(
+						k =>
+							DynamicEncryptionRouter.getPublicKeySignature(
+								PublicKey.fromBytes(PublicKeyType.YLIDE, k.keypair.publicKey),
+							) === keySignature,
+					),
+				);
 			} else {
-				const walletAccounts = await Promise.all(
-					this.controllers.wallets.map(async w => ({
-						wallet: w,
-						account: await w.getAuthenticatedAccount(),
-					})),
-				);
-				const accountIdx = walletAccounts.findIndex(
-					a => a.account && a.account.address === receipientKeyAddress,
-				);
-				if (accountIdx === -1) {
-					throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
-				}
-				const account = walletAccounts[accountIdx].account;
-				if (!account) {
-					throw new Error(`Account of this message recipient ${receipientKeyAddress} is not available`);
-				}
-				const wallet = walletAccounts[accountIdx].wallet;
-				symmKey = await wallet.decryptMessageKey(account, publicKey, msgKey.encryptedMessageKey);
+				keysToCheck.push(...ylideKeys);
 			}
-			if (!symmKey) {
-				throw new Error('Unable to find decryption route');
+			if (!ylideKeys.length) {
+				throw new YlideError(YlideErrorType.KEY_NOT_DERIVED, { signature: keySignature });
 			}
-			decryptedContent = MessageEncodedContent.decodeRawContent(unpackedContent.content, symmKey);
+			for (const ylideKey of keysToCheck) {
+				try {
+					await ylideKey.keypair.execute('read mail', async keypair => {
+						symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
+					});
+				} catch (err) {
+					// wrong key, try next
+				}
+			}
 		} else {
-			decryptedContent = MessageEncodedContent.unpackRawContent(unpackedContent.content);
+			const walletAccounts = await Promise.all(
+				this.controllers.wallets.map(async w => ({
+					wallet: w,
+					account: await w.getAuthenticatedAccount(),
+				})),
+			);
+			const accountIdx = walletAccounts.findIndex(a => a.account && a.account.address === receipientKeyAddress);
+			if (accountIdx === -1) {
+				throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
+			}
+			const account = walletAccounts[accountIdx].account;
+			if (!account) {
+				throw new Error(`Account of this message recipient ${receipientKeyAddress} is not available`);
+			}
+			const wallet = walletAccounts[accountIdx].wallet;
+			symmKey = await wallet.decryptMessageKey(account, publicKey, msgKey.encryptedMessageKey);
 		}
-		const decodedContent = MessageEncodedContent.messageContentFromBytes(decryptedContent);
+		if (!symmKey) {
+			throw new Error('Unable to find decryption route');
+		}
+		return new MessageSecureContext(symmKey);
+	}
+
+	async decryptMessageContent(
+		recipient: IGenericAccount,
+		msg: IMessage,
+		content: IMessageContent,
+		secureContext?: MessageSecureContext,
+	) {
+		const unpackedContainer = MessageContainer.unpackContainter(content.content);
+
+		let decryptedContent: MessageContentV3 | MessageContentV4;
+
+		if (unpackedContainer.isEncoded) {
+			if (!secureContext) {
+				secureContext = await this.getMessageSecureContext(recipient, msg, unpackedContainer);
+			}
+			decryptedContent = MessageBlob.decryptAndUnpackAndDecode(secureContext, unpackedContainer.messageBlob);
+		} else {
+			decryptedContent = MessageBlob.unpackAndDecode(unpackedContainer.messageBlob);
+		}
 		return {
-			...decodedContent,
-			serviceCode: unpackedContent.serviceCode,
-			decryptedContent,
+			content: decryptedContent,
+			serviceCode: unpackedContainer.serviceCode,
+			container: unpackedContainer,
 		};
 	}
 
 	decryptBroadcastContent(msg: IMessage, content: IMessageContent) {
-		const unpackedContent = MessageContainer.unpackContainter(content.content);
-		if (unpackedContent.isEncoded) {
+		const unpackedContainer = MessageContainer.unpackContainter(content.content);
+		if (unpackedContainer.isEncoded) {
 			throw new Error(`Can't decode encrypted content`);
 		}
-		const decryptedContent = MessageEncodedContent.unpackRawContent(unpackedContent.content);
-		const decodedContent = MessageEncodedContent.messageContentFromBytes(decryptedContent);
+		const decodedContent = MessageBlob.unpackAndDecode(unpackedContainer.messageBlob);
 
 		return {
-			...decodedContent,
-			serviceCode: unpackedContent.serviceCode,
-			decryptedContent,
+			content: decodedContent,
+			serviceCode: unpackedContainer.serviceCode,
+			container: unpackedContainer,
 		};
 	}
 }

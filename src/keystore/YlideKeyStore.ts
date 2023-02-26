@@ -218,6 +218,7 @@ export class YlideKeyStore extends EventEmitter {
 
 	/**
 	 * Method to retrieve all keys for certain address
+	 *
 	 * @param address User's address
 	 * @returns Array of key references or empty array if nothing was found.
 	 */

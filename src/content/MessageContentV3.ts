@@ -1,13 +1,22 @@
-import SmartBuffer, { bufcode } from '@ylide/smart-buffer';
+import SmartBuffer from '@ylide/smart-buffer';
 import { MessageContent } from './MessageContent';
+
+export interface IMessageContentV3 {
+	isPlain: boolean;
+	subject: string;
+	content: string;
+}
 
 /**
  * @category Content
  * @description `MessageContent` ancestor used for the plaintext or simply formatted messages with plaintext subject.
  */
-export class MessageContentV3 extends MessageContent {
+export class MessageContentV3 extends MessageContent implements IMessageContentV3 {
 	public static readonly VERSION = 0x03;
-	private readonly bytes: Uint8Array;
+
+	isPlain: boolean;
+	subject: string;
+	content: string;
 
 	/**
 	 * Private constructor for instantiating `MessageContentV3` instance
@@ -16,16 +25,18 @@ export class MessageContentV3 extends MessageContent {
 	 * @param subjectBytes Bytes of the subject text
 	 * @param bytes Bytes of the content text
 	 */
-	private constructor(private readonly isPlain: boolean, subjectBytes: Uint8Array, bytes: Uint8Array) {
-		super();
-		const buf = SmartBuffer.ofSize(1 + 1 + 2 + subjectBytes.length + bytes.length);
+	constructor(data: IMessageContentV3) {
+		super(MessageContentV3.VERSION);
 
-		buf.writeUint8(MessageContentV3.VERSION);
-		buf.writeUint8(this.isPlain ? 0x01 : 0x02);
-		buf.writeBytes16Length(subjectBytes);
-		buf.writeBytes(bytes);
+		this.isPlain = data.isPlain;
+		this.subject = data.subject;
+		this.content = data.content;
+	}
 
-		this.bytes = buf.bytes;
+	static isValid(bytes: Uint8Array) {
+		const buf = new SmartBuffer(bytes);
+		const version = buf.readUint8();
+		return version === MessageContentV3.VERSION;
 	}
 
 	/**
@@ -36,12 +47,7 @@ export class MessageContentV3 extends MessageContent {
 	 * @returns `MessageContentV3` instance
 	 */
 	static plain(subject: string, text: string) {
-		const subjectBytes = new TextEncoder().encode(subject);
-		if (subjectBytes.length > 1024) {
-			throw new Error('Subject is too long.');
-		}
-		const textBytes = new TextEncoder().encode(text);
-		return new MessageContentV3(true, subjectBytes, textBytes);
+		return new MessageContentV3({ isPlain: true, subject, content: text });
 	}
 
 	/**
@@ -52,16 +58,24 @@ export class MessageContentV3 extends MessageContent {
 	 * @returns `MessageContentV3` instance
 	 */
 	static rich(subject: string, text: any) {
-		const subjectBytes = new TextEncoder().encode(subject);
-		if (subjectBytes.length > 1024) {
-			throw new Error('Subject is too long.');
-		}
-		const textBytes = new TextEncoder().encode(JSON.stringify(text));
-		return new MessageContentV3(false, subjectBytes, textBytes);
+		return new MessageContentV3({ isPlain: false, subject, content: JSON.stringify(text) });
 	}
 
 	toBytes() {
-		return this.bytes;
+		const subjectBytes = new TextEncoder().encode(this.subject);
+		if (subjectBytes.length > 1024) {
+			throw new Error('Subject is too long.');
+		}
+		const contentBytes = new TextEncoder().encode(this.content);
+
+		const buf = SmartBuffer.ofSize(1 + 1 + 2 + subjectBytes.length + contentBytes.length);
+
+		buf.writeUint8(MessageContentV3.VERSION);
+		buf.writeUint8(this.isPlain ? 0x01 : 0x02);
+		buf.writeBytes16Length(subjectBytes);
+		buf.writeBytes(contentBytes);
+
+		return buf.bytes;
 	}
 
 	/**
@@ -82,18 +96,11 @@ export class MessageContentV3 extends MessageContent {
 		const isPlain = buf.readUint8() === 0x01;
 		const subjectBytes = buf.readBytes16Length();
 		const contentBytes = bytes.slice(4 + subjectBytes.length);
-		if (isPlain) {
-			return {
-				type: 'plain',
-				subject: bufcode.utf8.to(subjectBytes),
-				content: bufcode.utf8.to(contentBytes),
-			};
-		} else {
-			return {
-				type: 'rich',
-				subject: bufcode.utf8.to(subjectBytes),
-				content: JSON.parse(bufcode.utf8.to(contentBytes)),
-			};
-		}
+
+		return new MessageContentV3({
+			isPlain,
+			subject: new TextDecoder().decode(subjectBytes),
+			content: new TextDecoder().decode(contentBytes),
+		});
 	}
 }

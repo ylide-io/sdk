@@ -5,5 +5,6 @@ export * from './IGenericAccount';
 export * from './IMessage';
 export * from './PublicKey';
 export * from './PublicKeyType';
+export * from './Semver';
 export * from './ServiceCode';
 export * from './Uint256';
