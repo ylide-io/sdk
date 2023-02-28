@@ -128,6 +128,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 */
 	abstract sendMail(
 		me: IGenericAccount,
+		feedId: Uint256,
 		contentData: Uint8Array,
 		recipients: { address: Uint256; messageKey: MessageKey }[],
 		options?: any,

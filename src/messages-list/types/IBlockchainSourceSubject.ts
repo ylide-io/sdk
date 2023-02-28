@@ -7,14 +7,13 @@ export enum BlockchainSourceType {
 
 export type ISourceSubject =
 	| {
-			namespace?: string;
 			type: BlockchainSourceType.BROADCAST;
 			feedId: Uint256;
 			sender: string | null;
 	  }
 	| {
-			namespace?: string;
 			type: BlockchainSourceType.DIRECT;
+			feedId: Uint256;
 			recipient: Uint256;
 			sender: string | null;
 	  };

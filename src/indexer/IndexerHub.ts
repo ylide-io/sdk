@@ -2,7 +2,7 @@ import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../common';
 import { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../types';
 
-const IS_DEV = false;
+const IS_DEV = true;
 
 const endpoints = IS_DEV
 	? ['http://localhost:8495']
@@ -194,8 +194,9 @@ export class IndexerHub {
 		toBlock,
 		sender,
 		recipient,
+		feedId,
+		mailerId,
 		type,
-		namespace,
 		limit,
 	}: {
 		blockchain: string;
@@ -203,8 +204,9 @@ export class IndexerHub {
 		toBlock: number | null;
 		sender: string | null;
 		recipient: Uint256 | null;
+		feedId: Uint256 | null;
+		mailerId: string;
 		type: 'DIRECT' | 'BROADCAST';
-		namespace: string | undefined;
 		limit: number;
 	}): Promise<IMessage[]> {
 		const data = await this.request(`/${blockchain}`, {
@@ -212,8 +214,9 @@ export class IndexerHub {
 			toBlock,
 			sender,
 			recipient,
+			feedId,
+			mailerId,
 			type,
-			namespace,
 			limit,
 		});
 		return data.map((m: any) => ({

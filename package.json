@@ -63,7 +63,7 @@
 	"dependencies": {
 		"@datastructures-js/binary-search-tree": "5.2.0",
 		"@datastructures-js/linked-list": "5.2.5",
-		"@ylide/smart-buffer": "0.0.10",
+		"@ylide/smart-buffer": "0.0.11",
 		"eventemitter3": "5.0.0",
 		"idb": "7.1.1",
 		"js-sha256": "0.9.0",

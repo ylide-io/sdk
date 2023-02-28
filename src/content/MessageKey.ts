@@ -8,7 +8,7 @@ export class MessageKey {
 	) {}
 
 	toBytes() {
-		const buf = SmartBuffer.ofSize(1 + 1 + 2 + 4 + this.encryptedMessageKey.length);
+		const buf = SmartBuffer.ofSize(1 + 1 + 4 + 2 + this.encryptedMessageKey.length);
 		buf.writeUint8(0x02); // version
 		buf.writeUint8(this.publicKeyIndex);
 		if (this.decryptingPublicKeySignature === undefined) {
@@ -28,8 +28,8 @@ export class MessageKey {
 			return new MessageKey(publicKeyIndex, undefined, encryptedMessageKey);
 		} else if (version === 0x02) {
 			const publicKeyIndex = buf.readUint8();
-			const encryptedMessageKey = buf.readBytes16Length();
 			const decryptingPublicKeySignature = buf.readUint32();
+			const encryptedMessageKey = buf.readBytes16Length();
 			return new MessageKey(publicKeyIndex, decryptingPublicKeySignature, encryptedMessageKey);
 		} else {
 			throw new Error('Unsupported key version');

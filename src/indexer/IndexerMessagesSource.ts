@@ -49,8 +49,6 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 	};
 
 	private async retrieveMessageHistoryDesc(
-		sender: string | null,
-		recipient: Uint256 | null,
 		fromMessage?: IMessage,
 		toMessage?: IMessage,
 		limit?: number,
@@ -59,10 +57,11 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 			blockchain: this.subject.blockchain,
 			fromBlock: fromMessage ? Number(fromMessage.$$meta.block.number) : null,
 			toBlock: toMessage ? Number(toMessage.$$meta.block.number) : null,
-			sender,
-			recipient,
+			sender: this.subject.sender,
+			recipient: this.subject.type === BlockchainSourceType.DIRECT ? this.subject.recipient : null,
+			feedId: this.subject.feedId,
+			mailerId: this.subject.id,
 			type: 'DIRECT',
-			namespace: this.subject.namespace,
 			limit: limit || 10,
 		});
 
@@ -80,20 +79,9 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 
 	async getBefore(entry: IMessage, limit: number): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {
-			const subject = this.subject;
 			return await this.indexerHub.retryingOperation(
-				async () => {
-					return await this.retrieveMessageHistoryDesc(
-						subject.sender,
-						subject.recipient,
-						undefined,
-						entry,
-						limit,
-					);
-				},
-				async () => {
-					return await this.originalSource.getBefore(entry, limit);
-				},
+				() => this.retrieveMessageHistoryDesc(undefined, entry, limit),
+				() => this.originalSource.getBefore(entry, limit),
 			);
 		} else {
 			return await this.originalSource.getBefore(entry, limit);
@@ -102,20 +90,9 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 
 	async getAfter(entry: IMessage, limit: number): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {
-			const subject = this.subject;
 			return await this.indexerHub.retryingOperation(
-				async () => {
-					return await this.retrieveMessageHistoryDesc(
-						subject.sender,
-						subject.recipient,
-						entry,
-						undefined,
-						limit,
-					);
-				},
-				async () => {
-					return await this.originalSource.getAfter(entry, limit);
-				},
+				() => this.retrieveMessageHistoryDesc(entry, undefined, limit),
+				() => this.originalSource.getAfter(entry, limit),
 			);
 		} else {
 			return await this.originalSource.getAfter(entry, limit);
@@ -124,20 +101,9 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 
 	async getLast(limit: number, upToIncluding?: IMessage, mutableParams?: any): Promise<IMessage[]> {
 		if (this.subject.type === BlockchainSourceType.DIRECT) {
-			const subject = this.subject;
 			return await this.indexerHub.retryingOperation(
-				async () => {
-					return await this.retrieveMessageHistoryDesc(
-						subject.sender,
-						subject.recipient,
-						undefined,
-						undefined,
-						limit,
-					);
-				},
-				async () => {
-					return await this.originalSource.getLast(limit, upToIncluding, mutableParams);
-				},
+				async () => this.retrieveMessageHistoryDesc(undefined, undefined, limit),
+				async () => this.originalSource.getLast(limit, upToIncluding, mutableParams),
 			);
 		} else {
 			return await this.originalSource.getLast(limit, upToIncluding, mutableParams);

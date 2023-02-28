@@ -31,6 +31,7 @@ import {
 	YlideErrorType,
 	YlideKey,
 	YlideKeyStore,
+	YLIDE_MAIN_FEED_ID,
 } from '..';
 import { MessageBlob } from '../content/MessageBlob';
 import { MessageContentV4 } from '../content/MessageContentV4';
@@ -45,7 +46,7 @@ export interface SendMessageArgs {
 	content: MessageContent;
 	recipients: string[];
 	secureContext?: MessageSecureContext;
-	namespace?: string;
+	feedId?: Uint256;
 	serviceCode?: number;
 	copyOfSent?: boolean;
 }
@@ -408,7 +409,7 @@ export class YlideCore {
 			content,
 			recipients,
 			secureContext,
-			namespace,
+			feedId,
 			serviceCode = ServiceCode.SDK,
 			copyOfSent = true,
 		}: SendMessageArgs,
@@ -447,12 +448,7 @@ export class YlideCore {
 			secureContext,
 		);
 		const container = MessageContainer.packContainer(serviceCode, true, publicKeys, encryptedMessageBlob);
-		return wallet.sendMail(
-			sender,
-			container,
-			processedRecipients,
-			Object.assign({ namespace }, walletOptions || {}),
-		);
+		return wallet.sendMail(sender, feedId || YLIDE_MAIN_FEED_ID, container, processedRecipients, walletOptions);
 	}
 
 	async broadcastMessage(
@@ -545,6 +541,9 @@ export class YlideCore {
 					await ylideKey.keypair.execute('read mail', async keypair => {
 						symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
 					});
+					if (symmKey) {
+						break;
+					}
 				} catch (err) {
 					// wrong key, try next
 				}

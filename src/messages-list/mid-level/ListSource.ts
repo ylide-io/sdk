@@ -170,7 +170,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	private log(...args: any[]) {
-		console.log('LS: ', ...args);
+		// console.log('LS: ', ...args);
 	}
 
 	private validateDesc(vals: IMessage[]) {
