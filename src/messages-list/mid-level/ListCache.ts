@@ -12,7 +12,7 @@ interface DBInterface extends DBSchema {
 	};
 }
 
-const DISABLED = true;
+const DISABLED = false;
 
 export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;

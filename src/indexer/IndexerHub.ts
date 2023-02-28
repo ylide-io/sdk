@@ -2,7 +2,7 @@ import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../common';
 import { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../types';
 
-const IS_DEV = true;
+const IS_DEV = false;
 
 const endpoints = IS_DEV
 	? ['http://localhost:8495']

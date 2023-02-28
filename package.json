@@ -4,7 +4,7 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"version": "0.8.0-beta.0",
+	"version": "0.8.0-beta.1",
 	"description": "Ylide Protocol SDK for cross-chain communication and messaging",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
