@@ -92,32 +92,50 @@ export class YlideCore {
 		let indexerResult: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
 
 		if (this.indexerBlockchains.length) {
-			indexerResult = await this.indexer.retryingOperation(
-				async () => {
-					const rawResult = await this.indexer.requestMultipleKeys(addresses);
-					const result: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
-					for (const address of Object.keys(rawResult)) {
-						for (const bc of Object.keys(rawResult[address])) {
-							if (!result[address]) {
-								result[address] = {};
-							}
-							const kkey = rawResult[address][bc];
-							result[address][bc] = kkey
-								? {
-										keyVersion: kkey.keyVersion,
-										publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, kkey.publicKey),
-										timestamp: kkey.timestamp,
-										registrar: kkey.registrar,
-								  }
-								: null;
-						}
-					}
-					return result;
-				},
-				async () => {
-					return {};
-				},
+			const indexerAddresses = addresses.filter(a =>
+				blockchains
+					.filter(b => this.indexerBlockchains.includes(b.factory.blockchain))
+					.some(b => b.controller.isAddressValid(a)),
 			);
+			if (indexerAddresses.length) {
+				indexerResult = await this.indexer.retryingOperation(
+					async () => {
+						const rawResult = await this.indexer.requestMultipleKeys(indexerAddresses);
+						const result: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
+						for (const address of Object.keys(rawResult)) {
+							for (const bc of Object.keys(rawResult[address])) {
+								if (!result[address]) {
+									result[address] = {};
+								}
+								const kkey = rawResult[address][bc];
+								result[address][bc] = kkey
+									? {
+											keyVersion: kkey.keyVersion,
+											publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, kkey.publicKey),
+											timestamp: kkey.timestamp,
+											registrar: kkey.registrar,
+									  }
+									: null;
+							}
+						}
+						return result;
+					},
+					async () => {
+						return {};
+					},
+				);
+				for (const address of indexerAddresses) {
+					if (!indexerResult[address]) {
+						indexerResult[address] = {};
+					}
+				}
+			} else {
+				for (const address of indexerAddresses) {
+					if (!indexerResult[address]) {
+						indexerResult[address] = {};
+					}
+				}
+			}
 		}
 
 		const toReadFromBlockchain = blockchains.filter(b => !this.indexerBlockchains.includes(b.factory.blockchain));
@@ -222,16 +240,24 @@ export class YlideCore {
 		};
 
 		const readFromIndexer = async () => {
-			const remoteKeys: Record<string, ExternalYlidePublicKey | null> = {};
-			const rawRemoteKeys = await this.indexer.requestKeys(address);
-			const bcs = Object.keys(rawRemoteKeys);
-			for (const bc of bcs) {
-				remoteKeys[bc] = {
-					...rawRemoteKeys[bc],
-					publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, rawRemoteKeys[bc].publicKey),
-				};
+			if (
+				blockchains
+					.filter(b => this.indexerBlockchains.includes(b.factory.blockchain))
+					.some(b => b.controller.isAddressValid(address))
+			) {
+				const remoteKeys: Record<string, ExternalYlidePublicKey | null> = {};
+				const rawRemoteKeys = await this.indexer.requestKeys(address);
+				const bcs = Object.keys(rawRemoteKeys);
+				for (const bc of bcs) {
+					remoteKeys[bc] = {
+						...rawRemoteKeys[bc],
+						publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, rawRemoteKeys[bc].publicKey),
+					};
+				}
+				return remoteKeys;
+			} else {
+				return {};
 			}
-			return remoteKeys;
 		};
 
 		const indexerRemoteKeys = toReadFromIndexer.length
