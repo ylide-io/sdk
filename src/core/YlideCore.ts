@@ -487,19 +487,22 @@ export class YlideCore {
 	}
 
 	async getMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null> {
-		// requestContent
 		const blockchain = this.getMessageBlockchainController(msg);
 		if (!blockchain) {
 			return null;
 		}
-		return await this.indexer.retryingOperation(
-			async () => {
-				return await this.indexer.requestContent({ blockchain: msg.blockchain, msgId: msg.msgId });
-			},
-			async () => {
-				return await blockchain.retrieveMessageContent(msg);
-			},
-		);
+		if (this.indexerBlockchains.includes(blockchain.blockchain())) {
+			return await this.indexer.retryingOperation(
+				async () => {
+					return await this.indexer.requestContent({ blockchain: msg.blockchain, msgId: msg.msgId });
+				},
+				async () => {
+					return await blockchain.retrieveMessageContent(msg);
+				},
+			);
+		} else {
+			return await blockchain.retrieveMessageContent(msg);
+		}
 	}
 
 	getMessageBlockchainController(msg: IMessage): AbstractBlockchainController | null {
