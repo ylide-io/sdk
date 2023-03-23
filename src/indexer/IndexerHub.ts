@@ -190,7 +190,7 @@ export class IndexerHub {
 
 	async loadMessagesCount(
 		recipients: Uint256[],
-		timestamp: number = 0,
+		timestamp = 0,
 	): Promise<Record<Uint256, Record<string, number>>> {
 		return this.request('/messages-count', {
 			recipients,
