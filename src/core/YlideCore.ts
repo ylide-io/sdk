@@ -16,7 +16,6 @@ import {
 	MessageContent,
 	MessageContentV3,
 	MessageKey,
-	MessagePackedContent,
 	PublicKey,
 	PublicKeyType,
 	PuppetListSource,

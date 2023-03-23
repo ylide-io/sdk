@@ -4,6 +4,7 @@ export * from './content';
 export * from './core';
 export * from './cross-chain';
 export * from './crypto';
+export * from './de-storage';
 export * from './errors';
 export * from './indexer';
 export * from './keystore';

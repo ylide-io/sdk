@@ -1,4 +1,4 @@
-export type YMF = string & { __ylideMessageFormat: true }; // 32-bytes hex string
+export type YMF = string & { __ylideMessageFormat: true };
 
 export interface IYMFToken {
 	start: number;
