@@ -1,6 +1,6 @@
 export const YLIDE_IPFS_NODE = 'https://ipfs.ylide.io';
 
-export class IpfsStorage {
+export class YlideIpfsStorage {
 	nodeUrl: string = YLIDE_IPFS_NODE;
 
 	async uploadToIpfs(data: Uint8Array) {
