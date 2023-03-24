@@ -1,7 +1,7 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import { Semver } from '../types';
 import { MessageContent } from './MessageContent';
-import { MessageFormat, YMF } from './MessageFormat';
+import { YMF } from './YMF';
 import { MessageAttachment } from './attachments/MessageAttachment';
 import { MessageAttachmentLinkV1 } from './attachments/MessageAttachmentLinkV1';
 
@@ -66,7 +66,7 @@ export class MessageContentV4 extends MessageContent implements IMessageContentV
 
 	toBytes() {
 		const subjectBytes = new TextEncoder().encode(this.subject);
-		const contentBytes = new TextEncoder().encode(this.content);
+		const contentBytes = new TextEncoder().encode(this.content.toString());
 		const sendingAgentNameBytes = new TextEncoder().encode(this.sendingAgentName);
 		const extraJsonBytes = new TextEncoder().encode(JSON.stringify(this.extraJson));
 		const attachmentsBytes = this.attachments.map(a => a.toBytes());
@@ -137,12 +137,7 @@ export class MessageContentV4 extends MessageContent implements IMessageContentV
 		const contentBytes = buf.readBytes32Length();
 		const content = new TextDecoder().decode(contentBytes);
 
-		const validationResult = MessageFormat.validateYMF(content);
-		if (!validationResult.result) {
-			throw new Error(
-				'Invalid content YMF: ' + validationResult.errorText + ` at pos ${validationResult.errorPos}`,
-			);
-		}
+		const ymfContent = YMF.fromYMFText(content);
 
 		const attachmentsCount = buf.readUint16();
 		const attachments: MessageAttachment[] = [];
@@ -166,7 +161,7 @@ export class MessageContentV4 extends MessageContent implements IMessageContentV
 			sendingAgentName,
 			sendingAgentVersion,
 			subject,
-			content: content as YMF,
+			content: ymfContent,
 			attachments,
 			extraBytes,
 			extraJson,
