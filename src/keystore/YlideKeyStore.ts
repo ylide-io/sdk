@@ -67,7 +67,7 @@ export class YlideKeyStore extends EventEmitter {
 			blockchainGroup,
 			wallet,
 			address,
-			YlideKeyPair.getMagicStringV2(address, 1, ''),
+			YlideKeyPair.getMagicStringV2(address, 1, 'no-password'),
 		);
 		if (!secretKey) {
 			throw new YlideError(YlideErrorType.USER_CANCELLED);
