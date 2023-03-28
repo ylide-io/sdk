@@ -1,3 +1,4 @@
+import { YlidePublicKeyVersion } from '../types';
 import { YlideKeyPair } from './YlideKeyPair';
 
 export class YlideKey {
@@ -6,6 +7,7 @@ export class YlideKey {
 		public readonly wallet: string,
 		public readonly address: string,
 		public readonly keypair: YlideKeyPair,
+		public readonly keyVersion: YlidePublicKeyVersion,
 	) {
 		//
 	}

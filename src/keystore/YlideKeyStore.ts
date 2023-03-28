@@ -1,6 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { YlideError, YlideErrorType } from '../errors';
 import { AbstractStorage } from '../storage/AbstractStorage';
+import { YlidePublicKeyVersion } from '../types';
 import { YlideKey } from './YlideKey';
 import { YlideKeyPair } from './YlideKeyPair';
 
@@ -15,7 +16,7 @@ export enum YlideKeyStoreEvent {
  * @description Class for managing Ylide keys for multiple accounts and blockchains
  */
 export class YlideKeyStore extends EventEmitter {
-	private readonly pfx = 'YLD4_';
+	private readonly pfx = 'YLD5_';
 
 	keys: YlideKey[] = [];
 
@@ -51,19 +52,27 @@ export class YlideKeyStore extends EventEmitter {
 	}
 
 	/**
-	 * Method to create and store new Ylide communication key.
+	 * Method to construct new Ylide communication key without storing it.
 	 *
 	 * @param reason Reason for password/derivation request
-	 * @param blockchain Blockchain name
+	 * @param blockchainGroup Blockchain group name
 	 * @param wallet Wallet name
 	 * @param address User's address
 	 * @param password Ylide password
 	 * @returns `YlideKeyPair` instance
 	 */
-	async create(reason: string, blockchainGroup: string, wallet: string, address: string, password: string) {
-		const key = await this.constructKeypair(reason, blockchainGroup, wallet, address, password);
-		await this.storeKey(key, blockchainGroup, wallet);
-		return key;
+	async constructKeypairV3(reason: string, blockchainGroup: string, wallet: string, address: string) {
+		const secretKey = await this.options.onDeriveRequest(
+			reason,
+			blockchainGroup,
+			wallet,
+			address,
+			YlideKeyPair.getMagicStringV2(address, 1, ''),
+		);
+		if (!secretKey) {
+			throw new YlideError(YlideErrorType.USER_CANCELLED);
+		}
+		return new YlideKeyPair(address, { isEncrypted: false, keydata: secretKey });
 	}
 
 	/**
@@ -76,7 +85,13 @@ export class YlideKeyStore extends EventEmitter {
 	 * @param password Ylide password
 	 * @returns `YlideKeyPair` instance
 	 */
-	async constructKeypair(reason: string, blockchainGroup: string, wallet: string, address: string, password: string) {
+	async constructKeypairV2(
+		reason: string,
+		blockchainGroup: string,
+		wallet: string,
+		address: string,
+		password: string,
+	) {
 		const secretKey = await this.options.onDeriveRequest(
 			reason,
 			blockchainGroup,
@@ -127,8 +142,8 @@ export class YlideKeyStore extends EventEmitter {
 	 * @param blockchainGroup Blockchain group name
 	 * @param wallet Wallet name
 	 */
-	async storeKey(keypair: YlideKeyPair, blockchainGroup: string, wallet: string) {
-		const key = new YlideKey(blockchainGroup, wallet, keypair.address, keypair);
+	async storeKey(keypair: YlideKeyPair, keyVersion: YlidePublicKeyVersion, blockchainGroup: string, wallet: string) {
+		const key = new YlideKey(blockchainGroup, wallet, keypair.address, keypair, keyVersion);
 		this.keys.push(key);
 		this.emit(YlideKeyStoreEvent.KEY_ADDED, key);
 		this.emit(YlideKeyStoreEvent.KEYS_UPDATED, this.keys);
@@ -176,7 +191,11 @@ export class YlideKeyStore extends EventEmitter {
 			if (keypair.address !== keyMeta.address) {
 				continue;
 			}
-			const key = new YlideKey(keyMeta.blockchainGroup, keyMeta.wallet, keyMeta.address, keypair);
+			const keyVersion = await this.storage.readJSON<number>(this.key(`keyVersion${keyIdx}`));
+			if (!keyVersion) {
+				continue;
+			}
+			const key = new YlideKey(keyMeta.blockchainGroup, keyMeta.wallet, keyMeta.address, keypair, keyVersion);
 			this.keys.push(key);
 			this.emit(YlideKeyStoreEvent.KEY_ADDED, key);
 		}
@@ -198,6 +217,7 @@ export class YlideKeyStore extends EventEmitter {
 				address: keyData.address,
 			});
 			await this.storage.storeBytes(this.key(`key${keyIdx}`), keyData.keypair.toBytes());
+			await this.storage.storeJSON(this.key(`keyVersion${keyIdx}`), keyData.keyVersion);
 		}
 	}
 
