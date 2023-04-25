@@ -55,7 +55,6 @@ export interface BroadcastMessageArgs {
 	sender: IGenericAccount;
 	feedId: Uint256;
 	content: MessageContent;
-	namespace?: string;
 	serviceCode?: number;
 }
 
@@ -477,12 +476,12 @@ export class YlideCore {
 	}
 
 	async broadcastMessage(
-		{ feedId, wallet, sender, content, namespace, serviceCode = ServiceCode.SDK }: BroadcastMessageArgs,
+		{ feedId, wallet, sender, content, serviceCode = ServiceCode.SDK }: BroadcastMessageArgs,
 		walletOptions?: any,
 	) {
 		const encodedMessageBlob = MessageBlob.encodeAndPack(content);
 		const container = MessageContainer.packContainer(serviceCode, false, [], encodedMessageBlob);
-		return wallet.sendBroadcast(sender, feedId, container, Object.assign({ namespace }, walletOptions || {}));
+		return wallet.sendBroadcast(sender, feedId, container, walletOptions || {});
 	}
 
 	async getMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null> {
