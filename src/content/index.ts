@@ -5,6 +5,7 @@ export * from './MessageContainer';
 export * from './MessageContent';
 export * from './MessageContentV3';
 export * from './MessageContentV4';
+export * from './MessageContentV5';
 export * from './MessageKey';
 export * from './MessagePackedContent';
 export * from './MessageSecureContext';

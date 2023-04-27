@@ -13,27 +13,28 @@ import {
 	IUnpackedMessageContainer,
 	ListSource,
 	MessageContainer,
-	MessageContent,
-	MessageContentV3,
 	MessageKey,
 	PublicKey,
 	PublicKeyType,
 	PuppetListSource,
 	ServiceCode,
-	sha256,
 	SourceReadingSession,
 	Uint256,
-	uint256ToUint8Array,
-	uint8ArrayToUint256,
+	YLIDE_MAIN_FEED_ID,
 	Ylide,
 	YlideError,
 	YlideErrorType,
 	YlideKey,
 	YlideKeyStore,
-	YLIDE_MAIN_FEED_ID,
+	sha256,
+	uint256ToUint8Array,
+	uint8ArrayToUint256,
 } from '..';
 import { MessageBlob } from '../content/MessageBlob';
+import { MessageContent } from '../content/MessageContent';
+import { MessageContentV3 } from '../content/MessageContentV3';
 import { MessageContentV4 } from '../content/MessageContentV4';
+import { MessageContentV5 } from './../content/MessageContentV5';
 import { MessageSecureContext } from '../content/MessageSecureContext';
 import { IndexerHub } from '../indexer';
 import { IndexerMessagesSource } from '../indexer/IndexerMessagesSource';
@@ -607,7 +608,7 @@ export class YlideCore {
 	) {
 		const unpackedContainer = MessageContainer.unpackContainter(content.content);
 
-		let decryptedContent: MessageContentV3 | MessageContentV4;
+		let decryptedContent: MessageContentV3 | MessageContentV4 | MessageContentV5;
 
 		if (unpackedContainer.isEncoded) {
 			if (!secureContext) {
