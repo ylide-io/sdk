@@ -27,6 +27,7 @@ describe('MessageContentV5', () => {
 		});
 		const bytes = content.toBytes();
 		const decodedData = MessageContentV5.fromBytes(bytes);
+		expect(MessageContentV5.isValid(bytes)).equal(true);
 		expect(content).deep.equal(decodedData);
 	});
 });
