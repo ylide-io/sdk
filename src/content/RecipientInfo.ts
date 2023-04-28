@@ -29,13 +29,13 @@ export class RecipientInfo implements IRecipientInfo {
 			const aliasTypeBytes = new TextEncoder().encode(this.alias.type);
 			const aliasDataBytes = new TextEncoder().encode(this.alias.data);
 			aliasBytes = SmartBuffer.ofSize(
-				4 + // alias type length
+				1 + // alias type length
 					aliasTypeBytes.length + // alias type
-					4 + // alias data length
+					2 + // alias data length
 					aliasDataBytes.length, // alias data
 			);
-			aliasBytes.writeBytes32Length(aliasTypeBytes);
-			aliasBytes.writeBytes32Length(aliasDataBytes);
+			aliasBytes.writeBytes8Length(aliasTypeBytes);
+			aliasBytes.writeBytes16Length(aliasDataBytes);
 		}
 		const buf = SmartBuffer.ofSize(
 			4 + // address length
@@ -59,8 +59,8 @@ export class RecipientInfo implements IRecipientInfo {
 		let alias: { type: string; data: any } | undefined;
 		if (aliasBytes.length > 0) {
 			const aliasBuf = new SmartBuffer(aliasBytes);
-			const aliasType = new TextDecoder().decode(aliasBuf.readBytes32Length());
-			const aliasData = new TextDecoder().decode(aliasBuf.readBytes32Length());
+			const aliasType = new TextDecoder().decode(aliasBuf.readBytes8Length());
+			const aliasData = new TextDecoder().decode(aliasBuf.readBytes16Length());
 			alias = { type: aliasType, data: aliasData };
 		}
 		return new RecipientInfo({ address, blockchain, alias });
