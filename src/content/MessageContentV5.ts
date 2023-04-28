@@ -4,6 +4,7 @@ import { MessageContent } from './MessageContent';
 import { YMF } from './YMF';
 import { MessageAttachment } from './attachments/MessageAttachment';
 import { MessageAttachmentLinkV1 } from './attachments/MessageAttachmentLinkV1';
+import { RecipientInfo } from './RecipientInfo';
 
 export interface IMessageContentV5 {
 	sendingAgentName: string; // string up to 255 chars
@@ -18,12 +19,6 @@ export interface IMessageContentV5 {
 	extraJson: Record<string, any>;
 
 	recipientInfos: RecipientInfo[];
-}
-
-export interface RecipientInfo {
-	blockchain: string;
-	chainId: number;
-	address: string;
 }
 
 /**
@@ -82,7 +77,7 @@ export class MessageContentV5 extends MessageContent implements IMessageContentV
 		const sendingAgentNameBytes = new TextEncoder().encode(this.sendingAgentName);
 		const extraJsonBytes = new TextEncoder().encode(JSON.stringify(this.extraJson));
 		const attachmentsBytes = this.attachments.map(a => a.toBytes());
-		const recipientInfosBytes = new TextEncoder().encode(JSON.stringify(this.recipientInfos));
+		const recipientInfosBytes = this.recipientInfos.map(r => r.toBytes());
 
 		const buf = SmartBuffer.ofSize(
 			1 + // version
@@ -99,8 +94,8 @@ export class MessageContentV5 extends MessageContent implements IMessageContentV
 				this.extraBytes.length + // extraBytes
 				4 + // extraJson length
 				extraJsonBytes.length + // extraJson
-				4 + // recipientInfosBytes length
-				recipientInfosBytes.length, // recipientInfosBytes
+				2 + // recipientInfosBytes count
+				recipientInfosBytes.reduce((acc, bytes) => acc + 4 + bytes.length, 0), // recipientInfosBytes
 		);
 
 		buf.writeUint8(MessageContentV5.VERSION);
@@ -120,7 +115,8 @@ export class MessageContentV5 extends MessageContent implements IMessageContentV
 		buf.writeBytes32Length(this.extraBytes);
 		buf.writeBytes32Length(extraJsonBytes);
 
-		buf.writeBytes32Length(recipientInfosBytes);
+		buf.writeUint16(recipientInfosBytes.length);
+		recipientInfosBytes.forEach(bytes => buf.writeBytes32Length(bytes));
 
 		return buf.bytes;
 	}
@@ -174,8 +170,12 @@ export class MessageContentV5 extends MessageContent implements IMessageContentV
 		const extraJsonBytes = buf.readBytes32Length();
 		const extraJson = JSON.parse(new TextDecoder().decode(extraJsonBytes));
 
-		const recipientInfosBytes = buf.readBytes32Length();
-		const recipientInfos = JSON.parse(new TextDecoder().decode(recipientInfosBytes));
+		const recipientInfosCount = buf.readUint16();
+		const recipientInfos: RecipientInfo[] = [];
+		for (let i = 0; i < recipientInfosCount; i++) {
+			const recipientInfo = RecipientInfo.fromBytes(buf.readBytes32Length());
+			recipientInfos.push(recipientInfo);
+		}
 
 		return new MessageContentV5({
 			sendingAgentName,

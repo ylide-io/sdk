@@ -17,7 +17,7 @@
 		"src/**/*"
 	],
 	"scripts": {
-		"test": "mocha -r ts-node/register 'src/tests/index.ts'",
+		"test": "mocha -r ts-node/register 'tests/*.ts'",
 		"dry-run": "ts-node src/__tests__/index.ts",
 		"build": "rimraf ./lib && tsc",
 		"format": "prettier --write \"src/**/*.ts\"",
