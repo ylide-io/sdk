@@ -10,6 +10,7 @@
 import { MessageContent } from './MessageContent';
 import { MessageContentV3 } from './MessageContentV3';
 import { MessageContentV4 } from './MessageContentV4';
+import { MessageContentV5 } from './MessageContentV5';
 import { MessagePackedContent } from './MessagePackedContent';
 import { MessageSecureContext } from './MessageSecureContext';
 
@@ -61,6 +62,8 @@ export class MessageBlob {
 			return MessageContentV3.fromBytes(bytes);
 		} else if (bytes.length && bytes[0] === 0x04) {
 			return MessageContentV4.fromBytes(bytes);
+		} else if (bytes.length && bytes[0] === 0x05) {
+			return MessageContentV5.fromBytes(bytes);
 		} else {
 			throw new Error('Unsupported message content version');
 		}
