@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import SmartBuffer from '@ylide/smart-buffer';
 
 export interface IRecipientInfo {
@@ -24,45 +25,48 @@ export class RecipientInfo implements IRecipientInfo {
 	toBytes(): Uint8Array {
 		const addressBytes = new TextEncoder().encode(this.address);
 		const blockchainBytes = new TextEncoder().encode(this.blockchain);
-		let aliasBytes = SmartBuffer.ofSize(0);
+		const isThereAlias = !!this.alias;
+		let aliasLength = 0;
+		let aliasTypeBytes: Uint8Array;
+		let aliasDataBytes: Uint8Array;
 		if (this.alias) {
-			const aliasTypeBytes = new TextEncoder().encode(this.alias.type);
-			const aliasDataBytes = new TextEncoder().encode(this.alias.data);
-			aliasBytes = SmartBuffer.ofSize(
+			aliasTypeBytes = new TextEncoder().encode(this.alias.type);
+			aliasDataBytes = new TextEncoder().encode(this.alias.data);
+			aliasLength =
 				1 + // alias type length
-					aliasTypeBytes.length + // alias type
-					2 + // alias data length
-					aliasDataBytes.length, // alias data
-			);
-			aliasBytes.writeBytes8Length(aliasTypeBytes);
-			aliasBytes.writeBytes16Length(aliasDataBytes);
+				aliasTypeBytes.length + // alias type
+				2 + // alias data length
+				aliasDataBytes.length; // alias data
 		}
 		const buf = SmartBuffer.ofSize(
-			4 + // address length
+			2 + // address length
 				addressBytes.length + // address
-				4 + // blockchain length
+				1 + // blockchain length
 				blockchainBytes.length + // blockchain
-				4 + // alias length
-				aliasBytes.bytes.length, // alias
+				1 + // is there alias length
+				aliasLength,
 		);
-		buf.writeBytes32Length(addressBytes);
-		buf.writeBytes32Length(blockchainBytes);
-		buf.writeBytes32Length(aliasBytes.bytes);
+		buf.writeBytes16Length(addressBytes);
+		buf.writeBytes8Length(blockchainBytes);
+		buf.writeUint8(isThereAlias ? 1 : 0);
+		if (isThereAlias) {
+			buf.writeBytes8Length(aliasTypeBytes!);
+			buf.writeBytes16Length(aliasDataBytes!);
+		}
 		return buf.bytes;
 	}
 
 	static fromBytes(bytes: Uint8Array): RecipientInfo {
 		const buf = new SmartBuffer(bytes);
-		const address = new TextDecoder().decode(buf.readBytes32Length());
-		const blockchain = new TextDecoder().decode(buf.readBytes32Length());
-		const aliasBytes = buf.readBytes32Length();
-		let alias: { type: string; data: any } | undefined;
-		if (aliasBytes.length > 0) {
-			const aliasBuf = new SmartBuffer(aliasBytes);
-			const aliasType = new TextDecoder().decode(aliasBuf.readBytes8Length());
-			const aliasData = new TextDecoder().decode(aliasBuf.readBytes16Length());
-			alias = { type: aliasType, data: aliasData };
+		const address = new TextDecoder().decode(buf.readBytes16Length());
+		const blockchain = new TextDecoder().decode(buf.readBytes8Length());
+		const isThereAlias = buf.readUint8() === 1;
+		if (isThereAlias) {
+			const aliasType = new TextDecoder().decode(buf.readBytes8Length());
+			const aliasData = new TextDecoder().decode(buf.readBytes16Length());
+			return new RecipientInfo({ address, blockchain, alias: { type: aliasType, data: aliasData } });
+		} else {
+			return new RecipientInfo({ address, blockchain });
 		}
-		return new RecipientInfo({ address, blockchain, alias });
 	}
 }
