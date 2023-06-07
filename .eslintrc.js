@@ -4,6 +4,20 @@ module.exports = {
 		es6: true,
 		node: true,
 	},
+	overrides: [
+		{
+			files: ['src/**/*'],
+			parserOptions: {
+				project: './tsconfig.json',
+			},
+		},
+		{
+			files: ['tests/**/*'],
+			parserOptions: {
+				project: './tsconfig.tests.json',
+			},
+		},
+	],
 	extends: [
 		'plugin:@typescript-eslint/recommended',
 		'plugin:@typescript-eslint/recommended-requiring-type-checking',
