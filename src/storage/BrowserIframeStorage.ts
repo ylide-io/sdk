@@ -97,4 +97,12 @@ export class BrowserIframeStorage extends AbstractStorage {
 	async clear(): Promise<boolean> {
 		return this.op<boolean>('clear', {});
 	}
+
+	async getKeys(): Promise<string[]> {
+		return this.op<string[]>('getKeys', {});
+	}
+
+	async delete(key: string): Promise<boolean> {
+		return this.op<boolean>('delete', { key });
+	}
 }

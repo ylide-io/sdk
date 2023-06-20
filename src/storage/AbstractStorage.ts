@@ -52,6 +52,20 @@ export abstract class AbstractStorage {
 	abstract clear(): Promise<boolean>;
 
 	/**
+	 * Method to get all keys from storage
+	 *
+	 * @returns Strings array with all the keys
+	 */
+	abstract getKeys(): Promise<string[]>;
+
+	/**
+	 * Method to get all keys from storage
+	 *
+	 * @returns Strings array with all the keys
+	 */
+	abstract delete(key: string): Promise<boolean>;
+
+	/**
 	 * Method to read string by key
 	 *
 	 * @param key Key to retrieve

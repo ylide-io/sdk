@@ -39,4 +39,17 @@ export class BrowserLocalStorage extends AbstractStorage {
 			return false;
 		}
 	}
+
+	async getKeys(): Promise<string[]> {
+		return Object.keys(localStorage);
+	}
+
+	async delete(key: string): Promise<boolean> {
+		try {
+			localStorage.removeItem(key);
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
 }

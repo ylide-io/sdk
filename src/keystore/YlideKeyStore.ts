@@ -203,10 +203,22 @@ export class YlideKeyStore extends EventEmitter {
 	}
 
 	/**
+	 * Method to clear internal storage
+	 */
+	async clear() {
+		const keys = await this.storage.getKeys();
+		for (const key of keys) {
+			if (key.startsWith(this.pfx)) {
+				await this.storage.delete(key);
+			}
+		}
+	}
+
+	/**
 	 * Method to save keys to internal storage
 	 */
 	async save() {
-		await this.storage.clear();
+		await this.clear();
 		await this.storage.storeJSON(this.key('init'), true);
 		await this.storage.storeJSON(this.key('keysLength'), this.keys.length);
 		for (let keyIdx = 0; keyIdx < this.keys.length; keyIdx++) {
