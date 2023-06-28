@@ -19,12 +19,53 @@ import { BlockchainWalletMap, BlockchainMap } from './types';
  * ```
  */
 export class Ylide {
+	private static _isVerbose = false;
 	private static _walletFactories: BlockchainWalletMap<WalletControllerFactory> = {};
 	private static _blockchainFactories: BlockchainMap<BlockchainControllerFactory> = {};
 	private static _blockchainToGroupMap: Record<string, string> = {};
 
 	static get blockchainToGroupMap() {
 		return this._blockchainToGroupMap;
+	}
+
+	/**
+	 * @description This method is used to make SDK verbose. It means that all extra logs will be printed to console.
+	 */
+	static verbose() {
+		this._isVerbose = true;
+	}
+
+	/**
+	 * @description This method is used to make SDK silent. It means that all extra logs will be hidden.
+	 */
+	static silent() {
+		this._isVerbose = false;
+	}
+
+	/**
+	 * @description This method is used to check if SDK is verbose.
+	 */
+	static get isVerbose() {
+		return this._isVerbose;
+	}
+
+	private static verboseLog(...args: any[]) {
+		if (this._isVerbose) {
+			console.log('[Y-SDK]', ...args);
+		}
+	}
+
+	private static verboseLogTick(...args: any[]) {
+		if (this._isVerbose) {
+			console.log('[Y-SDK]', ...args);
+			const timer = setTimeout(() => {
+				console.log('[Y-SDK]', '...still working...', ...args);
+			}, 5000);
+			return () => clearTimeout(timer);
+		} else {
+			// eslint-disable-next-line @typescript-eslint/no-empty-function
+			return () => {};
+		}
 	}
 
 	/**
@@ -164,7 +205,10 @@ export class Ylide {
 
 		for (const sender of list) {
 			try {
-				if (await sender.factory.isWalletAvailable()) {
+				const done = this.verboseLogTick(`Checking availability of ${sender.blockchain} ${sender.wallet}`);
+				const isAvailable = await sender.factory.isWalletAvailable();
+				done();
+				if (isAvailable) {
 					result.push(sender.factory);
 				}
 			} catch (e) {
@@ -199,11 +243,24 @@ export class Ylide {
 	 */
 	static async instantiateWallet(blockchainGroup: string, wallet: string, options?: any) {
 		const walletControllerFactory = this.getWalletControllerFactory(blockchainGroup, wallet);
-		if (!(await walletControllerFactory.isWalletAvailable())) {
+		const doneAvailabilityCheck = this.verboseLogTick(`Checking availability of ${blockchainGroup} ${wallet}`);
+		const isAvailable = await walletControllerFactory.isWalletAvailable();
+		doneAvailabilityCheck();
+		if (!isAvailable) {
 			throw new Error('Wallet is not available');
 		}
-		const walletController = await walletControllerFactory.create(options);
+		const doneWalletControllerCreate = this.verboseLogTick(
+			`Creating ${blockchainGroup} ${wallet} wallet controller`,
+		);
+		const walletController = await walletControllerFactory.create(
+			Object.assign({ verbose: this._isVerbose }, options || {}),
+		);
+		doneWalletControllerCreate();
+		const doneWalletControllerInit = this.verboseLogTick(
+			`Initializing ${blockchainGroup} ${wallet} wallet controller`,
+		);
 		await walletController.init();
+		doneWalletControllerInit();
 		return walletController;
 	}
 
@@ -219,8 +276,14 @@ export class Ylide {
 	 */
 	static async instantiateBlockchain(blockchain: string, options?: any) {
 		const blockchainControllerFactory = this.getBlockchainControllerFactory(blockchain);
-		const blockchainController = await blockchainControllerFactory.create(options);
+		const doneBlockchainControllerCreate = this.verboseLogTick(`Creating ${blockchain} blockchain controller`);
+		const blockchainController = await blockchainControllerFactory.create(
+			Object.assign({ verbose: this._isVerbose }, options || {}),
+		);
+		doneBlockchainControllerCreate();
+		const doneBlockchainControllerInit = this.verboseLogTick(`Initializing ${blockchain} blockchain controller`);
 		await blockchainController.init();
+		doneBlockchainControllerInit();
 		return blockchainController;
 	}
 
