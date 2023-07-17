@@ -66,8 +66,9 @@ export class YlideCore {
 		public readonly controllers: YlideControllers,
 		public readonly keystore: YlideKeyStore,
 		private readonly indexerBlockchains: string[] = [],
+		useWebSocketPulling?: boolean,
 	) {
-		this.indexer = new IndexerHub();
+		this.indexer = new IndexerHub(useWebSocketPulling);
 	}
 
 	static getSentAddress(recipient: Uint256): Uint256 {

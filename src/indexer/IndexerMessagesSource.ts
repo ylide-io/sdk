@@ -4,6 +4,8 @@ import { IMessage, Uint256 } from '../types';
 import { asyncTimer } from '../utils';
 import { BlockchainSourceType, IBlockchainSourceSubject } from '../messages-list/types';
 import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
+import { randomBytes } from '../crypto';
+import SmartBuffer from '@ylide/smart-buffer';
 
 /**
  * @internal
@@ -11,6 +13,7 @@ import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesS
 export class IndexerMessagesSource extends EventEmitter implements LowLevelMessagesSource {
 	protected pullTimer: (() => void) | null = null;
 	protected lastMessage: IMessage | null = null;
+	public readonly channel: string = new SmartBuffer(randomBytes(32)).toHexString();
 
 	constructor(
 		public readonly originalSource: LowLevelMessagesSource,
@@ -28,15 +31,23 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 	}
 
 	pause() {
-		if (this.pullTimer) {
-			this.pullTimer();
+		if (this.indexerHub.useWebSocketPulling) {
+			this.indexerHub.unsubscribe(this);
+		} else {
+			if (this.pullTimer) {
+				this.pullTimer();
+			}
 		}
 	}
 
 	resume(since?: IMessage | undefined): void {
 		this.lastMessage = since || null;
-		if (!this.pullTimer) {
-			this.pullTimer = asyncTimer(this.pull.bind(this), this._pullCycle);
+		if (this.indexerHub.useWebSocketPulling) {
+			this.indexerHub.subscribe(this);
+		} else {
+			if (!this.pullTimer) {
+				this.pullTimer = asyncTimer(this.pull.bind(this), this._pullCycle);
+			}
 		}
 	}
 
@@ -110,13 +121,17 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 		}
 	}
 
-	protected async pull() {
-		const messages = this.lastMessage
-			? await this.getAfter(this.lastMessage, this.limit)
-			: await this.getLast(this.limit);
+	drainNewMessages(messages: IMessage[]) {
 		if (messages.length) {
 			this.lastMessage = messages[0];
 			this.emit('messages', { subject: this.subject, messages });
 		}
+	}
+
+	protected async pull() {
+		const messages = this.lastMessage
+			? await this.getAfter(this.lastMessage, this.limit)
+			: await this.getLast(this.limit);
+		this.drainNewMessages(messages);
 	}
 }

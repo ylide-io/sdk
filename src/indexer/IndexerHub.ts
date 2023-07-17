@@ -1,6 +1,8 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../common';
 import { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../types';
+import { BlockchainSourceType, IBlockchainSourceSubject } from '../messages-list';
+import type { IndexerMessagesSource } from './IndexerMessagesSource';
 
 const IS_DEV = false;
 
@@ -19,6 +21,112 @@ export class IndexerHub {
 	private lastTryTimestamps: Record<string, number> = {};
 
 	private cs: CriticalSection = new CriticalSection();
+	public readonly useWebSocketPulling;
+	private webSocket: WebSocket | null = null;
+	private subscriptions: Set<IndexerMessagesSource> = new Set();
+
+	constructor(useWebSocketPulling?: boolean) {
+		if (typeof useWebSocketPulling === 'undefined') {
+			this.useWebSocketPulling = typeof window !== 'undefined' && window?.WebSocket ? true : false;
+		} else {
+			this.useWebSocketPulling = useWebSocketPulling;
+		}
+		this.init();
+	}
+
+	subscribe(instance: IndexerMessagesSource) {
+		if (this.subscriptions.has(instance)) {
+			return;
+		}
+		this.subscriptions.add(instance);
+		this.webSocket?.send(
+			JSON.stringify({
+				cmd: 'join',
+				id: instance.channel,
+				blockchain: instance.subject.blockchain,
+				sender: instance.subject.sender,
+				recipient: instance.subject.type === BlockchainSourceType.DIRECT ? instance.subject.recipient : null,
+				feedId: instance.subject.feedId,
+				mailerId: instance.subject.id,
+				type: instance.subject.type,
+			}),
+		);
+	}
+
+	unsubscribe(instance: IndexerMessagesSource) {
+		if (!this.subscriptions.has(instance)) {
+			return;
+		}
+		this.subscriptions.delete(instance);
+		this.webSocket?.send(
+			JSON.stringify({
+				cmd: 'leave',
+				id: instance.channel,
+			}),
+		);
+	}
+
+	private initWebSocket() {
+		const ws = new WebSocket('wss://push1.ylide.io/v2/client');
+		ws.onopen = () => {
+			this.webSocket = ws;
+			for (const instance of this.subscriptions) {
+				ws.send(
+					JSON.stringify({
+						cmd: 'join',
+						id: instance.channel,
+						blockchain: instance.subject.blockchain,
+						sender: instance.subject.sender,
+						recipient:
+							instance.subject.type === BlockchainSourceType.DIRECT ? instance.subject.recipient : null,
+						feedId: instance.subject.feedId,
+						mailerId: instance.subject.id,
+						type: instance.subject.type,
+					}),
+				);
+			}
+		};
+		ws.onerror = err => {
+			console.log(`Ylide Indexer WebSocket error: `, err);
+		};
+		ws.onmessage = event => {
+			let data: {
+				type: 'ylide-direct-message';
+				channels: string[];
+				msg: any;
+			};
+			try {
+				data = JSON.parse(event.data);
+			} catch (err) {
+				return;
+			}
+			if (data.type === 'ylide-direct-message') {
+				for (const instance of this.subscriptions) {
+					if (data.channels.includes(instance.channel)) {
+						instance.drainNewMessages([
+							{
+								...data.msg,
+								key: new Uint8Array(data.msg.key),
+							},
+						]);
+					}
+				}
+			}
+		};
+		ws.onclose = () => {
+			this.webSocket = null;
+			console.log(`Ylide Indexer WebSocket closed. Reconnecting in 1s...`);
+			setTimeout(() => {
+				this.initWebSocket();
+			}, 1000);
+		};
+	}
+
+	private init() {
+		if (this.useWebSocketPulling) {
+			this.initWebSocket();
+		}
+	}
 
 	async retryingOperation<T>(callback: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
 		let lastErr;
@@ -188,10 +296,7 @@ export class IndexerHub {
 		>;
 	}
 
-	async loadMessagesCount(
-		recipients: Uint256[],
-		timestamp = 0,
-	): Promise<Record<Uint256, Record<string, number>>> {
+	async loadMessagesCount(recipients: Uint256[], timestamp = 0): Promise<Record<Uint256, Record<string, number>>> {
 		return this.request('/messages-count', {
 			recipients,
 			timestamp,
