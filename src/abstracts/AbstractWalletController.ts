@@ -1,12 +1,5 @@
 import { EventEmitter } from 'eventemitter3';
-import {
-	MessageKey,
-	AbstractBlockchainController,
-	PublicKey,
-	IGenericAccount,
-	IMessage,
-	YlidePublicKeyVersion,
-} from '..';
+import { MessageKey, PublicKey, IGenericAccount, IMessage, YlidePublicKeyVersion } from '..';
 import { Uint256 } from '../types/Uint256';
 
 export enum WalletEvent {

@@ -1,6 +1,5 @@
-import { EventEmitter } from 'eventemitter3';
 import { IndexerHub } from '.';
-import { IMessage, Uint256 } from '../types';
+import { IMessage } from '../types';
 import { asyncTimer } from '../utils';
 import { BlockchainSourceType, IBlockchainSourceSubject } from '../messages-list/types';
 import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
@@ -10,7 +9,7 @@ import SmartBuffer from '@ylide/smart-buffer';
 /**
  * @internal
  */
-export class IndexerMessagesSource extends EventEmitter implements LowLevelMessagesSource {
+export class IndexerMessagesSource implements LowLevelMessagesSource {
 	protected pullTimer: (() => void) | null = null;
 	protected lastMessage: IMessage | null = null;
 	public readonly channel: string = new SmartBuffer(randomBytes(32)).toHexString();
@@ -27,9 +26,7 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 		public readonly subject: IBlockchainSourceSubject,
 		protected _pullCycle: number = 7000,
 		public readonly limit = 50,
-	) {
-		super();
-	}
+	) {}
 
 	getName(): string {
 		return `IndexerSource over ${this.originalSource.getName()}`;

@@ -92,22 +92,27 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 		}
 		this.isListInitializationLoading = true;
 		await this.storageInitializationPromise;
-		if (this.storage.segments.length) {
-			this.listInitializationPromiseResolver();
-			return;
-		}
-		await this.loadMore(10);
+		// if (this.storage.segments.length) {
+		// 	this.listInitializationPromiseResolver();
+		// 	return;
+		// }
+		await this.loadMore('after', 10);
 		this.listInitializationPromiseResolver();
 	}
 
-	private async loadMore(limit = 10) {
+	private async loadMore(afterOrBefore: 'after' | 'before', limit = 10) {
 		if (this.storage.readToBottom) {
 			return;
 		}
 		await this.loadingCriticalSection.enter();
 		const gs = this.guaranteedSegment;
 		const before = gs ? gs.tail().getValue() : null;
-		const msgs = before ? await this.source.getBefore(before, limit) : await this.source.getLast(limit);
+		const msgs =
+			afterOrBefore === 'after'
+				? await this.source.getLast(limit)
+				: before
+				? await this.source.getBefore(before, limit)
+				: await this.source.getLast(limit);
 		if (msgs.length) {
 			if (msgs.length < limit) {
 				this.storage.readToBottom = true;
@@ -139,13 +144,13 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 				if (available >= limit) {
 					return;
 				} else {
-					await this.loadMore(limit - available);
+					await this.loadMore('before', limit - available);
 				}
 			} else {
 				throw new Error('You cant load messages after inexistent message');
 			}
 		} else {
-			await this.loadMore(limit);
+			await this.loadMore('before', limit);
 		}
 		this.requestCriticalSection.leave();
 	}
