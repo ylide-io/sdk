@@ -89,6 +89,16 @@ export class ExtendedDoublyLinkedList<T> extends DoublyLinkedList<T> {
 		return newNode;
 	}
 
+	countAfterNode(node: DoublyLinkedListNode<T> | null, before?: DoublyLinkedListNode<T>): number {
+		let count = 0;
+		let currentNode = node;
+		while (currentNode !== null && (!before || currentNode !== before)) {
+			count++;
+			currentNode = currentNode.getNext();
+		}
+		return count;
+	}
+
 	/**
 	 * Adds a node at the end of the list.
 	 *

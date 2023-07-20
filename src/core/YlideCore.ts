@@ -1,44 +1,36 @@
-import {
-	AbstractBlockchainController,
-	AbstractWalletController,
-	BlockchainControllerFactory,
-	DynamicEncryptionRouter,
-	ExternalYlidePublicKey,
-	IGenericAccount,
-	IListSource,
-	IMessage,
-	IMessageContent,
-	IMessageCorruptedContent,
-	ISourceSubject,
-	IUnpackedMessageContainer,
-	ListSource,
-	MessageContainer,
-	MessageKey,
-	PublicKey,
-	PublicKeyType,
-	PuppetListSource,
-	ServiceCode,
-	SourceReadingSession,
-	Uint256,
-	YLIDE_MAIN_FEED_ID,
-	Ylide,
-	YlideError,
-	YlideErrorType,
-	YlideKey,
-	YlideKeyStore,
-	sha256,
-	uint256ToUint8Array,
-	uint8ArrayToUint256,
-} from '..';
 import { MessageBlob } from '../content/MessageBlob';
-import { MessageContent } from '../content/MessageContent';
-import { MessageContentV3 } from '../content/MessageContentV3';
-import { MessageContentV4 } from '../content/MessageContentV4';
-import { MessageContentV5 } from './../content/MessageContentV5';
+import type { MessageContent } from '../content/MessageContent';
+import type { MessageContentV3 } from '../content/MessageContentV3';
+import type { MessageContentV4 } from '../content/MessageContentV4';
+import type { MessageContentV5 } from './../content/MessageContentV5';
 import { MessageSecureContext } from '../content/MessageSecureContext';
-import { IndexerHub } from '../indexer';
+import { IndexerHub } from '../indexer/IndexerHub';
 import { IndexerMessagesSource } from '../indexer/IndexerMessagesSource';
-import { YlideControllers } from './YlideControllers';
+import type { YlideControllers } from './YlideControllers';
+import { PuppetListSource } from '../messages-list/mid-level/PuppetListSource';
+import type { IGenericAccount } from '../types/IGenericAccount';
+import type { AbstractWalletController } from '../abstracts/AbstractWalletController';
+import { Uint256, uint256ToUint8Array, uint8ArrayToUint256 } from '../types/Uint256';
+import type { YlideKeyStore } from '../keystore/YlideKeyStore';
+import { sha256 } from '../crypto/sha256';
+import type { ExternalYlidePublicKey } from '../types/ExternalPublicKey';
+import { Ylide } from '../Ylide';
+import { PublicKeyType } from '../types/PublicKeyType';
+import { PublicKey } from '../types/PublicKey';
+import type { BlockchainControllerFactory } from '../abstracts/BlockchainControllerFactory';
+import type { AbstractBlockchainController } from '../abstracts/AbstractBlockchainController';
+import type { ISourceSubject } from '../messages-list/types/IBlockchainSourceSubject';
+import type { SourceReadingSession } from '../messages-list/SourceReadingSession';
+import type { IListSource } from '../messages-list/types/IListSource';
+import { ListSource } from '../messages-list/mid-level/ListSource';
+import { ServiceCode } from '../types/ServiceCode';
+import { DynamicEncryptionRouter } from '../cross-chain/DynamicEncryptionRouter';
+import { YLIDE_MAIN_FEED_ID } from '../utils/constants';
+import { IUnpackedMessageContainer, MessageContainer } from '../content/MessageContainer';
+import type { IMessage, IMessageContent, IMessageCorruptedContent } from '../types/IMessage';
+import { MessageKey } from '../content/MessageKey';
+import type { YlideKey } from '../keystore/YlideKey';
+import { YlideError, YlideErrorType } from '../errors/YlideError';
 
 export interface SendMessageArgs {
 	wallet: AbstractWalletController;

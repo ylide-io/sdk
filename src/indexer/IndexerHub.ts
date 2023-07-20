@@ -1,13 +1,13 @@
 import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../common';
 import { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../types';
-import { BlockchainSourceType, IBlockchainSourceSubject } from '../messages-list';
+import { BlockchainSourceType } from '../messages-list';
 import type { IndexerMessagesSource } from './IndexerMessagesSource';
 
 const IS_DEV = false;
 
 const endpoints = IS_DEV
-	? ['http://localhost:8495']
+	? ['http://localhost:9999']
 	: [
 			'https://idx1.ylide.io',
 			'https://idx2.ylide.io',
@@ -303,20 +303,57 @@ export class IndexerHub {
 		});
 	}
 
-	async requestMessages({
-		blockchain,
-		fromBlock,
-		toBlock,
-		sender,
-		recipient,
-		feedId,
-		mailerId,
-		type,
-		limit,
-	}: {
+	async requestMultiMessages(
+		requests: {
+			blockchain: string;
+			fromBlock: number | null;
+			toBlock: number | null;
+			fromMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+			toMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+			sender: string | null;
+			recipient: Uint256 | null;
+			feedId: Uint256 | null;
+			mailerId: string;
+			type: 'DIRECT' | 'BROADCAST';
+			limit: number;
+		}[],
+	): Promise<({ result: true; data: IMessage[] } | { result: false; error: string })[]> {
+		const enrichedRequests = requests.map(r => ({
+			body: r,
+			id: String(Math.floor(Math.random() * 1000000000000)),
+		}));
+		const response = await this.request('/multi-messages', { requests: enrichedRequests });
+		return enrichedRequests.map(r => {
+			const result = response.find((g: any) => g.id === r.id);
+			return result?.response;
+		});
+	}
+
+	messagesDebouncer: {
+		resolve: (value: IMessage[]) => void;
+		reject: (reason?: any) => void;
+		request: {
+			blockchain: string;
+			fromBlock: number | null;
+			toBlock: number | null;
+			fromMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+			toMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+			sender: string | null;
+			recipient: Uint256 | null;
+			feedId: Uint256 | null;
+			mailerId: string;
+			type: 'DIRECT' | 'BROADCAST';
+			limit: number;
+		};
+	}[] = [];
+	messagesDebounceTimer: any = null;
+
+	async requestMessages(request: {
 		blockchain: string;
 		fromBlock: number | null;
 		toBlock: number | null;
+		fromMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+		toMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
 		sender: string | null;
 		recipient: Uint256 | null;
 		feedId: Uint256 | null;
@@ -324,16 +361,42 @@ export class IndexerHub {
 		type: 'DIRECT' | 'BROADCAST';
 		limit: number;
 	}): Promise<IMessage[]> {
-		const data = await this.request(`/${blockchain}`, {
-			fromBlock,
-			toBlock,
-			sender,
-			recipient,
-			feedId,
-			mailerId,
-			type,
-			limit,
+		const data = await new Promise<IMessage[]>((resolve, reject) => {
+			this.messagesDebouncer.push({
+				resolve,
+				reject,
+				request,
+			});
+			if (!this.messagesDebounceTimer) {
+				this.messagesDebounceTimer = setTimeout(() => {
+					this.messagesDebounceTimer = null;
+					const requests = [...this.messagesDebouncer];
+					this.messagesDebouncer = [];
+					(async () => {
+						const responses = await this.requestMultiMessages(requests.map(r => r.request));
+						responses.forEach((response, i) => {
+							if (response?.result === true) {
+								requests[i].resolve(response.data);
+							} else {
+								requests[i].reject(response?.error || 'Response error');
+							}
+						});
+					})().catch(reject);
+				}, 100);
+			}
 		});
+		// const data = await this.request(`/${blockchain}`, {
+		// 	fromBlock,
+		// 	toBlock,
+		// 	fromMessage,
+		// 	toMessage,
+		// 	sender,
+		// 	recipient,
+		// 	feedId,
+		// 	mailerId,
+		// 	type,
+		// 	limit,
+		// });
 		return data.map((m: any) => ({
 			...m,
 			key: new Uint8Array(m.key),

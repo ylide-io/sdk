@@ -15,6 +15,11 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 	protected lastMessage: IMessage | null = null;
 	public readonly channel: string = new SmartBuffer(randomBytes(32)).toHexString();
 
+	protected newMessagesSubscriptions: Set<{
+		name: string;
+		callback: (params: { messages: IMessage[]; afterMsgId: string | undefined }) => void;
+	}> = new Set();
+
 	constructor(
 		public readonly originalSource: LowLevelMessagesSource,
 		public readonly indexerHub: IndexerHub,
@@ -30,7 +35,25 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 		return `IndexerSource over ${this.originalSource.getName()}`;
 	}
 
-	pause() {
+	startTrackingNewMessages(
+		subscriptionName: string,
+		// since: IMessage | undefined,
+		callback: (params: { messages: IMessage[]; afterMsgId: string | undefined }) => void,
+	) {
+		const subscription = { name: subscriptionName, callback };
+		this.newMessagesSubscriptions.add(subscription);
+		if (this.newMessagesSubscriptions.size === 1) {
+			this.resume();
+		}
+		return () => {
+			this.newMessagesSubscriptions.delete(subscription);
+			if (this.newMessagesSubscriptions.size === 0) {
+				this.pause();
+			}
+		};
+	}
+
+	private pause() {
 		if (this.indexerHub.useWebSocketPulling) {
 			this.indexerHub.unsubscribe(this);
 		} else {
@@ -40,7 +63,7 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 		}
 	}
 
-	resume(since?: IMessage | undefined): void {
+	private resume(since?: IMessage | undefined): void {
 		this.lastMessage = since || null;
 		if (this.indexerHub.useWebSocketPulling) {
 			this.indexerHub.subscribe(this);
@@ -68,6 +91,20 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 			blockchain: this.subject.blockchain,
 			fromBlock: fromMessage ? Number(fromMessage.$$meta.block.number) : null,
 			toBlock: toMessage ? Number(toMessage.$$meta.block.number) : null,
+			fromMessage: fromMessage
+				? {
+						blockNumber: String(fromMessage.$$meta.event.blockNumber),
+						transactionIndex: fromMessage.$$meta.event.transactionIndex,
+						logIndex: fromMessage.$$meta.event.logIndex,
+				  }
+				: null,
+			toMessage: toMessage
+				? {
+						blockNumber: String(toMessage.$$meta.event.blockNumber),
+						transactionIndex: toMessage.$$meta.event.transactionIndex,
+						logIndex: toMessage.$$meta.event.logIndex,
+				  }
+				: null,
 			sender: this.subject.sender,
 			recipient: this.subject.type === BlockchainSourceType.DIRECT ? this.subject.recipient : null,
 			feedId: this.subject.feedId,
@@ -124,7 +161,7 @@ export class IndexerMessagesSource extends EventEmitter implements LowLevelMessa
 	drainNewMessages(messages: IMessage[]) {
 		if (messages.length) {
 			this.lastMessage = messages[0];
-			this.emit('messages', { subject: this.subject, messages });
+			this.newMessagesSubscriptions.forEach(s => s.callback({ messages, afterMsgId: undefined }));
 		}
 	}
 

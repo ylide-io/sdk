@@ -7,12 +7,12 @@ interface DBInterface extends DBSchema {
 		key: string;
 	};
 	group: {
-		value: { id: string; segments: any[][] };
+		value: { id: string; segments: any[][]; readToBottom: boolean };
 		key: string;
 	};
 }
 
-const DISABLED = false;
+const DISABLED = true;
 
 export class ListCache<T> {
 	private db: IDBPDatabase<DBInterface> | null = null;
@@ -41,7 +41,11 @@ export class ListCache<T> {
 	async save(listStorage: ListStorage<any>) {
 		if (!DISABLED) {
 			const db = await this.getDB();
-			await db.put('group', { id: this.group, segments: listStorage.segments.map(s => s.toArray()) });
+			await db.put('group', {
+				id: this.group,
+				segments: listStorage.segments.map(s => s.toArray()),
+				readToBottom: listStorage.readToBottom,
+			});
 		}
 	}
 
@@ -53,11 +57,12 @@ export class ListCache<T> {
 				return;
 			}
 			await listStorage.putObjectsSegments(group.segments, false);
+			listStorage.readToBottom = group.readToBottom;
 		}
 	}
 
 	private async openDB() {
-		return await openDB<DBInterface>('ylide-storage-E', 1, {
+		return await openDB<DBInterface>('ylide-storage-F', 1, {
 			upgrade: db => {
 				const groupsStore = db.createObjectStore('group', {
 					keyPath: 'id',

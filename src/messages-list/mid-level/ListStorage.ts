@@ -13,6 +13,7 @@ export class ListStorage<T> {
 	// descending order of segments, each segment is sorted descending too
 	// guaranteed that there will be no empty segments
 	readonly segments: ExtendedDoublyLinkedList<T>[] = [];
+	readToBottom = false;
 
 	constructor(
 		private name: string,
@@ -160,22 +161,20 @@ export class ListStorage<T> {
 				} else {
 					this.log('put: before inside');
 					// last inside...
-					const newSegment = new ExtendedDoublyLinkedList<T>();
+					// const newSegment = new ExtendedDoublyLinkedList<T>();
 					// remove segments between first and last, including last
-					this.segments.splice(firstPos.segmentIdx, lastPos.segmentIdx - firstPos.segmentIdx + 1, newSegment);
-					let currentNode = null;
-					for (const msg of descSortedConnectedValues) {
-						if (currentNode === null) {
-							currentNode = newSegment.insertFirst(msg);
-						} else {
-							currentNode = newSegment.insertAfter(msg, currentNode);
-						}
+					// this.segments.splice(firstPos.segmentIdx, lastPos.segmentIdx - firstPos.segmentIdx + 1, newSegment);
+					const firstSegment = this.segments[0];
+					// let currentNode = null;
+					for (let i = lastPos.segmentIdx + 1; i < descSortedConnectedValues.length; i++) {
+						const msg = descSortedConnectedValues[descSortedConnectedValues.length - i - 1];
+						firstSegment.insertFirst(msg);
 					}
-					this.log('put: before inside done');
-					for (let current = lastPos.element.getNext(); current !== null; current = current.getNext()) {
-						this.log('put: before inside done 2: ', current);
-						currentNode = newSegment.insertAfter(current.getValue(), currentNode);
-					}
+					// this.log('put: before inside done');
+					// for (let current = lastPos.element.getNext(); current !== null; current = current.getNext()) {
+					// 	this.log('put: before inside done 2: ', current);
+					// 	currentNode = newSegment.insertAfter(current.getValue(), currentNode);
+					// }
 				}
 			} else {
 				this.log('put: inside');
@@ -193,8 +192,10 @@ export class ListStorage<T> {
 						}
 					}
 					// drop the tail of the firstSegment
+					const removeFromCount = firstSegment.countAfterNode(currentNode) - 1;
 					currentNode.setNext(null as any);
 					firstSegment.setTail(currentNode);
+					firstSegment.setCount(firstSegment.count() - removeFromCount);
 				} else if (lastPos.type === 'before') {
 					this.log('put: inside before');
 					this.segments.splice(firstPos.segmentIdx + 1, lastPos.segmentIdx - firstPos.segmentIdx - 1);
@@ -208,8 +209,10 @@ export class ListStorage<T> {
 						}
 					}
 					// drop the tail of the firstSegment
+					const removeFromCount = firstSegment.countAfterNode(currentNode) - 1;
 					currentNode.setNext(null as any);
 					firstSegment.setTail(currentNode);
+					firstSegment.setCount(firstSegment.count() - removeFromCount);
 				} else {
 					this.log('put: inside inside');
 					// lastPos is inside
@@ -225,8 +228,10 @@ export class ListStorage<T> {
 						}
 					}
 					// drop the tail of the firstSegment
+					const removeFromCount = firstSegment.countAfterNode(currentNode) - 1;
 					currentNode.setNext(null as any);
 					firstSegment.setTail(currentNode);
+					firstSegment.setCount(firstSegment.count() - removeFromCount);
 					this.log('put: inside inside done');
 					for (let current = lastPos.element.getNext(); current !== null; current = current.getNext()) {
 						// this.log('put: inside inside done 2: ', current);

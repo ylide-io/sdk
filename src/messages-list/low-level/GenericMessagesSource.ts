@@ -1,14 +1,18 @@
-import { EventEmitter } from 'eventemitter3';
-import { IMessage, Uint256 } from '../../types';
+import { IMessage } from '../../types';
 import { asyncTimer } from '../../utils/asyncTimer';
 import { LowLevelMessagesSource } from '../types/LowLevelMessagesSource';
 
 /**
  * @internal
  */
-export class GenericMessagesSource extends EventEmitter implements LowLevelMessagesSource {
+export class GenericMessagesSource implements LowLevelMessagesSource {
 	protected pullTimer: (() => void) | null = null;
 	protected lastMessage: IMessage | null = null;
+
+	protected newMessagesSubscriptions: Set<{
+		name: string;
+		callback: (params: { messages: IMessage[]; afterMsgId: string | undefined }) => void;
+	}> = new Set();
 
 	constructor(
 		private name: string,
@@ -20,21 +24,37 @@ export class GenericMessagesSource extends EventEmitter implements LowLevelMessa
 		) => Promise<IMessage[]>,
 		protected _pullCycle: number = 20000,
 		public readonly limit = 50,
-	) {
-		super();
-	}
+	) {}
 
 	getName() {
 		return this.name;
 	}
 
-	pause() {
+	startTrackingNewMessages(
+		subscriptionName: string,
+		// since: IMessage | undefined,
+		callback: (params: { messages: IMessage[]; afterMsgId: string | undefined }) => void,
+	) {
+		const subscription = { name: subscriptionName, callback };
+		this.newMessagesSubscriptions.add(subscription);
+		if (this.newMessagesSubscriptions.size === 1) {
+			this.resume();
+		}
+		return () => {
+			this.newMessagesSubscriptions.delete(subscription);
+			if (this.newMessagesSubscriptions.size === 0) {
+				this.pause();
+			}
+		};
+	}
+
+	private pause() {
 		if (this.pullTimer) {
 			this.pullTimer();
 		}
 	}
 
-	resume(since?: IMessage | undefined): void {
+	private resume(since?: IMessage | undefined): void {
 		this.lastMessage = since || null;
 		if (!this.pullTimer) {
 			this.pullTimer = asyncTimer(this.pull.bind(this), this._pullCycle);
@@ -67,7 +87,9 @@ export class GenericMessagesSource extends EventEmitter implements LowLevelMessa
 			: await this.getLast(this.limit);
 		if (messages.length) {
 			this.lastMessage = messages[0];
-			this.emit('messages', { messages });
+			for (const subscription of this.newMessagesSubscriptions) {
+				subscription.callback({ messages, afterMsgId: this.lastMessage?.msgId });
+			}
 		}
 	}
 }

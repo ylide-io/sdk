@@ -1,9 +1,10 @@
-import { IListSource, IMessage } from '..';
 import { Repository } from '../common/Repository';
 import { BlockchainSourceType, IBlockchainSourceSubject } from './types/IBlockchainSourceSubject';
 import { ListCache } from './mid-level/ListCache';
-import { ListSource } from './mid-level/ListSource';
+// import { ListSource } from './mid-level/ListSource';
 import { ListStorage } from './mid-level/ListStorage';
+import { IMessage } from '../types/IMessage';
+import { IListSource } from './types/IListSource';
 
 export class SourceReadingSession {
 	public cacheRepository: Repository<IBlockchainSourceSubject, ListCache<IMessage>>;
@@ -17,7 +18,7 @@ export class SourceReadingSession {
 		this.storageRepository = new Repository<IBlockchainSourceSubject, ListStorage<IMessage>>(
 			this.sourceSubjectHash.bind(this),
 		);
-		this.listSourceRepository = new Repository<IBlockchainSourceSubject, ListSource>(
+		this.listSourceRepository = new Repository<IBlockchainSourceSubject, IListSource>(
 			this.sourceSubjectHash.bind(this),
 		);
 	}

@@ -1,26 +1,32 @@
-import { AsyncEventEmitter, CriticalSection, ExtendedDoublyLinkedList } from '../../common';
-import { IMessage } from '../../types';
+import { AsyncEventEmitter } from '../../common/AsyncEventEmitter';
+import { CriticalSection } from '../../common/CriticalSection';
+import { ExtendedDoublyLinkedList } from '../../common/ExtendedDoublyLinkedList';
+import { IMessage } from '../../types/IMessage';
+import { SourceReadingSession } from '../SourceReadingSession';
+import { IBlockchainSourceSubject, IListSource, LowLevelMessagesSource } from '../types';
 import { ListCache } from './ListCache';
 import { ListStorage } from './ListStorage';
-import { SourceReadingSession } from '../SourceReadingSession';
-import { IBlockchainSourceSubject } from '../types/IBlockchainSourceSubject';
-import { IListSource } from '../types/IListSource';
-import { LowLevelMessagesSource } from '../types/LowLevelMessagesSource';
-import { validateDesc } from '../..';
 
 export class ListSource extends AsyncEventEmitter implements IListSource {
 	private readonly cache: ListCache<IMessage>;
-	public readonly storage: ListStorage<IMessage>;
+	private readonly storage: ListStorage<IMessage>;
 
-	private criticalSection = new CriticalSection();
-	private newMessagesCriticalSection = new CriticalSection();
+	private storageInitializationPromise: Promise<void>;
+	private storageInitializationPromiseResolver!: () => void;
 
-	private _lastSize = 2;
-	private _minReadingSize = 10;
-	private _paused = true;
-	private _drained = false;
-	private _drainedByError = false;
-	private _newMessagesBlocked = 0;
+	private isListInitializationLoading = false;
+	private listInitializationPromise: Promise<void> | null = null;
+	private listInitializationPromiseResolver!: () => void;
+
+	private trackingNewMessagesDispose: null | (() => void) = null;
+
+	protected newMessagesSubscriptions: Set<{
+		name: string;
+		callback: () => void;
+	}> = new Set();
+
+	private requestCriticalSection = new CriticalSection();
+	private loadingCriticalSection = new CriticalSection();
 
 	constructor(
 		public readonly readingSession: SourceReadingSession,
@@ -45,6 +51,13 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			);
 			this.readingSession.storageRepository.set(subject, this.storage);
 		}
+		this.storageInitializationPromise = new Promise<void>(resolve => {
+			this.storageInitializationPromiseResolver = resolve;
+		});
+		this.listInitializationPromise = new Promise<void>(resolve => {
+			this.listInitializationPromiseResolver = resolve;
+		});
+		void this.initializeStorage();
 	}
 
 	getName() {
@@ -55,190 +68,135 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 		return this.source.compare(a, b);
 	}
 
-	async blockNewMessages() {
-		this._newMessagesBlocked++;
-		if (this._newMessagesBlocked === 1) {
-			await this.newMessagesCriticalSection.enter();
-		}
-	}
-
-	async unblockNewMessages() {
-		this._newMessagesBlocked--;
-		if (this._newMessagesBlocked < 0) {
-			// eslint-disable-next-line
-			console.error('Must never happen: < 0 new messages block');
-		}
-		if (this._newMessagesBlocked === 0) {
-			this.newMessagesCriticalSection.leave();
-		}
+	get readToBottom() {
+		return this.storage.readToBottom;
 	}
 
 	get guaranteedSegment(): ExtendedDoublyLinkedList<IMessage> | null {
-		return this._paused ? null : this.storage.segments.length ? this.storage.segments[0] : null;
+		return this.storage.segments.length ? this.storage.segments[0] : null;
 	}
 
-	get paused() {
-		return this._paused;
+	private async ready() {
+		await this.initializeList();
 	}
 
-	get drained() {
-		return this._drained;
-	}
-
-	get drainedByError() {
-		return this._drainedByError;
-	}
-
-	get guaranteed() {
-		return this._paused ? 0 : this.guaranteedSegment?.count() || 0;
-	}
-
-	async loadStorage() {
+	private async initializeStorage() {
 		await this.storage.load();
+		this.storageInitializationPromiseResolver();
 	}
 
-	private connectToStart(messages: IMessage[]): IMessage[] {
-		const lastMessage = this.guaranteedSegment?.head()?.getValue();
-		const connectedMessages = messages.concat(lastMessage ? [lastMessage] : []);
-		return connectedMessages;
-	}
-
-	private handleNewMessages = async ({ messages }: { messages: IMessage[] }) => {
-		await this.newMessagesCriticalSection.enter();
-		const connectedMessages = this.connectToStart(messages);
-		await this.storage.putObjects(connectedMessages, true);
-		void this.emit('messages', { messages }, false);
-		await this.emit('guaranteedSegmentUpdated');
-		this.newMessagesCriticalSection.leave();
-	};
-
-	async resume() {
-		try {
-			if (!this.paused) {
-				return;
-			}
-			await this.criticalSection.enter();
-			if (!this.paused) {
-				return;
-			}
-			if (!this.guaranteedSegment) {
-				await this.loadStorage();
-			}
-			const _lastMessage = this.guaranteedSegment?.head().getValue();
-			const lastMutableParams = await this.cache.loadLastMutableParams();
-			const last = await this.source.getLast(this._lastSize, _lastMessage, lastMutableParams);
-			this.validateDesc(last);
-			await this.cache.saveLastMutableParams(lastMutableParams);
-			if (last.length < this._lastSize) {
-				this._drained = true;
-			}
-			this._paused = false;
-			if (last.length > 0) {
-				await this.storage.putObjects(last, true);
-				await this.emit('guaranteedSegmentUpdated');
-			}
-			const lastMessage = this.guaranteedSegment?.head()?.getValue();
-			// eslint-disable-next-line @typescript-eslint/no-misused-promises
-			this.source.on('messages', this.handleNewMessages);
-			this.source.resume(lastMessage);
-		} catch (err) {
-			this._paused = false;
-			this._drainedByError = true;
-			this._drained = true;
-			await this.emit('guaranteedSegmentUpdated');
-			// eslint-disable-next-line
-			console.error('ListSource err: ', err);
-			// debugger;
-		} finally {
-			this.criticalSection.leave();
+	private async initializeList() {
+		if (this.isListInitializationLoading) {
+			await this.listInitializationPromise;
+			return;
 		}
-	}
-
-	pause() {
-		this.source.pause();
-		// eslint-disable-next-line @typescript-eslint/no-misused-promises
-		this.source.off('messages', this.handleNewMessages);
-		this._paused = true;
-	}
-
-	async readUntil(length: number) {
-		while (this.guaranteed < length && !this.drained) {
-			const size = length - this.guaranteed;
-			const readSize = Math.max(this._minReadingSize, size);
-			await this.readMore(readSize);
+		this.isListInitializationLoading = true;
+		await this.storageInitializationPromise;
+		if (this.storage.segments.length) {
+			this.listInitializationPromiseResolver();
+			return;
 		}
+		await this.loadMore(10);
+		this.listInitializationPromiseResolver();
 	}
 
-	private log(...args: any[]) {
-		// console.log('LS: ', ...args);
+	private async loadMore(limit = 10) {
+		if (this.storage.readToBottom) {
+			return;
+		}
+		await this.loadingCriticalSection.enter();
+		const gs = this.guaranteedSegment;
+		const before = gs ? gs.tail().getValue() : null;
+		const msgs = before ? await this.source.getBefore(before, limit) : await this.source.getLast(limit);
+		if (msgs.length) {
+			if (msgs.length < limit) {
+				this.storage.readToBottom = true;
+			}
+			const connected = before ? [before, ...msgs] : msgs;
+			await this.storage.putObjects(connected);
+		} else {
+			this.storage.readToBottom = true;
+			await this.storage.dropToCache();
+		}
+		this.loadingCriticalSection.leave();
 	}
 
-	private validateDesc(vals: IMessage[]) {
-		return validateDesc(this.getName(), vals, this.compare.bind(this));
-	}
-
-	async readMore(size: number) {
-		try {
-			this.log('readMore', size);
-			const availableNow = this.guaranteed;
-			await this.criticalSection.enter();
-			const reducedSize = size - (this.guaranteed - availableNow);
-			if (reducedSize <= 0) {
-				return;
-			}
-			if (this._paused) {
-				throw new Error(`You can't read more from paused ListSource. Please, resume it first`);
-			}
-			if (this._drained) {
-				return;
-			}
-			this.log('readMore', reducedSize);
-			if (!this.guaranteedSegment) {
-				const readSize = Math.max(this._minReadingSize, reducedSize);
-				this.log('readMore12', readSize);
-				const last = await this.source.getLast(readSize);
-				this.validateDesc(last);
-				this.log('readMore13', last.length);
-				if (last.length < readSize) {
-					this._drained = true;
+	private async request(name: string, from: IMessage, limit = 10) {
+		await this.requestCriticalSection.enter();
+		const gs = this.guaranteedSegment;
+		if (gs) {
+			const findPosition = gs.find(n => n.getValue().msgId === from.msgId);
+			if (findPosition) {
+				let available = 0;
+				let curr = findPosition.getNext();
+				while (curr) {
+					available++;
+					if (available >= limit) {
+						break;
+					}
+					curr = curr.getNext();
 				}
-				if (last.length > 0) {
-					this.log('readMore14', last.length);
-					await this.storage.putObjects(last, true);
-					this.log('readMore15', last.length);
-					await this.emit('guaranteedSegmentUpdated');
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-					const lastMessage = this.guaranteedSegment!.head()?.getValue();
-					this.log('readMore16', lastMessage);
-					this.source.resume(lastMessage);
+				if (available >= limit) {
+					return;
+				} else {
+					await this.loadMore(limit - available);
 				}
 			} else {
-				this.log('readMore2', reducedSize);
-				const lastInSegment = this.guaranteedSegment.tail()?.getValue();
-				const readSize = Math.max(this._minReadingSize, reducedSize);
-				this.log('readMore3', readSize);
-				const newOnes = await this.source.getBefore(lastInSegment, readSize);
-				this.validateDesc(newOnes);
-				if (newOnes.length < readSize) {
-					this._drained = true;
-				}
-				this.log('readMore4', newOnes.length);
-				if (newOnes.length > 0) {
-					const objects = [lastInSegment, ...newOnes];
-					this.validateDesc(objects);
-					await this.storage.putObjects(objects, true);
-					await this.emit('guaranteedSegmentUpdated');
-				}
-				this.log('readMore5', newOnes.length);
+				throw new Error('You cant load messages after inexistent message');
 			}
-		} catch (err) {
-			// eslint-disable-next-line
-			console.error('readNext err: ', err);
-			this._drainedByError = true;
-			this._drained = true;
-			await this.emit('guaranteedSegmentUpdated');
-		} finally {
-			this.criticalSection.leave();
+		} else {
+			await this.loadMore(limit);
 		}
+		this.requestCriticalSection.leave();
+	}
+
+	private async handleNewMessages({ messages, afterMsgId }: { messages: IMessage[]; afterMsgId?: string }) {
+		await this.requestCriticalSection.enter();
+		await this.loadingCriticalSection.enter();
+		// if (afterMsgId) {
+		// 	const findPosition = this.guaranteedSegment?.find(node => node.getValue().msgId === afterMsgId);
+		// 	if (findPosition) {
+		// 		messages.push(findPosition.getValue());
+		// 	}
+		// }
+		if (this.guaranteedSegment) {
+			messages = [...messages, this.guaranteedSegment.head().getValue()];
+		}
+		await this.storage.putObjects(messages);
+		for (const subs of this.newMessagesSubscriptions) {
+			subs.callback();
+		}
+		this.loadingCriticalSection.leave();
+		this.requestCriticalSection.leave();
+	}
+
+	async connect(subscriptionName: string, newMessagesCallback: () => void) {
+		await this.storageInitializationPromise;
+		const subscription = { name: subscriptionName, callback: newMessagesCallback };
+		this.newMessagesSubscriptions.add(subscription);
+		if (this.newMessagesSubscriptions.size === 1) {
+			this.trackingNewMessagesDispose = this.source.startTrackingNewMessages(
+				`${this.getName()}.tracking`,
+				params => {
+					this.handleNewMessages(params).catch(e => {
+						console.error(e);
+					});
+				},
+			);
+			await this.ready();
+		}
+		return {
+			request: this.request.bind(this, subscriptionName),
+			dispose: () => {
+				this.newMessagesSubscriptions.delete(subscription);
+				if (this.newMessagesSubscriptions.size === 0) {
+					if (this.trackingNewMessagesDispose) {
+						this.trackingNewMessagesDispose();
+					} else {
+						throw new Error('trackingNewMessagesDispose is not defined');
+					}
+				}
+			},
+		};
 	}
 }
