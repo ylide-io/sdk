@@ -117,8 +117,13 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			if (msgs.length < limit) {
 				this.storage.readToBottom = true;
 			}
-			const connected = before ? [before, ...msgs] : msgs;
-			await this.storage.putObjects(connected);
+			const connected = afterOrBefore !== 'after' && before ? [before, ...msgs] : msgs;
+			try {
+				await this.storage.putObjects(connected);
+			} catch (err) {
+				console.error('StorageError: ', this.getName(), afterOrBefore, before, gs, msgs);
+				throw err;
+			}
 		} else {
 			this.storage.readToBottom = true;
 			await this.storage.dropToCache();
