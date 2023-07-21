@@ -170,7 +170,9 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 		// 	}
 		// }
 		if (this.guaranteedSegment) {
-			messages = [...messages, this.guaranteedSegment.head().getValue()];
+			if (this.compare(this.guaranteedSegment.head().getValue(), messages[messages.length - 1]) < 0) {
+				messages = [...messages, this.guaranteedSegment.head().getValue()];
+			}
 		}
 		await this.storage.putObjects(messages);
 		for (const subs of this.newMessagesSubscriptions) {

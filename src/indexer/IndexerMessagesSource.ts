@@ -155,7 +155,7 @@ export class IndexerMessagesSource implements LowLevelMessagesSource {
 		}
 	}
 
-	drainNewMessages(messages: IMessage[]) {
+	commitNewMessages(messages: IMessage[]) {
 		if (messages.length) {
 			this.lastMessage = messages[0];
 			this.newMessagesSubscriptions.forEach(s => s.callback({ messages, afterMsgId: undefined }));
@@ -166,6 +166,6 @@ export class IndexerMessagesSource implements LowLevelMessagesSource {
 		const messages = this.lastMessage
 			? await this.getAfter(this.lastMessage, this.limit)
 			: await this.getLast(this.limit);
-		this.drainNewMessages(messages);
+		this.commitNewMessages(messages);
 	}
 }

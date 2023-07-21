@@ -103,7 +103,7 @@ export class IndexerHub {
 			if (data.type === 'ylide-direct-message') {
 				for (const instance of this.subscriptions) {
 					if (data.channels.includes(instance.channel)) {
-						instance.drainNewMessages([
+						instance.commitNewMessages([
 							{
 								...data.msg,
 								key: new Uint8Array(data.msg.key),
