@@ -36,6 +36,9 @@ export class ListSourceDrainer {
 		this._filter = newFilter;
 		this.recalcMessages();
 		this._filled = Math.min(this._minReadingSize, this._messages.length);
+		if (this._filled < this._minReadingSize && !this.source.readToBottom) {
+			await this.request('DrainerFilter', null, this._minReadingSize - this._filled);
+		}
 		this.requestCriticalSection.leave();
 	}
 
