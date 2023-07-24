@@ -62,7 +62,7 @@ export class ListCache<T> {
 	}
 
 	private async openDB() {
-		return await openDB<DBInterface>('ylide-storage-F', 1, {
+		return await openDB<DBInterface>('ylide-storage-H', 1, {
 			upgrade: db => {
 				const groupsStore = db.createObjectStore('group', {
 					keyPath: 'id',

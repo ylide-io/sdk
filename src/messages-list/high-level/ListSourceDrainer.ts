@@ -70,12 +70,19 @@ export class ListSourceDrainer {
 		this.newMessagesSubscriptions.forEach(g => g.callback());
 	}
 
-	private async requestRaw(name: string, from: IMessage, limit = 10) {
-		const idx = this._messages.findIndex(m => m.msg.msgId === from.msgId);
-		if (idx === -1) {
-			throw new Error('You cant load messages after inexistent message');
+	private async requestRaw(name: string, from: IMessage | null, limit = 10) {
+		let available;
+
+		if (from) {
+			const idx = this._messages.findIndex(m => m.msg.msgId === from.msgId);
+			if (idx === -1) {
+				throw new Error('You cant load messages after inexistent message');
+			}
+			available = this._messages.length - idx - 1;
+		} else {
+			available = this._messages.length;
 		}
-		const available = this._messages.length - idx - 1;
+
 		if (available >= limit) {
 			return;
 		}
@@ -89,30 +96,35 @@ export class ListSourceDrainer {
 		if (this.source.readToBottom) {
 			return;
 		}
+		if (!this.source.guaranteedSegment.length) {
+			throw new Error('Multiplexer could be empty only if readToBottom is true');
+		}
 		const toRead = Math.max(needToReed, this._minReadingSize);
 		await this._requester(this.source.guaranteedSegment[this.source.guaranteedSegment.length - 1].msg, toRead);
 
 		this.recalcMessages();
 	}
 
-	private async request(name: string, from: IMessage, limit = 10) {
+	private async request(name: string, from: IMessage | null, limit = 10) {
 		await this.requestCriticalSection.enter();
-		const idx = this._messages.findIndex(m => m.msg.msgId === from.msgId);
-		if (idx === -1) {
-			throw new Error('You cant load messages after inexistent message');
+		let available;
+		let idx = -1;
+		if (from) {
+			idx = this._messages.findIndex(m => m.msg.msgId === from.msgId);
+			if (idx === -1) {
+				throw new Error('You cant load messages after inexistent message');
+			}
+			available = this._messages.length - idx - 1;
+		} else {
+			available = this._messages.length;
 		}
-		let available = this._messages.length - idx - 1;
+
 		while (available < limit && !this.source.readToBottom) {
 			await this.requestRaw(name, from, limit - available);
-			available = this._messages.length - idx - 1;
+			available = from ? this._messages.length - idx - 1 : this._messages.length;
 		}
 
-		let newFilled = idx + 1 + limit;
-		if (newFilled > this._messages.length) {
-			newFilled = this._messages.length;
-		}
-		this._filled = newFilled;
-
+		this._filled = from ? Math.min(idx + 1 + limit, this._messages.length) : Math.min(limit, this._messages.length);
 		this.requestCriticalSection.leave();
 	}
 
@@ -120,8 +132,8 @@ export class ListSourceDrainer {
 		if (this.readToBottom) {
 			return;
 		}
-		if (this._messages.length === 0) {
-			throw new Error('You cant load messages before connect');
+		if (!this._messages.length) {
+			throw new Error(`You cant load next page before connect`);
 		}
 		await this.request(name, this._messages[this._messages.length - 1].msg, this._minReadingSize);
 	}
@@ -135,6 +147,9 @@ export class ListSourceDrainer {
 			this._disposer = dispose;
 			this.recalcMessages();
 			this._filled = Math.min(this._minReadingSize, this._messages.length);
+			if (this._filled < this._minReadingSize) {
+				await this.request(subscriptionName, null, this._minReadingSize - this._filled);
+			}
 		}
 		return {
 			request: this.request.bind(this, subscriptionName),

@@ -10,6 +10,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	private _minReadingSize = 10;
 
 	private requestCriticalSection = new CriticalSection();
+	private connectCriticalSection = new CriticalSection();
 
 	protected newMessagesSubscriptions: Set<{
 		name: string;
@@ -75,19 +76,24 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 		}
 	}
 
-	private async requestRaw(name: string, from: IMessage, limit = 10) {
+	private async requestRaw(name: string, from: IMessage | null, limit = 10) {
 		if (!this._messages || !this.sourceToFilter.guaranteedSegment) {
 			throw new Error('You cant load messages after inexistent message');
 		}
-		const idx = this._messages.find(m => m.getValue().msgId === from.msgId);
-		if (!idx) {
-			throw new Error('You cant load messages after inexistent message');
-		}
+		let idx = null;
 		let available = 0;
-		let curr = idx.getNext();
-		while (curr) {
-			available++;
-			curr = curr.getNext();
+		if (from) {
+			idx = this._messages.find(m => m.getValue().msgId === from.msgId);
+			if (!idx) {
+				throw new Error('You cant load messages after inexistent message');
+			}
+			let curr = idx ? idx.getNext() : null;
+			while (curr) {
+				available++;
+				curr = curr.getNext();
+			}
+		} else {
+			available = this._messages.count();
 		}
 		if (available >= limit) {
 			return;
@@ -121,28 +127,37 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 		}
 	}
 
-	private async request(name: string, from: IMessage, limit = 10) {
+	private async request(name: string, from: IMessage | null, limit = 10) {
 		await this.requestCriticalSection.enter();
 		if (!this._messages || !this.sourceToFilter.guaranteedSegment) {
 			throw new Error('You cant load messages after inexistent message');
 		}
-		const idx = this._messages.find(m => m.getValue().msgId === from.msgId);
-		if (!idx) {
-			throw new Error('You cant load messages after inexistent message');
-		}
+		let idx = null;
 		let available = 0;
-		let curr = idx.getNext();
-		while (curr) {
-			available++;
-			curr = curr.getNext();
-		}
-		while (available < limit && !this.sourceToFilter.readToBottom) {
-			await this.requestRaw(name, from, limit);
-			available = 0;
-			curr = idx.getNext();
+		if (from) {
+			idx = this._messages.find(m => m.getValue().msgId === from.msgId);
+			if (!idx) {
+				throw new Error('You cant load messages after inexistent message');
+			}
+			let curr = idx ? idx.getNext() : null;
 			while (curr) {
 				available++;
 				curr = curr.getNext();
+			}
+		} else {
+			available = this._messages.count();
+		}
+		while (available < limit && !this.sourceToFilter.readToBottom) {
+			await this.requestRaw(name, from, limit);
+			if (idx) {
+				available = 0;
+				let curr = idx.getNext();
+				while (curr) {
+					available++;
+					curr = curr.getNext();
+				}
+			} else {
+				available = this._messages.count();
 			}
 		}
 
@@ -150,6 +165,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	async connect(subscriptionName: string, newMessagesCallback: () => void) {
+		await this.connectCriticalSection.enter();
 		const subscription = { name: subscriptionName, callback: newMessagesCallback };
 		this.newMessagesSubscriptions.add(subscription);
 		if (this.newMessagesSubscriptions.size === 1) {
@@ -157,7 +173,11 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 			this._requester = request;
 			this._disposer = dispose;
 			this._messages = this.sourceToFilter.guaranteedSegment?.filter(this.filter);
+			if (this._messages?.count() === 0) {
+				await this.request(subscriptionName, null, this._minReadingSize);
+			}
 		}
+		this.connectCriticalSection.leave();
 		return {
 			request: this.request.bind(this, subscriptionName),
 			dispose: () => {

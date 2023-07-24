@@ -27,6 +27,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 
 	private requestCriticalSection = new CriticalSection();
 	private loadingCriticalSection = new CriticalSection();
+	private connectCriticalSection = new CriticalSection();
 
 	constructor(
 		public readonly readingSession: SourceReadingSession,
@@ -101,7 +102,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	private async loadMore(afterOrBefore: 'after' | 'before', limit = 10) {
-		if (this.storage.readToBottom) {
+		if (afterOrBefore === 'before' && this.storage.readToBottom) {
 			return;
 		}
 		await this.loadingCriticalSection.enter();
@@ -183,6 +184,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	async connect(subscriptionName: string, newMessagesCallback: () => void) {
+		await this.connectCriticalSection.enter();
 		await this.storageInitializationPromise;
 		const subscription = { name: subscriptionName, callback: newMessagesCallback };
 		this.newMessagesSubscriptions.add(subscription);
@@ -197,6 +199,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 			);
 			await this.ready();
 		}
+		this.connectCriticalSection.leave();
 		return {
 			request: this.request.bind(this, subscriptionName),
 			dispose: () => {

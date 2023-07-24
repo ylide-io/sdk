@@ -478,6 +478,20 @@ export class YlideCore {
 		return wallet.sendBroadcast(sender, feedId, container, walletOptions || {});
 	}
 
+	async getMessageByMsgId(msgId: string): Promise<IMessage | null> {
+		for (const controller of this.controllers.blockchains) {
+			if (controller.isValidMsgId(msgId)) {
+				try {
+					return await controller.getMessageByMsgId(msgId);
+				} catch (err) {
+					console.error('Error getting message by msgId', err);
+					return null;
+				}
+			}
+		}
+		return null;
+	}
+
 	async getMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null> {
 		const blockchain = this.getMessageBlockchainController(msg);
 		if (!blockchain) {
