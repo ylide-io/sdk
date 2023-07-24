@@ -18,6 +18,19 @@ export type ISourceSubject =
 			sender: string | null;
 	  };
 
+export type ILooseSourceSubject =
+	| {
+			type: BlockchainSourceType.BROADCAST;
+			feedId: Uint256 | null;
+			sender: string | null;
+	  }
+	| {
+			type: BlockchainSourceType.DIRECT;
+			feedId: Uint256 | null;
+			recipient: Uint256 | null;
+			sender: string | null;
+	  };
+
 export type IBlockchainSourceSubject = ISourceSubject & {
 	blockchain: string;
 	id: string;
