@@ -1,9 +1,4 @@
-import { MessageContentV3 } from './MessageContentV3';
-import pako from 'pako';
-import nacl from 'tweetnacl';
-import { symmetricDecrypt, symmetricEncrypt } from '../crypto/symmetric';
-import { MessageContent } from '.';
-import { MessageContentV4 } from './MessageContentV4';
+import { deflate, inflate } from 'pako';
 
 /**
  * @category Content
@@ -29,7 +24,7 @@ export class MessagePackedContent {
 	 * @returns Bytes of compression result
 	 */
 	static pack(bytes: Uint8Array): Uint8Array {
-		return pako.deflate(bytes);
+		return deflate(bytes);
 	}
 
 	/**
@@ -39,6 +34,6 @@ export class MessagePackedContent {
 	 * @returns Bytes of decompression result
 	 */
 	static unpack(bytes: Uint8Array): Uint8Array {
-		return pako.inflate(bytes);
+		return inflate(bytes);
 	}
 }

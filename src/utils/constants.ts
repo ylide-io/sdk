@@ -1,3 +1,3 @@
-import { Uint256 } from '../types';
+import type { Uint256 } from '../primitives';
 
 export const YLIDE_MAIN_FEED_ID = '0000000000000000000000000000000000000000000000000000000000000000' as Uint256;

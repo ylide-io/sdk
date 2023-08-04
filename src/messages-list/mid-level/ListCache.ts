@@ -1,5 +1,7 @@
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import { ListStorage } from './ListStorage';
+import { openDB } from 'idb';
+
+import type { DBSchema, IDBPDatabase } from 'idb';
+import type { ListStorage } from './ListStorage';
 
 interface DBInterface extends DBSchema {
 	groupLast: {

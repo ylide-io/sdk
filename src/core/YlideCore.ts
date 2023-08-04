@@ -1,40 +1,44 @@
 import { MessageBlob } from '../content/MessageBlob';
-import type { MessageContent } from '../content/MessageContent';
-import type { MessageContentV3 } from '../content/MessageContentV3';
-import type { MessageContentV4 } from '../content/MessageContentV4';
-import type { MessageContentV5 } from './../content/MessageContentV5';
 import { MessageSecureContext } from '../content/MessageSecureContext';
 import { IndexerHub } from '../indexer/IndexerHub';
 import { IndexerMessagesSource } from '../indexer/IndexerMessagesSource';
-import type { YlideControllers } from './YlideControllers';
 import { PuppetListSource } from '../messages-list/mid-level/PuppetListSource';
-import type { IGenericAccount } from '../types/IGenericAccount';
-import type { AbstractWalletController } from '../abstracts/AbstractWalletController';
-import { Uint256, uint256ToUint8Array, uint8ArrayToUint256 } from '../types/Uint256';
-import type { YlideKeyStore } from '../keystore/YlideKeyStore';
+import { uint256ToUint8Array, uint8ArrayToUint256 } from '../primitives/Uint256';
 import { sha256 } from '../crypto/sha256';
-import type { ExternalYlidePublicKey } from '../types/ExternalPublicKey';
-import { Ylide } from '../Ylide';
-import { PublicKeyType } from '../types/PublicKeyType';
-import { PublicKey } from '../types/PublicKey';
-import type { BlockchainControllerFactory } from '../abstracts/BlockchainControllerFactory';
-import type { AbstractBlockchainController } from '../abstracts/AbstractBlockchainController';
-import type { ISourceSubject } from '../messages-list/types/IBlockchainSourceSubject';
-import type { SourceReadingSession } from '../messages-list/SourceReadingSession';
-import type { IListSource } from '../messages-list/types/IListSource';
+import { RemotePublicKey } from '../keystore/RemotePublicKey';
+import { PublicKeyType } from '../primitives/PublicKeyType';
+import { PublicKey } from '../primitives/PublicKey';
 import { ListSource } from '../messages-list/mid-level/ListSource';
-import { ServiceCode } from '../types/ServiceCode';
+import { ServiceCode } from '../primitives/ServiceCode';
 import { DynamicEncryptionRouter } from '../cross-chain/DynamicEncryptionRouter';
 import { YLIDE_MAIN_FEED_ID } from '../utils/constants';
-import { IUnpackedMessageContainer, MessageContainer } from '../content/MessageContainer';
-import type { IMessage, IMessageContent, IMessageCorruptedContent } from '../types/IMessage';
+import { MessageContainer } from '../content/MessageContainer';
 import { MessageKey } from '../content/MessageKey';
-import type { YlideKey } from '../keystore/YlideKey';
 import { YlideError, YlideErrorType } from '../errors/YlideError';
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import type { YlidePrivateKey, YlidePrivateKeyHandlers } from '../keystore';
+import type { WalletAccount } from '../primitives/WalletAccount';
+import type { IUnpackedMessageContainer } from '../content/MessageContainer';
+import type { Uint256 } from '../primitives/Uint256';
+import type { YlideKeyRegistry } from '../keystore/YlideKeysRegistry';
+import type { IMessage, IMessageContent, IMessageCorruptedContent } from '../primitives/IMessage';
+import type { IListSource } from '../messages-list/types/IListSource';
+import type { SourceReadingSession } from '../messages-list/SourceReadingSession';
+import type { ISourceSubject } from '../messages-list/types/IBlockchainSourceSubject';
+import type { AbstractBlockchainController } from '../abstracts/AbstractBlockchainController';
+import type { BlockchainControllerFactory } from '../abstracts/BlockchainControllerFactory';
+import type { AbstractWalletController } from '../abstracts/AbstractWalletController';
+import type { YlideControllers } from './YlideControllers';
+import type { MessageContentV3 } from '../content/MessageContentV3';
+import type { MessageContentV4 } from '../content/MessageContentV4';
+import type { MessageContentV5 } from './../content/MessageContentV5';
+import type { MessageContent } from '../content/MessageContent';
+import type { Ylide } from '../Ylide';
 
 export interface SendMessageArgs {
 	wallet: AbstractWalletController;
-	sender: IGenericAccount;
+	sender: WalletAccount;
 	content: MessageContent;
 	recipients: string[];
 	secureContext?: MessageSecureContext;
@@ -45,7 +49,7 @@ export interface SendMessageArgs {
 
 export interface BroadcastMessageArgs {
 	wallet: AbstractWalletController;
-	sender: IGenericAccount;
+	sender: WalletAccount;
 	feedId: Uint256;
 	content: MessageContent;
 	serviceCode?: number;
@@ -55,8 +59,9 @@ export class YlideCore {
 	readonly indexer: IndexerHub;
 
 	constructor(
+		public readonly ylide: Ylide,
 		public readonly controllers: YlideControllers,
-		public readonly keystore: YlideKeyStore,
+		public readonly keyRegistry: YlideKeyRegistry,
 		private readonly indexerBlockchains: string[] = [],
 		useWebSocketPulling?: boolean,
 	) {
@@ -71,17 +76,17 @@ export class YlideCore {
 		Record<
 			string,
 			{
-				freshestKey: ExternalYlidePublicKey | null;
-				remoteKeys: Record<string, ExternalYlidePublicKey | null>;
+				freshestKey: RemotePublicKey | null;
+				remoteKeys: Record<string, RemotePublicKey | null>;
 			}
 		>
 	> {
-		const blockchains = Ylide.blockchainsList.map(({ factory }) => ({
+		const blockchains = this.ylide.blockchainsList.map(({ factory }) => ({
 			factory,
 			controller: this.controllers.blockchainsMap[factory.blockchain],
 		}));
 
-		let indexerResult: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
+		let indexerResult: Record<string, Record<string, RemotePublicKey | null>> = {};
 
 		if (this.indexerBlockchains.length) {
 			const indexerAddresses = addresses.filter(a =>
@@ -93,21 +98,26 @@ export class YlideCore {
 				indexerResult = await this.indexer.retryingOperation(
 					async () => {
 						const rawResult = await this.indexer.requestMultipleKeys(indexerAddresses);
-						const result: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
+						const result: Record<string, Record<string, RemotePublicKey | null>> = {};
 						for (const address of Object.keys(rawResult)) {
 							for (const bc of Object.keys(rawResult[address])) {
 								if (!result[address]) {
 									result[address] = {};
 								}
 								const kkey = rawResult[address][bc];
-								result[address][bc] = kkey
-									? {
-											keyVersion: kkey.keyVersion,
-											publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, kkey.publicKey),
-											timestamp: kkey.timestamp,
-											registrar: kkey.registrar,
-									  }
-									: null;
+								const bcGroup = this.getBlockchainGroupByBlockchain(bc);
+								if (bcGroup) {
+									result[address][bc] = kkey
+										? new RemotePublicKey(
+												bcGroup,
+												bc,
+												address,
+												new PublicKey(PublicKeyType.YLIDE, kkey.keyVersion, kkey.publicKey),
+												kkey.timestamp,
+												kkey.registrar,
+										  )
+										: null;
+								}
 							}
 						}
 						return result;
@@ -135,10 +145,10 @@ export class YlideCore {
 		const readFromBlockchains = async (
 			fromBlockchains: { factory: BlockchainControllerFactory; controller: AbstractBlockchainController }[],
 		) => {
-			const blockchainRemoteKeys: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
+			const blockchainRemoteKeys: Record<string, Record<string, RemotePublicKey | null>> = {};
 			await Promise.all(
 				addresses.map(async address => {
-					const remoteKeys: Record<string, ExternalYlidePublicKey | null> = {};
+					const remoteKeys: Record<string, RemotePublicKey | null> = {};
 
 					await Promise.all(
 						fromBlockchains.map(async ({ factory, controller }) => {
@@ -163,7 +173,7 @@ export class YlideCore {
 
 		const blockchainsResult = await readFromBlockchains(toReadFromBlockchain);
 
-		const globalResult: Record<string, Record<string, ExternalYlidePublicKey | null>> = {};
+		const globalResult: Record<string, Record<string, RemotePublicKey | null>> = {};
 		// merge results:
 		for (const address of addresses) {
 			globalResult[address] = {
@@ -175,14 +185,14 @@ export class YlideCore {
 		const processedResult: Record<
 			string,
 			{
-				freshestKey: ExternalYlidePublicKey | null;
-				remoteKeys: Record<string, ExternalYlidePublicKey | null>;
+				freshestKey: RemotePublicKey | null;
+				remoteKeys: Record<string, RemotePublicKey | null>;
 			}
 		> = {};
 		for (const address of addresses) {
 			const remoteKeys = globalResult[address];
 			const bcs = Object.keys(remoteKeys);
-			let freshestKey: ExternalYlidePublicKey | null = null;
+			let freshestKey: RemotePublicKey | null = null;
 			for (const bc of bcs) {
 				const kkey = remoteKeys[bc];
 				if (kkey && (!freshestKey || freshestKey.timestamp < kkey.timestamp)) {
@@ -198,11 +208,15 @@ export class YlideCore {
 		return processedResult;
 	}
 
+	getBlockchainGroupByBlockchain(blockchain: string): string | undefined {
+		return this.ylide.blockchainsList.find(b => b.factory.blockchain === blockchain)?.factory.blockchainGroup;
+	}
+
 	async getAddressKeys(address: string): Promise<{
-		freshestKey: ExternalYlidePublicKey | null;
-		remoteKeys: Record<string, ExternalYlidePublicKey | null>;
+		freshestKey: RemotePublicKey | null;
+		remoteKeys: Record<string, RemotePublicKey | null>;
 	}> {
-		const blockchains = Ylide.blockchainsList.map(({ factory }) => ({
+		const blockchains = this.ylide.blockchainsList.map(({ factory }) => ({
 			factory,
 			controller: this.controllers.blockchainsMap[factory.blockchain],
 		}));
@@ -213,7 +227,7 @@ export class YlideCore {
 		const readFromBlockchains = async (
 			fromBlockchains: { factory: BlockchainControllerFactory; controller: AbstractBlockchainController }[],
 		) => {
-			const remoteKeys: Record<string, ExternalYlidePublicKey | null> = {};
+			const remoteKeys: Record<string, RemotePublicKey | null> = {};
 			await Promise.all(
 				fromBlockchains.map(async ({ factory, controller }) => {
 					try {
@@ -237,14 +251,29 @@ export class YlideCore {
 					.filter(b => this.indexerBlockchains.includes(b.factory.blockchain))
 					.some(b => b.controller.isAddressValid(address))
 			) {
-				const remoteKeys: Record<string, ExternalYlidePublicKey | null> = {};
+				const remoteKeys: Record<string, RemotePublicKey | null> = {};
 				const rawRemoteKeys = await this.indexer.requestKeys(address);
 				const bcs = Object.keys(rawRemoteKeys);
 				for (const bc of bcs) {
-					remoteKeys[bc] = {
+					const aggr = {
 						...rawRemoteKeys[bc],
-						publicKey: PublicKey.fromBytes(PublicKeyType.YLIDE, rawRemoteKeys[bc].publicKey),
+						publicKey: new PublicKey(
+							PublicKeyType.YLIDE,
+							rawRemoteKeys[bc].keyVersion,
+							rawRemoteKeys[bc].publicKey,
+						),
 					};
+					const bcGroup = this.getBlockchainGroupByBlockchain(bc);
+					if (bcGroup) {
+						remoteKeys[bc] = new RemotePublicKey(
+							bcGroup,
+							bc,
+							address.toLowerCase(),
+							aggr.publicKey,
+							aggr.timestamp,
+							aggr.registrar,
+						);
+					}
 				}
 				return remoteKeys;
 			} else {
@@ -265,7 +294,7 @@ export class YlideCore {
 		const blockchainRemoteKeys = toReadFromBlockchain.length ? await readFromBlockchains(toReadFromBlockchain) : {};
 
 		const finalRemoteKeys = { ...indexerRemoteKeys, ...blockchainRemoteKeys };
-		let freshestKey: ExternalYlidePublicKey | null = null;
+		let freshestKey: RemotePublicKey | null = null;
 		for (const bc of Object.keys(finalRemoteKeys)) {
 			const key = finalRemoteKeys[bc];
 			if (key) {
@@ -282,21 +311,19 @@ export class YlideCore {
 		};
 	}
 
-	async getAddressesKeysHistory(
-		addresses: string[],
-	): Promise<Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]>> {
-		const blockchains = Ylide.blockchainsList.map(({ factory }) => ({
+	async getAddressesKeysHistory(addresses: string[]): Promise<Record<string, RemotePublicKey[]>> {
+		const blockchains = this.ylide.blockchainsList.map(({ factory }) => ({
 			factory,
 			controller: this.controllers.blockchainsMap[factory.blockchain],
 		}));
 
-		const indexerResult: Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]> = {};
+		const indexerResult: Record<string, RemotePublicKey[]> = {};
 
 		// if (this.indexerBlockchains.length) {
 		// 	indexerResult = await this.indexer.retryingOperation(
 		// 		async () => {
 		// 			const rawResult = await this.indexer.requestKeysHistory(addresses);
-		// 			const result: Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]> = {};
+		// 			const result: Record<string, { key: RemotePublicKey; blockchain: string }[]> = {};
 		// 			for (const address of Object.keys(rawResult)) {
 		// 				if (!result[address]) {
 		// 					result[address] = [];
@@ -326,18 +353,18 @@ export class YlideCore {
 		const readFromBlockchains = async (
 			fromBlockchains: { factory: BlockchainControllerFactory; controller: AbstractBlockchainController }[],
 		) => {
-			const blockchainRemoteKeys: Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]> = {};
+			const blockchainRemoteKeys: Record<string, RemotePublicKey[]> = {};
 
 			await Promise.all(
 				addresses.map(async address => {
-					const remoteKeys: { key: ExternalYlidePublicKey; blockchain: string }[] = [];
+					const remoteKeys: RemotePublicKey[] = [];
 
 					await Promise.all(
-						fromBlockchains.map(async ({ factory, controller }) => {
+						fromBlockchains.map(async ({ controller }) => {
 							try {
 								if (controller.isAddressValid(address)) {
 									const keys = await controller.extractPublicKeysHistoryByAddress(address);
-									remoteKeys.push(...keys.map(k => ({ key: k, blockchain: factory.blockchain })));
+									remoteKeys.push(...keys);
 								}
 							} catch (err) {
 								// so sad :(
@@ -354,14 +381,11 @@ export class YlideCore {
 
 		const blockchainsResult = await readFromBlockchains(toReadFromBlockchain);
 
-		const globalResult: Record<string, { key: ExternalYlidePublicKey; blockchain: string }[]> = {};
+		const globalResult: Record<string, RemotePublicKey[]> = {};
 		// merge results:
 		for (const address of addresses) {
-			globalResult[address] = {
-				...indexerResult[address],
-				...blockchainsResult[address],
-			};
-			globalResult[address].sort((a, b) => b.key.timestamp - a.key.timestamp);
+			globalResult[address] = [...(indexerResult[address] || []), ...(blockchainsResult[address] || [])];
+			globalResult[address].sort((a, b) => b.timestamp - a.timestamp);
 		}
 
 		return globalResult;
@@ -440,7 +464,10 @@ export class YlideCore {
 		const actualRecipients = recipients.map(r => {
 			const bc = this.controllers.blockchains.find(b => b.isAddressValid(r));
 			if (!bc) {
-				throw new Error(`Address ${r} is not valid for any registered blockchain`);
+				throw new YlideError(
+					YlideErrorType.INVALID_PARAM,
+					`Address ${r} is not valid for any registered blockchain`,
+				);
 			}
 			return {
 				keyAddress: bc.addressToUint256(r),
@@ -521,7 +548,7 @@ export class YlideCore {
 	}
 
 	async getMessageWalletController(msg: IMessage, keyAddress?: Uint256): Promise<AbstractWalletController | null> {
-		const blockchainGroup = Ylide.blockchainToGroupMap[msg.blockchain];
+		const blockchainGroup = this.ylide.blockchainToGroupMap[msg.blockchain];
 		const walletsMap = this.controllers.walletsMap[blockchainGroup];
 		if (!walletsMap) {
 			return null;
@@ -542,44 +569,46 @@ export class YlideCore {
 	}
 
 	async getMessageSecureContext(
-		recipient: IGenericAccount,
+		recipient: WalletAccount,
 		msg: IMessage,
 		unpackedContainer: IUnpackedMessageContainer,
+		handlers?: YlidePrivateKeyHandlers,
 	) {
 		const receipientKeyAddress = recipient.address;
 
 		const msgKey = MessageKey.fromBytes(msg.key);
-		const publicKey = unpackedContainer.senderPublicKeys[msgKey.publicKeyIndex];
+		const senderPublicKey = unpackedContainer.senderPublicKeys[msgKey.publicKeyIndex];
 
 		let symmKey: Uint8Array | null = null;
-		if (publicKey.type === PublicKeyType.YLIDE) {
-			const ylideKeys = this.keystore.getAll(receipientKeyAddress);
+		if (senderPublicKey.type === PublicKeyType.YLIDE) {
 			const keySignature = msgKey.decryptingPublicKeySignature;
-			const keysToCheck: YlideKey[] = [];
+			const keysToCheck: YlidePrivateKey[] = [];
 			if (keySignature) {
-				keysToCheck.push(
-					...ylideKeys.filter(
-						k =>
-							DynamicEncryptionRouter.getPublicKeySignature(
-								PublicKey.fromBytes(PublicKeyType.YLIDE, k.keypair.publicKey),
-							) === keySignature,
-					),
+				const key = this.keyRegistry.getLocalPrivateKeyForPublicKeySignature(
+					receipientKeyAddress,
+					keySignature,
 				);
+				if (key) {
+					keysToCheck.push(key);
+				}
 			} else {
-				keysToCheck.push(...ylideKeys);
+				keysToCheck.push(...this.keyRegistry.getLocalPrivateKeys(receipientKeyAddress));
 			}
-			if (!ylideKeys.length) {
-				throw new YlideError(YlideErrorType.KEY_NOT_DERIVED, { signature: keySignature });
+			if (!keysToCheck.length) {
+				throw new YlideError(YlideErrorType.DECRYPTION_KEY_UNAVAILABLE, 'Unable to find decryption key', {
+					signature: keySignature,
+				});
 			}
 			for (const ylideKey of keysToCheck) {
 				try {
-					await ylideKey.keypair.execute('read mail', async keypair => {
-						symmKey = keypair.decrypt(msgKey.encryptedMessageKey, publicKey.bytes);
-					});
+					await ylideKey.execute(async keypair => {
+						symmKey = keypair.decrypt(msgKey.encryptedMessageKey, senderPublicKey.keyBytes);
+					}, handlers);
 					if (symmKey) {
 						break;
 					}
 				} catch (err) {
+					console.warn('Error decrypting message key', err);
 					// wrong key, try next
 				}
 			}
@@ -592,26 +621,36 @@ export class YlideCore {
 			);
 			const accountIdx = walletAccounts.findIndex(a => a.account && a.account.address === receipientKeyAddress);
 			if (accountIdx === -1) {
-				throw new Error(`Wallet of this message recipient ${receipientKeyAddress} is not registered`);
+				throw new YlideError(
+					YlideErrorType.UNAVAILABLE,
+					`Native decription: Wallet of this message recipient ${receipientKeyAddress} is not registered`,
+				);
 			}
 			const account = walletAccounts[accountIdx].account;
 			if (!account) {
-				throw new Error(`Account of this message recipient ${receipientKeyAddress} is not available`);
+				throw new YlideError(
+					YlideErrorType.UNAVAILABLE,
+					`Native decription: Account of this message recipient ${receipientKeyAddress} is not available`,
+				);
 			}
 			const wallet = walletAccounts[accountIdx].wallet;
-			symmKey = await wallet.decryptMessageKey(account, publicKey, msgKey.encryptedMessageKey);
+			symmKey = await wallet.decryptMessageKey(account, senderPublicKey, msgKey.encryptedMessageKey);
 		}
 		if (!symmKey) {
-			throw new Error('Unable to find decryption route');
+			throw new YlideError(
+				YlideErrorType.DECRYPTION_KEY_UNAVAILABLE,
+				'No decryption key is able to decrypt this message key',
+			);
 		}
 		return new MessageSecureContext(symmKey);
 	}
 
 	async decryptMessageContent(
-		recipient: IGenericAccount,
+		recipient: WalletAccount,
 		msg: IMessage,
 		content: IMessageContent,
 		secureContext?: MessageSecureContext,
+		handlers?: YlidePrivateKeyHandlers,
 	) {
 		const unpackedContainer = MessageContainer.unpackContainter(content.content);
 
@@ -619,7 +658,7 @@ export class YlideCore {
 
 		if (unpackedContainer.isEncoded) {
 			if (!secureContext) {
-				secureContext = await this.getMessageSecureContext(recipient, msg, unpackedContainer);
+				secureContext = await this.getMessageSecureContext(recipient, msg, unpackedContainer, handlers);
 			}
 			decryptedContent = MessageBlob.decryptAndUnpackAndDecode(secureContext, unpackedContainer.messageBlob);
 		} else {
@@ -635,7 +674,10 @@ export class YlideCore {
 	decryptBroadcastContent(msg: IMessage, content: IMessageContent) {
 		const unpackedContainer = MessageContainer.unpackContainter(content.content);
 		if (unpackedContainer.isEncoded) {
-			throw new Error(`Can't decode encrypted content`);
+			throw new YlideMisusageError(
+				'YlideCore',
+				`Encrypted broadcast content is not supported in YlideCore. You still can decrypt it using raw Ylide crypto primitives.`,
+			);
 		}
 		const decodedContent = MessageBlob.unpackAndDecode(unpackedContainer.messageBlob);
 

@@ -1,6 +1,8 @@
 import { EventEmitter } from 'eventemitter3';
-import { MessageKey, PublicKey, IGenericAccount, IMessage, YlidePublicKeyVersion } from '..';
-import { Uint256 } from '../types/Uint256';
+
+import type { MessageKey, IMessage, YlideKeyVersion, WalletAccount } from '..';
+import type { Uint256 } from '../primitives/Uint256';
+import type { EncryptionPublicKey } from '../primitives/EncryptionPublicKey';
 
 export enum WalletEvent {
 	BLOCKCHAIN_CHANGED = 'blockchain_changed',
@@ -9,10 +11,7 @@ export enum WalletEvent {
 	LOGIN = 'login',
 }
 
-export type SwitchAccountCallback = (
-	currentAccount: IGenericAccount | null,
-	needAccount: IGenericAccount,
-) => Promise<void>;
+export type SwitchAccountCallback = (currentAccount: WalletAccount | null, needAccount: WalletAccount) => Promise<void>;
 
 export interface SendMailResult {
 	pushes: { recipient: Uint256; push: IMessage }[];
@@ -56,7 +55,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		super();
 	}
 
-	protected async switchAccountRequest(currentAccount: IGenericAccount | null, needAccount: IGenericAccount) {
+	protected async switchAccountRequest(currentAccount: WalletAccount | null, needAccount: WalletAccount) {
 		if (this.onSwitchAccountRequest) {
 			await this.onSwitchAccountRequest(currentAccount, needAccount);
 		}
@@ -65,7 +64,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	on(event: WalletEvent.BLOCKCHAIN_CHANGED, fn: (newBlockchain: string) => void, context?: any): this;
 	on(
 		event: WalletEvent.LOGIN | WalletEvent.ACCOUNT_CHANGED,
-		fn: (newAccount: IGenericAccount) => void,
+		fn: (newAccount: WalletAccount) => void,
 		context?: any,
 	): this;
 	on(event: WalletEvent.LOGOUT, fn: () => void, context?: any): this;
@@ -85,17 +84,17 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	/**
 	 * Method to get account currently authenticated by the wallet for this app
 	 */
-	abstract getAuthenticatedAccount(): Promise<IGenericAccount | null>;
+	abstract getAuthenticatedAccount(): Promise<WalletAccount | null>;
 
 	/**
 	 * Method to request wallet to authenticate some account for this app
 	 */
-	abstract requestAuthentication(): Promise<IGenericAccount | null>;
+	abstract requestAuthentication(): Promise<WalletAccount | null>;
 
 	/**
 	 * Method to request wallet to revoke authenticaion of this app
 	 */
-	abstract disconnectAccount(account: IGenericAccount): Promise<void>;
+	abstract disconnectAccount(account: WalletAccount): Promise<void>;
 
 	/**
 	 * Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString (usually containing Ylide password)
@@ -103,14 +102,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * @param account Account for which you request signature
 	 * @param magicString - string which consists of some fixed part and dynamic part like Ylide password
 	 */
-	abstract signMagicString(account: IGenericAccount, magicString: string): Promise<Uint8Array>;
-
-	/**
-	 * TODO
-	 *
-	 * @param account Account for which you request the private communication key
-	 */
-	abstract requestYlidePrivateKey(account: IGenericAccount): Promise<Uint8Array | null>;
+	abstract signMagicString(account: WalletAccount, magicString: string): Promise<Uint8Array>;
 
 	/**
 	 * Method to publish message using Ylide Protocol.
@@ -120,7 +112,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * @param recipients - array of recipients (address-public key pairs)
 	 */
 	abstract sendMail(
-		me: IGenericAccount,
+		from: WalletAccount,
 		feedId: Uint256,
 		contentData: Uint8Array,
 		recipients: { address: Uint256; messageKey: MessageKey }[],
@@ -128,7 +120,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	): Promise<SendMailResult>;
 
 	abstract sendBroadcast(
-		me: IGenericAccount,
+		from: WalletAccount,
 		feedId: Uint256,
 		contentData: Uint8Array,
 		options?: any,
@@ -141,9 +133,9 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * @param publicKey - public key to attach to user's address
 	 */
 	abstract attachPublicKey(
-		account: IGenericAccount,
+		account: WalletAccount,
 		publicKey: Uint8Array,
-		keyVersion: YlidePublicKeyVersion,
+		keyVersion: YlideKeyVersion,
 		registrar: number,
 		options?: any,
 	): Promise<void>;
@@ -160,8 +152,8 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * @param publicKey - public key to attach to user's address
 	 */
 	abstract decryptMessageKey(
-		recipientAccount: IGenericAccount,
-		senderPublicKey: PublicKey,
+		recipientAccount: WalletAccount,
+		senderPublicKey: EncryptionPublicKey,
 		encryptedKey: Uint8Array,
 	): Promise<Uint8Array>;
 }

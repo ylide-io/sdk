@@ -1,6 +1,10 @@
-import SmartBuffer from '@ylide/smart-buffer';
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import { MessageAttachment } from './MessageAttachment';
 import { MessageAttachmentType } from './MessageAttachmentType';
+
+import { YlideMisusageError } from '../../errors/YlideMisusageError';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 export interface IMessageAttachmentLinkV1 {
 	type: MessageAttachmentType.LINK_V1; // byte
@@ -55,7 +59,7 @@ export class MessageAttachmentLinkV1 extends MessageAttachment implements IMessa
 		const buf = new SmartBuffer(bytes);
 		const type = buf.readUint8();
 		if (type !== MessageAttachmentType.LINK_V1) {
-			throw new Error('Wrong type');
+			throw new YlideMisusageError('MessageAttachmentLinkV1', 'Wrong type');
 		}
 		const link = new TextDecoder().decode(buf.readBytes16Length());
 		const previewLink = new TextDecoder().decode(buf.readBytes16Length());

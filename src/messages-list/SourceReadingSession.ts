@@ -1,10 +1,14 @@
-import { Repository } from '../common/Repository';
-import { BlockchainSourceType, IBlockchainSourceSubject } from './types/IBlockchainSourceSubject';
-import { ListCache } from './mid-level/ListCache';
+import { BlockchainSourceType } from './types/IBlockchainSourceSubject';
+
 // import { ListSource } from './mid-level/ListSource';
-import { ListStorage } from './mid-level/ListStorage';
-import { IMessage } from '../types/IMessage';
-import { IListSource } from './types/IListSource';
+
+import { Repository } from '../common/Repository';
+
+import type { IListSource } from './types/IListSource';
+import type { IMessage } from '../primitives/IMessage';
+import type { ListStorage } from './mid-level/ListStorage';
+import type { ListCache } from './mid-level/ListCache';
+import type { IBlockchainSourceSubject } from './types/IBlockchainSourceSubject';
 
 export class SourceReadingSession {
 	public cacheRepository: Repository<IBlockchainSourceSubject, ListCache<IMessage>>;

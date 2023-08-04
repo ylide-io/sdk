@@ -1,3 +1,4 @@
+import { YlideMisusageError } from '../errors/YlideMisusageError';
 import { decodeSpecialChar, encodeSpecialChar, isLiteralChar, isSpaceChar } from '../utils/charsHelper';
 
 export interface IYMFTextToken {
@@ -113,7 +114,7 @@ export class YMF {
 						isInsideAttributeValueOpening = false;
 						isInsideAttributeValue = true;
 					} else {
-						throw new Error('Attribute value must be enclosed in double quotes');
+						throw new YlideMisusageError('YMF', 'Attribute value must be enclosed in double quotes');
 					}
 				} else if (isInsideAttributeValue) {
 					if (isEscaped) {
@@ -140,7 +141,7 @@ export class YMF {
 				} else if (isInsideAttributeName) {
 					if (c === '=') {
 						if (currentLiteral === '') {
-							throw new Error('Attribute name can not be empty');
+							throw new YlideMisusageError('YMF', 'Attribute name can not be empty');
 						}
 						currentAttribute = currentLiteral;
 						currentLiteral = '';
@@ -149,12 +150,12 @@ export class YMF {
 					} else if (isLiteralChar(c)) {
 						currentLiteral += c;
 					} else {
-						throw new Error(`Unexpected char "${c}" in attribute name`);
+						throw new YlideMisusageError('YMF', `Unexpected char "${c}" in attribute name`);
 					}
 				} else if (isInsideTagName) {
 					if (c === '>') {
 						if (currentLiteral === '') {
-							throw new Error('Tag name can not be empty');
+							throw new YlideMisusageError('YMF', 'Tag name can not be empty');
 						}
 						(currentNode as IYMFTagToken).tag = currentLiteral;
 						currentLiteral = '';
@@ -166,14 +167,14 @@ export class YMF {
 							if ((currentNode as IYMFTagToken).tagType === 'open') {
 								(currentNode as IYMFTagToken).tagType = 'close';
 							} else {
-								throw new Error('Syntax error: unexpected "/"');
+								throw new YlideMisusageError('YMF', 'Syntax error: unexpected "/"');
 							}
 						} else {
-							throw new Error('Syntax error: unexpected "/"');
+							throw new YlideMisusageError('YMF', 'Syntax error: unexpected "/"');
 						}
 					} else if (isSpaceChar(c)) {
 						if (currentLiteral === '') {
-							throw new Error('Tag name can not be empty');
+							throw new YlideMisusageError('YMF', 'Tag name can not be empty');
 						}
 						(currentNode as IYMFTagToken).tag = currentLiteral;
 						currentLiteral = '';
@@ -181,11 +182,11 @@ export class YMF {
 					} else if (isLiteralChar(c)) {
 						currentLiteral += c;
 					} else {
-						throw new Error('Syntax error: unexpected character in tag name');
+						throw new YlideMisusageError('YMF', 'Syntax error: unexpected character in tag name');
 					}
 				} else if (isSpaceChar(c)) {
 					if ((currentNode as IYMFTagToken).tagType === 'self-closing') {
-						throw new Error('Syntax error: unexpected space');
+						throw new YlideMisusageError('YMF', 'Syntax error: unexpected space');
 					}
 					// do nothing
 				} else if (isLiteralChar(c)) {
@@ -193,7 +194,7 @@ export class YMF {
 						(currentNode as IYMFTagToken).tagType === 'self-closing' ||
 						(currentNode as IYMFTagToken).tagType === 'close'
 					) {
-						throw new Error('Syntax error: unexpected char');
+						throw new YlideMisusageError('YMF', 'Syntax error: unexpected char');
 					}
 					currentLiteral = c;
 					isInsideAttributeName = true;
@@ -204,16 +205,16 @@ export class YMF {
 					if ((currentNode as IYMFTagToken).tagType === 'open') {
 						(currentNode as IYMFTagToken).tagType = 'self-closing';
 					} else {
-						throw new Error('Syntax error: unexpected character');
+						throw new YlideMisusageError('YMF', 'Syntax error: unexpected character');
 					}
 				}
 			}
 		}
 		if (!isInsideText) {
-			throw new Error(`Unexpected end of input`);
+			throw new YlideMisusageError('YMF', `Unexpected end of input`);
 		} else {
 			if (isInsideSymbol) {
-				throw new Error(`Unexpected end of input`);
+				throw new YlideMisusageError('YMF', `Unexpected end of input`);
 			}
 		}
 		return nodes;
@@ -229,7 +230,7 @@ export class YMF {
 		for (const token of tokens) {
 			if (token.type === 'text') {
 				if (current.type !== 'root' && current.type !== 'tag') {
-					throw new Error('Syntax error: unexpected text, should be impossible');
+					throw new YlideMisusageError('YMF', 'Syntax error: unexpected text, should be impossible');
 				}
 				current.children.push({
 					parent: current,
@@ -238,7 +239,7 @@ export class YMF {
 				});
 			} else if (token.type === 'symbol') {
 				if (current.type !== 'root' && current.type !== 'tag') {
-					throw new Error('Syntax error: unexpected text, should be impossible');
+					throw new YlideMisusageError('YMF', 'Syntax error: unexpected text, should be impossible');
 				}
 				current.children.push({
 					parent: current,
@@ -259,10 +260,13 @@ export class YMF {
 					current = node;
 				} else if (token.tagType === 'close') {
 					if (!current.parent) {
-						throw new Error('Syntax error: unexpected close tag');
+						throw new YlideMisusageError('YMF', 'Syntax error: unexpected close tag');
 					} else {
 						if (current.tag !== token.tag) {
-							throw new Error(`Syntax error: expected close tag for "${current.tag}"`);
+							throw new YlideMisusageError(
+								'YMF',
+								`Syntax error: expected close tag for "${current.tag}"`,
+							);
 						}
 						current = current.parent;
 					}
@@ -306,7 +310,7 @@ export class YMF {
 			}
 			if (node.singular) {
 				if (node.children.length) {
-					throw new Error('Singular tags can not have children, should be impossible');
+					throw new YlideMisusageError('YMF', 'Singular tags can not have children, should be impossible');
 				}
 				if (!isSimple) {
 					text += ' />';
@@ -323,7 +327,7 @@ export class YMF {
 				}
 			}
 		} else {
-			throw new Error('Unknown node type: ' + node.type);
+			throw new YlideMisusageError('YMF', 'Unknown node type: ' + node.type);
 		}
 		return text;
 	}

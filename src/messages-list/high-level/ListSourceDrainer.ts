@@ -1,6 +1,9 @@
 import { CriticalSection } from '../../common';
-import { IMessage } from '../../types/IMessage';
-import { IMessageWithSource, ListSourceMultiplexer } from './ListSourceMultiplexer';
+import { YlideError, YlideErrorType } from '../../errors/YlideError';
+import { YlideMisusageError } from '../../errors/YlideMisusageError';
+
+import type { IMessageWithSource, ListSourceMultiplexer } from './ListSourceMultiplexer';
+import type { IMessage } from '../../primitives/IMessage';
 
 export class ListSourceDrainer {
 	private _messages: IMessageWithSource[] = [];
@@ -79,7 +82,7 @@ export class ListSourceDrainer {
 		if (from) {
 			const idx = this._messages.findIndex(m => m.msg.msgId === from.msgId);
 			if (idx === -1) {
-				throw new Error('You cant load messages after inexistent message');
+				throw new YlideMisusageError('ListSourceDrainer', 'You cant load messages after inexistent message');
 			}
 			available = this._messages.length - idx - 1;
 		} else {
@@ -94,13 +97,16 @@ export class ListSourceDrainer {
 		}
 		const needToReed = limit - available;
 		if (!this._requester) {
-			throw new Error('You cant load messages before connect');
+			throw new YlideMisusageError('ListSourceDrainer', 'You cant load messages before connect');
 		}
 		if (this.source.readToBottom) {
 			return;
 		}
 		if (!this.source.guaranteedSegment.length) {
-			throw new Error('Multiplexer could be empty only if readToBottom is true');
+			throw new YlideError(
+				YlideErrorType.MUST_NEVER_HAPPEN,
+				'Multiplexer could be empty only if readToBottom is true',
+			);
 		}
 		const toRead = Math.max(needToReed, this._minReadingSize);
 		await this._requester(this.source.guaranteedSegment[this.source.guaranteedSegment.length - 1].msg, toRead);
@@ -115,7 +121,7 @@ export class ListSourceDrainer {
 		if (from) {
 			idx = this._messages.findIndex(m => m.msg.msgId === from.msgId);
 			if (idx === -1) {
-				throw new Error('You cant load messages after inexistent message');
+				throw new YlideMisusageError('ListSourceDrainer', 'You cant load messages after inexistent message');
 			}
 			available = this._messages.length - idx - 1;
 		} else {
@@ -136,7 +142,7 @@ export class ListSourceDrainer {
 			return;
 		}
 		if (!this._messages.length) {
-			throw new Error(`You cant load next page before connect`);
+			throw new YlideMisusageError('ListSourceDrainer', `You cant load next page before connect`);
 		}
 		await this.request(name, this._messages[this._messages.length - 1].msg, this._minReadingSize);
 	}
@@ -161,7 +167,7 @@ export class ListSourceDrainer {
 				this.newMessagesSubscriptions.delete(subscription);
 				if (this.newMessagesSubscriptions.size === 0) {
 					if (!this._disposer) {
-						throw new Error('You cant dispose before connect');
+						throw new YlideMisusageError('ListSourceDrainer', 'You cant dispose before connect');
 					}
 					this._disposer();
 				}

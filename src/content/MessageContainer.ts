@@ -1,10 +1,14 @@
-import SmartBuffer from '@ylide/smart-buffer';
-import { PublicKey, ServiceCode } from '../types';
+import { EncryptionPublicKey } from '../primitives/EncryptionPublicKey';
+import { YlideError, YlideErrorType } from '../errors';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
+
+import type { ServiceCode } from '../primitives';
 
 export interface IUnpackedMessageContainer {
 	version: number;
 	serviceCode: ServiceCode;
-	senderPublicKeys: PublicKey[];
+	senderPublicKeys: EncryptionPublicKey[];
 	messageBlob: Uint8Array;
 	isEncoded: boolean;
 }
@@ -46,7 +50,7 @@ export class MessageContainer {
 	static packContainer(
 		serviceCode: number,
 		isEncoded: boolean,
-		senderPublicKeys: PublicKey[],
+		senderPublicKeys: EncryptionPublicKey[],
 		messageBlobBytes: Uint8Array,
 	) {
 		const keysSize = senderPublicKeys.reduce((p, c) => p + c.getPackedSize(), 0);
@@ -76,7 +80,7 @@ export class MessageContainer {
 		} else if (version === 0x05) {
 			return this.unpackContainerV5(buf);
 		} else {
-			throw new Error(`Version ${version} is not supported`);
+			throw new YlideError(YlideErrorType.UNSUPPORTED, `Version ${version} is not supported`);
 		}
 	}
 
@@ -89,9 +93,9 @@ export class MessageContainer {
 	static unpackContainerV5(buf: SmartBuffer): IUnpackedMessageContainer {
 		const serviceCode = buf.readUint32();
 		const keysLength = buf.readUint8();
-		const senderPublicKeys: PublicKey[] = [];
+		const senderPublicKeys: EncryptionPublicKey[] = [];
 		for (let i = 0; i < keysLength; i++) {
-			senderPublicKeys.push(PublicKey.fromPackedBytesInBuffer(buf));
+			senderPublicKeys.push(EncryptionPublicKey.fromPackedBytesInBuffer(buf));
 		}
 		const messageBlob = buf.readBytes32Length();
 		return {
@@ -113,9 +117,9 @@ export class MessageContainer {
 		const serviceCode = buf.readUint32();
 		const isEncoded = buf.readUint8() === 1;
 		const keysLength = buf.readUint8();
-		const senderPublicKeys: PublicKey[] = [];
+		const senderPublicKeys: EncryptionPublicKey[] = [];
 		for (let i = 0; i < keysLength; i++) {
-			senderPublicKeys.push(PublicKey.fromPackedBytesInBuffer(buf));
+			senderPublicKeys.push(EncryptionPublicKey.fromPackedBytesInBuffer(buf));
 		}
 		const messageBlob = buf.readBytes32Length();
 		return {

@@ -1,5 +1,5 @@
-import { IMessage } from '../../types';
-import { AscComparator } from './AscComparator';
+import type { AscComparator } from './AscComparator';
+import type { IMessage } from '../../primitives';
 
 export interface LowLevelMessagesSource {
 	compare: AscComparator<IMessage>;

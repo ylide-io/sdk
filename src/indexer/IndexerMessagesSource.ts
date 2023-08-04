@@ -1,10 +1,13 @@
-import { IndexerHub } from '.';
-import { IMessage } from '../types';
 import { asyncTimer } from '../utils';
-import { BlockchainSourceType, IBlockchainSourceSubject } from '../messages-list/types';
-import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
+import { BlockchainSourceType } from '../messages-list/types';
 import { randomBytes } from '../crypto';
-import SmartBuffer from '@ylide/smart-buffer';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
+
+import type { IndexerHub } from '.';
+import type { IMessage } from '../primitives';
+import type { IBlockchainSourceSubject } from '../messages-list/types';
+import type { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
 
 /**
  * @internal

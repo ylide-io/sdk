@@ -9,4 +9,5 @@ export * from './MessageContentV5';
 export * from './MessageKey';
 export * from './MessagePackedContent';
 export * from './MessageSecureContext';
+export * from './RecipientInfo';
 export * from './YMF';

@@ -7,12 +7,15 @@
  * - packed MessageContent to MessageContrainer to bytes
  */
 
-import { MessageContent } from './MessageContent';
 import { MessageContentV3 } from './MessageContentV3';
 import { MessageContentV4 } from './MessageContentV4';
 import { MessageContentV5 } from './MessageContentV5';
 import { MessagePackedContent } from './MessagePackedContent';
-import { MessageSecureContext } from './MessageSecureContext';
+
+import { YlideError, YlideErrorType } from '../errors';
+
+import type { MessageSecureContext } from './MessageSecureContext';
+import type { MessageContent } from './MessageContent';
 
 export class MessageBlob {
 	static encodeAndPackAndEncrypt(secureContext: MessageSecureContext, content: MessageContent) {
@@ -65,7 +68,7 @@ export class MessageBlob {
 		} else if (bytes.length && bytes[0] === 0x05) {
 			return MessageContentV5.fromBytes(bytes);
 		} else {
-			throw new Error('Unsupported message content version');
+			throw new YlideError(YlideErrorType.UNSUPPORTED, 'Unsupported message content version');
 		}
 	}
 }

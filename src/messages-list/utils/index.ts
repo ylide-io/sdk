@@ -1,4 +1,6 @@
-import { BlockchainSourceType, IBlockchainSourceSubject, ISourceSubject } from '../types/IBlockchainSourceSubject';
+import { BlockchainSourceType } from '../types/IBlockchainSourceSubject';
+
+import type { IBlockchainSourceSubject, ISourceSubject } from '../types/IBlockchainSourceSubject';
 
 export const shrinkSubject = (subject: IBlockchainSourceSubject): IBlockchainSourceSubject => {
 	if (subject.type === BlockchainSourceType.BROADCAST) {

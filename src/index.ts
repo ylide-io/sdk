@@ -10,7 +10,7 @@ export * from './indexer';
 export * from './keystore';
 export * from './messages-list';
 export * from './storage';
-export * from './types';
+export * from './primitives';
 export * from './utils';
 
 export * from './Ylide';

@@ -1,4 +1,4 @@
-import { AbstractWalletController } from './AbstractWalletController';
+import type { AbstractWalletController } from './AbstractWalletController';
 
 export interface WalletControllerFactory {
 	isWalletAvailable(): Promise<boolean>;

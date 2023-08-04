@@ -1,4 +1,4 @@
-import { Uint256 } from '../../types';
+import type { Uint256 } from '../../primitives';
 
 export enum BlockchainSourceType {
 	BROADCAST,

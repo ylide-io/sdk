@@ -1,5 +1,8 @@
-import SmartBuffer from '@ylide/smart-buffer';
 import { MessageContent } from './MessageContent';
+
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 export interface IMessageContentV3 {
 	isPlain: boolean;
@@ -64,7 +67,7 @@ export class MessageContentV3 extends MessageContent implements IMessageContentV
 	toBytes() {
 		const subjectBytes = new TextEncoder().encode(this.subject);
 		if (subjectBytes.length > 1024) {
-			throw new Error('Subject is too long.');
+			throw new YlideMisusageError('MessageContentV3', 'Subject is too long.');
 		}
 		const contentBytes = new TextEncoder().encode(this.content);
 
@@ -86,12 +89,12 @@ export class MessageContentV3 extends MessageContent implements IMessageContentV
 	 */
 	static fromBytes(bytes: Uint8Array) {
 		if (bytes.length < 4) {
-			throw new Error('Wrong size of buffer');
+			throw new YlideMisusageError('MessageContentV3', 'Wrong size of buffer');
 		}
 		const buf = new SmartBuffer(bytes);
 		const version = buf.readUint8();
 		if (version !== this.VERSION) {
-			throw new Error('Wrong version');
+			throw new YlideMisusageError('MessageContentV3', 'Wrong version');
 		}
 		const isPlain = buf.readUint8() === 0x01;
 		const subjectBytes = buf.readBytes16Length();

@@ -1,5 +1,6 @@
-import nacl from 'tweetnacl';
 import { symmetricDecrypt, symmetricEncrypt } from '../crypto';
+
+import nacl from 'tweetnacl';
 
 export class MessageSecureContext {
 	constructor(public readonly key: Uint8Array) {}

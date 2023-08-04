@@ -1,7 +1,10 @@
-import SmartBuffer from '@ylide/smart-buffer';
 import { CriticalSection } from '../common';
-import { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../types';
 import { BlockchainSourceType } from '../messages-list';
+import { YlideError, YlideErrorType } from '../errors';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
+
+import type { IMessage, IMessageContent, IMessageCorruptedContent, Uint256 } from '../primitives';
 import type { IndexerMessagesSource } from './IndexerMessagesSource';
 
 const IS_DEV = false;
@@ -179,18 +182,23 @@ export class IndexerHub {
 	}
 
 	async request(url: string, body: any) {
-		const response = await fetch(`${this.endpoint}${url}`, {
-			method: 'POST',
-			body: JSON.stringify(body),
-			headers: {
-				'Content-Type': 'text/plain',
-			},
-		});
-		const responseBody = await response.json();
+		let responseBody;
+		try {
+			const response = await fetch(`${this.endpoint}${url}`, {
+				method: 'POST',
+				body: JSON.stringify(body),
+				headers: {
+					'Content-Type': 'text/plain',
+				},
+			});
+			responseBody = await response.json();
+		} catch (err: any) {
+			throw new YlideError(YlideErrorType.NETWORK_ERROR, err?.message, err);
+		}
 		if (responseBody.result) {
 			return responseBody.data;
 		} else {
-			throw new Error(responseBody.error || 'Response error');
+			throw new YlideError(YlideErrorType.RESPONSE_ERROR, responseBody.error || 'Response error');
 		}
 	}
 

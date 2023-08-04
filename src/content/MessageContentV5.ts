@@ -1,10 +1,14 @@
-import SmartBuffer from '@ylide/smart-buffer';
-import { Semver } from '../types';
 import { MessageContent } from './MessageContent';
 import { YMF } from './YMF';
-import { MessageAttachment } from './attachments/MessageAttachment';
 import { MessageAttachmentLinkV1 } from './attachments/MessageAttachmentLinkV1';
 import { RecipientInfo } from './RecipientInfo';
+
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
+
+import type { Semver } from '../primitives';
+import type { MessageAttachment } from './attachments/MessageAttachment';
 
 export interface IMessageContentV5 {
 	sendingAgentName: string; // string up to 255 chars
@@ -133,7 +137,7 @@ export class MessageContentV5 extends MessageContent implements IMessageContentV
 		const version = buf.readUint8();
 
 		if (version !== MessageContentV5.VERSION) {
-			throw new Error(`Unsupported version: ${version}`);
+			throw new YlideMisusageError('MessageContentV5', `Unsupported version: ${version}`);
 		}
 
 		const sendingAgentNameBytes = buf.readBytes8Length();

@@ -1,12 +1,16 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import nacl from 'tweetnacl';
-import { AbstractBlockchainController } from '../abstracts';
 import { MessageKey } from '../content';
-import { MessageSecureContext } from '../content/MessageSecureContext';
-import { YlideCore } from '../core';
-import { symmetricEncrypt, sha256 } from '../crypto';
-import { IExtraEncryptionStrateryEntry, PublicKey, PublicKeyType } from '../types';
-import { Uint256 } from '../types/Uint256';
+import { symmetricEncrypt } from '../crypto';
+import { PublicKeyType } from '../primitives';
+import { EncryptionPublicKey } from '../primitives/EncryptionPublicKey';
+import { YlideError, YlideErrorType } from '../errors';
+
+import { randomBytes, box as naclbox } from 'tweetnacl';
+
+import type { Uint256 } from '../primitives/Uint256';
+import type { IExtraEncryptionStrateryEntry, PublicKey } from '../primitives';
+import type { YlideCore } from '../core';
+import type { MessageSecureContext } from '../content/MessageSecureContext';
+import type { AbstractBlockchainController } from '../abstracts';
 
 export interface IAvailableStrategy {
 	type: string;
@@ -34,20 +38,17 @@ export class DynamicEncryptionRouter {
 	}
 
 	private static panic(): never {
-		throw new Error('Panic');
-	}
-
-	static getPublicKeySignature(publicKey: PublicKey) {
-		return new Uint32Array(sha256(publicKey.bytes).slice(0, 4).buffer)[0];
+		throw new YlideError(YlideErrorType.MUST_NEVER_HAPPEN, 'Panic: must never happen');
 	}
 
 	static async executeEncryption(
-		route: ReturnType<typeof DynamicEncryptionRouter['findBestEncryptionRouting']>,
+		route: ReturnType<(typeof DynamicEncryptionRouter)['findBestEncryptionRouting']>,
 		secureContext: MessageSecureContext,
 	) {
-		const ylideEphemeral = nacl.box.keyPair.fromSecretKey(nacl.randomBytes(32));
-		const ylideEphemeralPublic = PublicKey.fromBytes(PublicKeyType.YLIDE, ylideEphemeral.publicKey);
-		const publicKeys: PublicKey[] = [];
+		const ylideEphemeral = naclbox.keyPair.fromSecretKey(randomBytes(32));
+		const ylideEphemeralPublic = new EncryptionPublicKey(PublicKeyType.YLIDE, ylideEphemeral.publicKey);
+
+		const publicKeys: EncryptionPublicKey[] = [];
 		const result: { address: Uint256; messageKey: MessageKey }[] = [];
 		for (const entity of route) {
 			if (entity.type === 'ylide') {
@@ -57,11 +58,11 @@ export class DynamicEncryptionRouter {
 						address: entity.recipients[idx].address,
 						messageKey: new MessageKey(
 							pkIdx,
-							entry.ylide ? this.getPublicKeySignature(entry.publicKey) : this.panic(),
+							entry.ylide ? entry.publicKey.signature : this.panic(),
 							entry.ylide
 								? symmetricEncrypt(
 										secureContext.key,
-										nacl.box.before(entry.publicKey.bytes, ylideEphemeral.secretKey),
+										naclbox.before(entry.publicKey.keyBytes, ylideEphemeral.secretKey),
 								  )
 								: this.panic(),
 						),

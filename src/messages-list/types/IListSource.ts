@@ -1,8 +1,7 @@
-import { DoublyLinkedList } from '@datastructures-js/linked-list';
-
-import { AsyncEventEmitter } from '../../common';
-import { IMessage } from '../../types';
-import { IBlockchainSourceSubject } from './IBlockchainSourceSubject';
+import type { AsyncEventEmitter } from '../../common';
+import type { DoublyLinkedList } from '@datastructures-js/linked-list';
+import type { IMessage } from '../../primitives';
+import type { IBlockchainSourceSubject } from './IBlockchainSourceSubject';
 
 export interface IListSource extends AsyncEventEmitter {
 	getName(): string;

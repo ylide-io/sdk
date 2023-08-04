@@ -8,50 +8,33 @@ So, first of all you should import these connectors:
 import { everscaleBlockchainFactory, everscaleWalletFactory } from '@ylide/everscale';
 ```
 
-Afterward, you should register them in the `Ylide` singleton:
-
-```ts
-Ylide.registerBlockchainFactory(everscaleBlockchainFactory);
-Ylide.registerWalletFactory(everscaleWalletFactory);
-```
-
 You can easily verify availability of EverWallet in user's browser:
 
 ```ts
 const isWalletAvailable = await everscaleWalletFactory.isWalletAvailable();
 ```
 
-Then, let's instantiate `Ylide`, `YlideKeystore` with `BrowserLocalStorage`:
+Then, let's instantiate `Ylide`, `YlideKeysRegistry` with `BrowserLocalStorage`:
 
 ```ts
 let provider;
 
 const storage = new BrowserLocalStorage();
-const keystore = new YlideKeyStore(storage, {
-	// This handler will be called every time Keystore needs user's Ylide password
-	onPasswordRequest: async (reason: string) => prompt(`Enter Ylide password for ${reason}:`),
+const keyRegistry = new YlideKeysRegistry(storage);
 
-	// This handler will be called every time Keystore needs derived signature of user's Ylide password
-	onDeriveRequest: async (reason: string, blockchain: string, address: string, magicString: string) => {
-		try {
-			// We request wallet to sign our magic string - it will be used for generation of communication private key
-			return provider.wallet.signMagicString(magicString);
-		} catch (err) {
-			return null;
-		}
-	},
-});
-
-await keystore.init();
+await keyRegistry.init();
 ```
 
 So, our next step is to initialize Ylide, blockchain and wallet controllers:
 
 ```ts
-const ylide = new Ylide(keystore);
+const ylide = new Ylide(keyRegistry);
 
-const blockchain = await ylide.addBlockchain('everscale');
-const wallet = await ylide.addWallet('everscale', 'everwallet');
+ylide.registerBlockchainFactory(everscaleBlockchainFactory);
+ylide.registerWalletFactory(everscaleWalletFactory);
+
+const blockchain = await ylide.controllers.addBlockchain('everscale');
+const wallet = await ylide.controllers.addWallet('everscale', 'everwallet');
 ```
 
 ## Initializing communication key
@@ -62,23 +45,25 @@ First of all, you should request access to the wallet account. Let's do this:
 const account = await wallet.requestAuthentication();
 ```
 
-Now, we are ready for creation of our first communication key:
+Now, we are ready for the creation of our first communication key:
 
 ```ts
-const ylidePassword = prompt(`Enter Ylide password for your first key:`);
-if (!ylidePassword) {
-	return;
-}
-const key = await keystore.create('For your first key', 'everscale', 'everwallet', account.address, ylidePassword);
+const key = await keyRegistry.instantiateNewPrivateKey(
+	wallet.blockchainGroup(),
+	account.address,
+	YlideKeyVersion.KEY_V3,
+	PrivateKeyAvailabilityState.AVAILABLE,
+	{
+		onPrivateKeyRequest: (address, magicString) => wallet.signMagicString(account, magicString),
+	},
+);
 ```
 
-Now, key is ready, encrypted and saved into the storage. To store it decrypted let's do the following:
+Now, key is ready. Let's add it to the registry (registry is automatically saved):
 
 ```ts
-// Switch key storage mode to decrypted
-await key.storeUnencrypted(ylidePassword);
 // Save the key in the storage again
-await keystore.save();
+await keyRegistry.addLocalPrivateKey(key);
 ```
 
 Key is ready and available for usage.
@@ -88,11 +73,11 @@ Key is ready and available for usage.
 First of all, let's check if this key had already been saved into the Ylide Registry:
 
 ```ts
-const pk = await blockchain.extractPublicKeyFromAddress(account.address);
-if (!pk) {
+const { freshestKey } = await ylide.core.getAddressKeys(account.address);
+if (!freshestKey) {
 	// There is no public key connected to this address in the Registry
 } else {
-	if (pk.bytes.length === key.publicKey.length && pk.bytes.every((e, idx) => e === key.publicKey[idx])) {
+	if (freshestKey.publicKey.equals(key.publicKey)) {
 		// This key connected to this address in the Registry
 	} else {
 		// Another key connected to this address in the Registry
@@ -103,7 +88,7 @@ if (!pk) {
 If user's public key is not in the Registry - you should register it:
 
 ```ts
-await wallet.attachPublicKey(key.publicKey);
+await wallet.attachPublicKey(account, key.publicKey.keyBytes, key.publicKey.keyVersion, 0);
 ```
 
 Now, user can send and receive messages using Ylide Protocol.
@@ -113,13 +98,30 @@ Now, user can send and receive messages using Ylide Protocol.
 First of all, let's build message's content:
 
 ```ts
-const content = MessageContentV3.plain('Test subject', 'Hello Ylide world :)');
+const subject = 'Hello!';
+const text = YMF.fromPlainText('Nice to meet you in Ylide :)');
 ```
 
-Now, send the message;
+Now, prepare the message content container:
 
 ```ts
-const msgId = await ylide.sendMessage({
+const content = new MessageContentV5({
+	sendingAgentName: 'generic',
+	sendingAgentVersion: { major: 1, minor: 0, patch: 0 },
+	subject,
+	content: text,
+	attachments: [],
+	extraBytes: new Uint8Array(0),
+	extraJson: {},
+	recipientInfos: [
+		new RecipientInfo({
+			address: '0:86c4c21b15f373d77e80d6449358cfe59fc9a03e756052ac52258d8dd0ceb977',
+			blockchain: '',
+		}),
+	],
+});
+
+const msgId = await ylide.core.sendMessage({
 	wallet,
 	sender: account,
 	content,
@@ -129,20 +131,39 @@ const msgId = await ylide.sendMessage({
 
 Here we go. Message sent.
 
-## Reading message
+## Reading messages
 
-First of all, let's retrieve messages metadata from the blockchain:
+First of all, let's instantiate sources:
 
 ```ts
-const messages = await blockchain.retrieveMessageHistoryDescByDates(account.address);
+const readingSession = new SourceReadingSession();
+
+const sources = ylide.core.getListSources(readingSession, [
+	{
+		feedId: YLIDE_MAIN_FEED_ID, // main default mailing feed
+		type: BlockchainSourceType.DIRECT, // direct messages (not broadcasts)
+		recipient: blockchain.addressToUint256(account.address), // for your account
+		sender: null, // from all senders (without filter by sender's address)
+	},
+]);
+
+const messagesStream = new ListSourceDrainer(new ListSourceMultiplexer(sources.map(source => ({ source }))));
+
+const newMessagesHandler = () => {};
+
+const { dispose } = await messagesStream.connect('Reading mails', newMessagesHandler);
 ```
 
-Now, we have all the metadata: date, sender, recipient, key for decryption. But we hadn't loaded message content from the blockchain yet. So, let's do this:
+Now, when sources are connected, we can expect the first page of messages to be already loaded:
 
 ```ts
-const message = messages[0];
+const message = this.stream!.messages[0].msg;
+```
 
-const content = await blockchain.retrieveAndVerifyMessageContent(message);
+Let's load the content of the message:
+
+```ts
+const content = await ylide.core.getMessageContent(message);
 if (!content || content.corrupted) {
 	throw new Error('Content not found or corrupted');
 }
@@ -151,13 +172,13 @@ if (!content || content.corrupted) {
 Now, let's unpack and decrypt the container in which content of the message is stored:
 
 ```ts
-const decodedContent = await ylide.decryptMessageContent(message, content, account.address);
+const decodedContent = await ylide.core.decryptMessageContent(account, message, content);
 ```
 
 Finally, we can easily access the content of the message:
 
 ```ts
-alert(decodedContent.subject + '\n\n' + decodedContent.content);
+alert(decodedContent.content.subject + '\n\n' + decodedContent.content.content.toPlainText());
 ```
 
 Whoohoo!

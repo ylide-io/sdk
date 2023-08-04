@@ -1,5 +1,8 @@
-import nacl from 'tweetnacl';
-import { packSymmetricalyEncryptedData, unpackSymmetricalyEncryptedData } from '.';
+import { packSymmetricalyEncryptedData, unpackSymmetricalyEncryptedData } from './symmetric';
+
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import { randomBytes, box as naclbox } from 'tweetnacl';
 
 /**
  * @category Crypto
@@ -11,8 +14,8 @@ import { packSymmetricalyEncryptedData, unpackSymmetricalyEncryptedData } from '
  * @returns Encrypted data
  */
 export const asymmetricEncrypt = (data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) => {
-	const nonce = nacl.randomBytes(24);
-	const encData = nacl.box(data, nonce, theirPublicKey, mySecretKey);
+	const nonce = randomBytes(24);
+	const encData = naclbox(data, nonce, theirPublicKey, mySecretKey);
 	return packSymmetricalyEncryptedData(encData, nonce);
 };
 
@@ -28,9 +31,9 @@ export const asymmetricEncrypt = (data: Uint8Array, mySecretKey: Uint8Array, the
 export const asymmetricDecrypt = (data: Uint8Array, mySecretKey: Uint8Array, theirPublicKey: Uint8Array) => {
 	const { nonce, encData } = unpackSymmetricalyEncryptedData(data);
 
-	const decData = nacl.box.open(encData, nonce, theirPublicKey, mySecretKey);
+	const decData = naclbox.open(encData, nonce, theirPublicKey, mySecretKey);
 	if (!decData) {
-		throw new Error('Invalid box or key');
+		throw new YlideMisusageError('asymmetricDecrypt', 'Invalid box or key');
 	}
 	return decData;
 };

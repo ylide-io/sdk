@@ -1,7 +1,10 @@
-import { WalletControllerFactory, BlockchainControllerFactory } from './abstracts';
-import { YlideControllers, YlideCore } from './core';
-import { YlideKeyStore } from './keystore';
-import { BlockchainWalletMap, BlockchainMap } from './types';
+import { YlideControllers } from './core/YlideControllers';
+import { YlideCore } from './core/YlideCore';
+import { YlideError, YlideErrorType } from './errors';
+
+import type { WalletControllerFactory, BlockchainControllerFactory } from './abstracts';
+import type { YlideKeyRegistry } from './keystore';
+import type { BlockchainWalletMap, BlockchainMap } from './primitives';
 
 /**
  * @description It's a singleton entry point to all interactions with Ylide SDK
@@ -10,52 +13,62 @@ import { BlockchainWalletMap, BlockchainMap } from './types';
  * import { Ylide } from '@ylide/sdk';
  * import { everscaleBlockchainFactory, everscaleWalletFactory } from '@ylide/everscale';
  *
- * Ylide.registerBlockchain(everscaleBlockchainFactory);
- * Ylide.registerWallet(everscaleWalletFactory);
+ * const ylide = new Ylide();
  *
- * const wallet = await Ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
+ * ylide.registerBlockchain(everscaleBlockchainFactory);
+ * ylide.registerWallet(everscaleWalletFactory);
+ *
+ * const wallet = await ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
  *
  * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
  * ```
  */
 export class Ylide {
-	private static _isVerbose = false;
-	private static _walletFactories: BlockchainWalletMap<WalletControllerFactory> = {};
-	private static _blockchainFactories: BlockchainMap<BlockchainControllerFactory> = {};
-	private static _blockchainToGroupMap: Record<string, string> = {};
+	private _isVerbose = false;
+	private _walletFactories: BlockchainWalletMap<WalletControllerFactory> = {};
+	private _blockchainFactories: BlockchainMap<BlockchainControllerFactory> = {};
+	private _blockchainToGroupMap: Record<string, string> = {};
 
-	static get blockchainToGroupMap() {
+	public readonly controllers: YlideControllers;
+	public readonly core: YlideCore;
+
+	constructor(public readonly keyRegistry: YlideKeyRegistry, indexerBlockchains: string[] = []) {
+		this.controllers = new YlideControllers(this);
+		this.core = new YlideCore(this, this.controllers, keyRegistry, indexerBlockchains);
+	}
+
+	get blockchainToGroupMap() {
 		return this._blockchainToGroupMap;
 	}
 
 	/**
 	 * @description This method is used to make SDK verbose. It means that all extra logs will be printed to console.
 	 */
-	static verbose() {
+	verbose() {
 		this._isVerbose = true;
 	}
 
 	/**
 	 * @description This method is used to make SDK silent. It means that all extra logs will be hidden.
 	 */
-	static silent() {
+	silent() {
 		this._isVerbose = false;
 	}
 
 	/**
 	 * @description This method is used to check if SDK is verbose.
 	 */
-	static get isVerbose() {
+	get isVerbose() {
 		return this._isVerbose;
 	}
 
-	private static verboseLog(...args: any[]) {
+	private verboseLog(...args: any[]) {
 		if (this._isVerbose) {
 			console.log('[Y-SDK]', ...args);
 		}
 	}
 
-	private static verboseLogTick(...args: any[]) {
+	private verboseLogTick(...args: any[]) {
 		if (this._isVerbose) {
 			console.log('[Y-SDK]', ...args);
 			const timer = setTimeout(() => {
@@ -76,11 +89,13 @@ export class Ylide {
 	 * import { Ylide } from '@ylide/sdk';
 	 * import { everscaleWalletFactory } from '@ylide/everscale';
 	 *
-	 * Ylide.registerWallet(everscaleWalletFactory);
+	 * const ylide = new Ylide();
+	 *
+	 * ylide.registerWallet(everscaleWalletFactory);
 	 * ```
 	 * @param factory Wallet controller factory which you want to register
 	 */
-	static registerWalletFactory(factory: WalletControllerFactory) {
+	registerWalletFactory(factory: WalletControllerFactory) {
 		this._walletFactories[factory.blockchainGroup] = {
 			...this._walletFactories[factory.blockchainGroup],
 			[factory.wallet]: factory,
@@ -95,11 +110,13 @@ export class Ylide {
 	 * import { Ylide } from '@ylide/sdk';
 	 * import { everscaleBlockchainFactory } from '@ylide/everscale';
 	 *
-	 * Ylide.registerBlockchain(everscaleBlockchainFactory);
+	 * const ylide = new Ylide();
+	 *
+	 * ylide.registerBlockchain(everscaleBlockchainFactory);
 	 * ```
 	 * @param factory Blockchain controller factory which you want to register
 	 */
-	static registerBlockchainFactory(factory: BlockchainControllerFactory) {
+	registerBlockchainFactory(factory: BlockchainControllerFactory) {
 		this._blockchainFactories[factory.blockchain] = factory;
 		this._blockchainToGroupMap[factory.blockchain] = factory.blockchainGroup;
 	}
@@ -109,11 +126,11 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * Ylide.isBlockchainRegistered('everscale'); // return true if `Ylide.registerBlockchain` was called with this blockchain controller factory before
+	 * ylide.isBlockchainRegistered('everscale'); // return true if `Ylide.registerBlockchain` was called with this blockchain controller factory before
 	 * ```
 	 * @param blockchain Name of blockchain you want to check
 	 */
-	static isBlockchainRegistered(blockchain: string) {
+	isBlockchainRegistered(blockchain: string) {
 		return !!this._blockchainFactories[blockchain];
 	}
 
@@ -122,11 +139,11 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * Ylide.isWalletRegistered('everscale', 'everwallet'); // return true if `Ylide.registerWallet` was called with this wallet factory before
+	 * ylide.isWalletRegistered('everscale', 'everwallet'); // return true if `Ylide.registerWallet` was called with this wallet factory before
 	 * ```
 	 * @param blockchain Name of blockchain you want to check
 	 */
-	static isWalletRegistered(blockchain: string, wallet: string) {
+	isWalletRegistered(blockchain: string, wallet: string) {
 		return !!(this._walletFactories[blockchain] && this._walletFactories[blockchain][wallet]);
 	}
 
@@ -135,7 +152,7 @@ export class Ylide {
 	 *
 	 * @param blockchain Name of blockchain
 	 */
-	static getBlockchainControllerFactory(blockchain: string) {
+	getBlockchainControllerFactory(blockchain: string) {
 		return this._blockchainFactories[blockchain];
 	}
 
@@ -145,12 +162,15 @@ export class Ylide {
 	 * @param blockchainGroup Name of the blockchain group
 	 * @param wallet Name of in-browser wallet
 	 */
-	static getWalletControllerFactory(blockchainGroup: string, wallet: string) {
+	getWalletControllerFactory(blockchainGroup: string, wallet: string) {
 		if (!this._walletFactories[blockchainGroup]) {
-			throw new Error(`Blockchain group ${blockchainGroup} not found`);
+			throw new YlideError(YlideErrorType.NOT_FOUND, `Blockchain group ${blockchainGroup} not found`);
 		}
 		if (!this._walletFactories[blockchainGroup][wallet]) {
-			throw new Error(`Wallet ${wallet} not found in the blockchain group ${blockchainGroup}`);
+			throw new YlideError(
+				YlideErrorType.NOT_FOUND,
+				`Wallet ${wallet} not found in the blockchain group ${blockchainGroup}`,
+			);
 		}
 		return this._walletFactories[blockchainGroup][wallet];
 	}
@@ -160,10 +180,10 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const ethereumWallets = Ylide.walletsList.filter(t => t.blockchain === 'ethereum');
+	 * const evmWallets = ylide.walletsList.filter(t => t.blockchainGroup === 'evm');
 	 * ```
 	 */
-	static get walletsList() {
+	get walletsList() {
 		return Object.keys(this._walletFactories)
 			.map(blockchain =>
 				Object.keys(this._walletFactories[blockchain]).map(wallet => ({
@@ -180,10 +200,10 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const ethereumChains = Ylide.blockchainsList.filter(t => t.blockchain === 'ethereum');
+	 * const ethereumChains = ylide.blockchainsList.filter(t => t.blockchain === 'ethereum');
 	 * ```
 	 */
-	static get blockchainsList() {
+	get blockchainsList() {
 		return Object.keys(this._blockchainFactories).map(blockchain => ({
 			blockchain,
 			factory: this._blockchainFactories[blockchain],
@@ -195,10 +215,10 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const availableWallets = await Ylide.getAvailableWallets();
+	 * const availableWallets = await ylide.getAvailableWallets();
 	 * ```
 	 */
-	static async getAvailableWallets(): Promise<WalletControllerFactory[]> {
+	async getAvailableWallets(): Promise<WalletControllerFactory[]> {
 		const list = this.walletsList;
 
 		const result: WalletControllerFactory[] = [];
@@ -224,10 +244,10 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const availableBlockchains = await Ylide.getAvailableBlockchains();
+	 * const availableBlockchains = await ylide.getAvailableBlockchains();
 	 * ```
 	 */
-	static async getAvailableBlockchains(): Promise<BlockchainControllerFactory[]> {
+	async getAvailableBlockchains(): Promise<BlockchainControllerFactory[]> {
 		return this.blockchainsList.map(r => r.factory);
 	}
 
@@ -236,18 +256,18 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const wallet = await Ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
+	 * const wallet = await ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
 	 *
 	 * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
 	 */
-	static async instantiateWallet(blockchainGroup: string, wallet: string, options?: any) {
+	async instantiateWallet(blockchainGroup: string, wallet: string, options?: any) {
 		const walletControllerFactory = this.getWalletControllerFactory(blockchainGroup, wallet);
 		const doneAvailabilityCheck = this.verboseLogTick(`Checking availability of ${blockchainGroup} ${wallet}`);
 		const isAvailable = await walletControllerFactory.isWalletAvailable();
 		doneAvailabilityCheck();
 		if (!isAvailable) {
-			throw new Error('Wallet is not available');
+			throw new YlideError(YlideErrorType.UNAVAILABLE, 'Wallet is not available');
 		}
 		const doneWalletControllerCreate = this.verboseLogTick(
 			`Creating ${blockchainGroup} ${wallet} wallet controller`,
@@ -269,12 +289,12 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const blockchainController = await Ylide.instantiateBlockchain('everscale', { dev: false });
+	 * const blockchainController = await ylide.instantiateBlockchain('everscale', { dev: false });
 	 *
 	 * const isMyAddressValid = blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
 	 */
-	static async instantiateBlockchain(blockchain: string, options?: any) {
+	async instantiateBlockchain(blockchain: string, options?: any) {
 		const blockchainControllerFactory = this.getBlockchainControllerFactory(blockchain);
 		const doneBlockchainControllerCreate = this.verboseLogTick(`Creating ${blockchain} blockchain controller`);
 		const blockchainController = await blockchainControllerFactory.create(
@@ -285,15 +305,5 @@ export class Ylide {
 		await blockchainController.init();
 		doneBlockchainControllerInit();
 		return blockchainController;
-	}
-
-	// non-singleton part starts here:
-
-	controllers: YlideControllers;
-	core: YlideCore;
-
-	constructor(keystore: YlideKeyStore, indexerBlockchains: string[] = []) {
-		this.controllers = new YlideControllers();
-		this.core = new YlideCore(this.controllers, keystore, indexerBlockchains);
 	}
 }

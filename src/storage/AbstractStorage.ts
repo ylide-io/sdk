@@ -1,4 +1,4 @@
-import SmartBuffer from '@ylide/smart-buffer';
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 /**
  * @category Storage

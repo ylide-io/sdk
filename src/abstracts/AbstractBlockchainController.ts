@@ -1,4 +1,5 @@
-import {
+import type { AbstractNameService } from './AbstractNameService';
+import type {
 	MessageKey,
 	IExtraEncryptionStrateryBulk,
 	IExtraEncryptionStrateryEntry,
@@ -8,10 +9,9 @@ import {
 	ISourceSubject,
 	IBlockchainSourceSubject,
 } from '..';
-import { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
-import { ExternalYlidePublicKey } from '../types/ExternalPublicKey';
-import { Uint256 } from '../types/Uint256';
-import { AbstractNameService } from './AbstractNameService';
+import type { LowLevelMessagesSource } from '../messages-list/types/LowLevelMessagesSource';
+import type { RemotePublicKey } from '../keystore/RemotePublicKey';
+import type { Uint256 } from '../primitives/Uint256';
 
 /**
  * @description It's an abstract class designated to define an interface to read messaging data from blockchain: messages metadata, content and public keys of recipients
@@ -167,14 +167,14 @@ export abstract class AbstractBlockchainController {
 	 *
 	 * @param address - Recipient's wallet address
 	 */
-	abstract extractPublicKeyFromAddress(address: string): Promise<ExternalYlidePublicKey | null>;
+	abstract extractPublicKeyFromAddress(address: string): Promise<RemotePublicKey | null>;
 
 	/**
 	 * Method to get public keys history of the recipient by address.
 	 *
 	 * @param address - Recipient's wallet address
 	 */
-	abstract extractPublicKeysHistoryByAddress(address: string): Promise<ExternalYlidePublicKey[]>;
+	abstract extractPublicKeysHistoryByAddress(address: string): Promise<RemotePublicKey[]>;
 
 	/**
 	 * Method to get balance of the address. Currency used is the same which is used to pay for the Ylide tx in this blockchain

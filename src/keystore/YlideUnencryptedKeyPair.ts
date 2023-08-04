@@ -1,5 +1,6 @@
-import { BoxKeyPair } from 'tweetnacl';
 import { asymmetricDecrypt, asymmetricEncrypt } from '../crypto';
+
+import type { BoxKeyPair } from 'tweetnacl';
 
 /**
  * @category Keys

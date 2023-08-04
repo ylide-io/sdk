@@ -1,11 +1,14 @@
-import { AsyncEventEmitter } from '../../common/AsyncEventEmitter';
-import { CriticalSection } from '../../common/CriticalSection';
-import { ExtendedDoublyLinkedList } from '../../common/ExtendedDoublyLinkedList';
-import { IMessage } from '../../types/IMessage';
-import { SourceReadingSession } from '../SourceReadingSession';
-import { IBlockchainSourceSubject, IListSource, LowLevelMessagesSource } from '../types';
 import { ListCache } from './ListCache';
 import { ListStorage } from './ListStorage';
+
+import { AsyncEventEmitter } from '../../common/AsyncEventEmitter';
+import { CriticalSection } from '../../common/CriticalSection';
+import { YlideMisusageError } from '../../errors/YlideMisusageError';
+
+import type { ExtendedDoublyLinkedList } from '../../common/ExtendedDoublyLinkedList';
+import type { IMessage } from '../../primitives/IMessage';
+import type { SourceReadingSession } from '../SourceReadingSession';
+import type { IBlockchainSourceSubject, IListSource, LowLevelMessagesSource } from '../types';
 
 export class ListSource extends AsyncEventEmitter implements IListSource {
 	private readonly cache: ListCache<IMessage>;
@@ -153,7 +156,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 					await this.loadMore('before', limit - available);
 				}
 			} else {
-				throw new Error('You cant load messages after inexistent message');
+				throw new YlideMisusageError('ListSource', 'You cant load messages after inexistent message');
 			}
 		} else {
 			await this.loadMore('before', limit);
@@ -208,7 +211,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 					if (this.trackingNewMessagesDispose) {
 						this.trackingNewMessagesDispose();
 					} else {
-						throw new Error('trackingNewMessagesDispose is not defined');
+						throw new YlideMisusageError('ListSource', 'You cant dispose not connected subscription');
 					}
 				}
 			},

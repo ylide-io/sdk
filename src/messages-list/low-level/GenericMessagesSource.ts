@@ -1,6 +1,7 @@
-import { IMessage } from '../../types';
 import { asyncTimer } from '../../utils/asyncTimer';
-import { LowLevelMessagesSource } from '../types/LowLevelMessagesSource';
+
+import type { IMessage } from '../../primitives';
+import type { LowLevelMessagesSource } from '../types/LowLevelMessagesSource';
 
 /**
  * @internal

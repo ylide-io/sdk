@@ -1,8 +1,11 @@
-import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
 import { ExtendedDoublyLinkedList } from '../../common';
-import { ListCache } from './ListCache';
-import { AscComparator } from '../types';
 import { validateDesc } from '../../utils/validateDesc';
+import { YlideError, YlideErrorType } from '../../errors';
+
+import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
+
+import type { ListCache } from './ListCache';
+import type { AscComparator } from '../types';
 
 export type SegmentEndPosition<T> =
 	| { type: 'after' }
@@ -76,10 +79,16 @@ export class ListStorage<T> {
 								element: current,
 							};
 						} else if (cmpr > 0) {
-							throw new Error('Should never happen. Seems like list is not ordered correctly');
+							throw new YlideError(
+								YlideErrorType.MUST_NEVER_HAPPEN,
+								'Should never happen. Seems like list is not ordered correctly',
+							);
 						}
 					}
-					throw new Error('Should never happen. Seems like list is not ordered correctly');
+					throw new YlideError(
+						YlideErrorType.MUST_NEVER_HAPPEN,
+						'Should never happen. Seems like list is not ordered correctly',
+					);
 				}
 			}
 		}

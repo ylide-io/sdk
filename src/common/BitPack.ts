@@ -1,25 +1,27 @@
 // Inefficent as hell, but it works
 
-import SmartBuffer from '@ylide/smart-buffer';
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 export class BitPackWriter {
 	private buffer = '';
 
 	writeBits(value: number | bigint, bitLength: number) {
 		if (bitLength > 64) {
-			throw new Error('Cannot write more than 64 bits at once');
+			throw new YlideMisusageError('BitPackWriter', 'Cannot write more than 64 bits at once');
 		}
 		if (bitLength < 0) {
-			throw new Error('Cannot write negative bits');
+			throw new YlideMisusageError('BitPackWriter', 'Cannot write negative bits');
 		}
 		if (bitLength === 0) {
 			return;
 		}
 		if (value >= 2 ** bitLength) {
-			throw new Error('Cannot write more bits than the value has');
+			throw new YlideMisusageError('BitPackWriter', 'Cannot write more bits than the value has');
 		}
 		if (value < 0) {
-			throw new Error('Cannot write negative bits');
+			throw new YlideMisusageError('BitPackWriter', 'Cannot write negative bits');
 		}
 		const bits = value.toString(2).padStart(bitLength, '0');
 		this.buffer += bits;
@@ -111,16 +113,16 @@ export class BitPackReader {
 
 	readBits(bitLength: number) {
 		if (bitLength > 32) {
-			throw new Error('Cannot read more than 32 bits at once');
+			throw new YlideMisusageError('BitPackReader', 'Cannot read more than 32 bits at once');
 		}
 		if (bitLength < 0) {
-			throw new Error('Cannot read negative bits');
+			throw new YlideMisusageError('BitPackReader', 'Cannot read negative bits');
 		}
 		if (bitLength === 0) {
-			throw new Error('Cannot read zero bits');
+			throw new YlideMisusageError('BitPackReader', 'Cannot read zero bits');
 		}
 		if (this.bitOffset + bitLength > this.buffer.length) {
-			throw new Error('Cannot read more bits than the buffer has');
+			throw new YlideMisusageError('BitPackReader', 'Cannot read more bits than the buffer has');
 		}
 		const value = parseInt(this.buffer.substring(this.bitOffset, this.bitOffset + bitLength), 2);
 		this.bitOffset += bitLength;

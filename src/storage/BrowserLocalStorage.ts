@@ -1,5 +1,6 @@
-import SmartBuffer from '@ylide/smart-buffer';
 import { AbstractStorage } from './AbstractStorage';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 /**
  * @category Storage

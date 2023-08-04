@@ -25,7 +25,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">ListStorage</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L12">src/messages-list/mid-level/ListStorage.ts:12</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L15">src/messages-list/mid-level/ListStorage.ts:15</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -40,6 +40,7 @@
 <div class="tsd-index-list"><a href="ListStorage.html#cache" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>cache?</span></a>
 <a href="ListStorage.html#comparator" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>comparator</span></a>
 <a href="ListStorage.html#name" class="tsd-index-link tsd-kind-property tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>name</span></a>
+<a href="ListStorage.html#readToBottom" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>read<wbr/>To<wbr/>Bottom</span></a>
 <a href="ListStorage.html#segments" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>segments</span></a>
 </div></section>
 <section class="tsd-index-section">
@@ -52,6 +53,8 @@
 <a href="ListStorage.html#log" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>log</span></a>
 <a href="ListStorage.html#putObjects" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>put<wbr/>Objects</span></a>
 <a href="ListStorage.html#putObjectsSegments" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>put<wbr/>Objects<wbr/>Segments</span></a>
+<a href="ListStorage.html#toComplexSegment" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Complex<wbr/>Segment</span></a>
+<a href="ListStorage.html#toSegment" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>to<wbr/>Segment</span></a>
 <a href="ListStorage.html#validateDesc" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>validate<wbr/>Desc</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -77,29 +80,34 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> cache: <a href="ListCache.html" class="tsd-signature-type" data-tsd-kind="Class">ListCache</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="ListStorage.html" class="tsd-signature-type" data-tsd-kind="Class">ListStorage</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L17">src/messages-list/mid-level/ListStorage.ts:17</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L21">src/messages-list/mid-level/ListStorage.ts:21</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="cache" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>cache</span><a href="#cache" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">cache<span class="tsd-signature-symbol">?:</span> <a href="ListCache.html" class="tsd-signature-type" data-tsd-kind="Class">ListCache</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L20">src/messages-list/mid-level/ListStorage.ts:20</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L24">src/messages-list/mid-level/ListStorage.ts:24</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="comparator" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>comparator</span><a href="#comparator" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">comparator<span class="tsd-signature-symbol">:</span> <a href="../types/AscComparator.html" class="tsd-signature-type" data-tsd-kind="Type alias">AscComparator</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L19">src/messages-list/mid-level/ListStorage.ts:19</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L23">src/messages-list/mid-level/ListStorage.ts:23</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="name" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>name</span><a href="#name" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L18">src/messages-list/mid-level/ListStorage.ts:18</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L22">src/messages-list/mid-level/ListStorage.ts:22</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="readToBottom" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>read<wbr/>To<wbr/>Bottom</span><a href="#readToBottom" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">read<wbr/>To<wbr/>Bottom<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L19">src/messages-list/mid-level/ListStorage.ts:19</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="segments" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>segments</span><a href="#segments" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">segments<span class="tsd-signature-symbol">:</span> <a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L15">src/messages-list/mid-level/ListStorage.ts:15</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L18">src/messages-list/mid-level/ListStorage.ts:18</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="_put" class="tsd-anchor"></a>
@@ -114,7 +122,7 @@
 <h5>descSortedConnectedValues: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L92">src/messages-list/mid-level/ListStorage.ts:92</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L154">src/messages-list/mid-level/ListStorage.ts:154</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="_save" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_save</span><a href="#_save" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -122,7 +130,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L25">src/messages-list/mid-level/ListStorage.ts:25</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L29">src/messages-list/mid-level/ListStorage.ts:29</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="dropToCache" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>drop<wbr/>To<wbr/>Cache</span><a href="#dropToCache" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -130,7 +138,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L240">src/messages-list/mid-level/ListStorage.ts:240</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L232">src/messages-list/mid-level/ListStorage.ts:232</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="getPos" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>get<wbr/>Pos</span><a href="#getPos" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -145,7 +153,7 @@
 <h5>since: <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="../types/SegmentEndPosition.html" class="tsd-signature-type" data-tsd-kind="Type alias">SegmentEndPosition</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = null</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../types/SegmentEndPosition.html" class="tsd-signature-type" data-tsd-kind="Type alias">SegmentEndPosition</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L37">src/messages-list/mid-level/ListStorage.ts:37</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L41">src/messages-list/mid-level/ListStorage.ts:41</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="load" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>load</span><a href="#load" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -153,7 +161,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L31">src/messages-list/mid-level/ListStorage.ts:31</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L35">src/messages-list/mid-level/ListStorage.ts:35</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="log" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>log</span><a href="#log" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -166,7 +174,7 @@
 <h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span>args: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L88">src/messages-list/mid-level/ListStorage.ts:88</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L98">src/messages-list/mid-level/ListStorage.ts:98</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="putObjects" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>put<wbr/>Objects</span><a href="#putObjects" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -181,7 +189,7 @@
 <h5>dropToCache: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = true</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L248">src/messages-list/mid-level/ListStorage.ts:248</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L240">src/messages-list/mid-level/ListStorage.ts:240</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="putObjectsSegments" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>put<wbr/>Objects<wbr/>Segments</span><a href="#putObjectsSegments" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -196,7 +204,35 @@
 <h5>dropToCache: <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = true</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L256">src/messages-list/mid-level/ListStorage.ts:256</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L248">src/messages-list/mid-level/ListStorage.ts:248</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="toComplexSegment" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>to<wbr/>Complex<wbr/>Segment</span><a href="#toComplexSegment" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+<li class="tsd-signature tsd-anchor-link" id="toComplexSegment.toComplexSegment-1">to<wbr/>Complex<wbr/>Segment<span class="tsd-signature-symbol">(</span>arr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">[]</span>, sourceSegments<span class="tsd-signature-symbol">: </span><a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><a href="#toComplexSegment.toComplexSegment-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>arr: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">[]</span></h5></li>
+<li>
+<h5>sourceSegments: <a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L110">src/messages-list/mid-level/ListStorage.ts:110</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="toSegment" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>to<wbr/>Segment</span><a href="#toSegment" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+<li class="tsd-signature tsd-anchor-link" id="toSegment.toSegment-1">to<wbr/>Segment<span class="tsd-signature-symbol">(</span>arr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><a href="#toSegment.toSegment-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>arr: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="ExtendedDoublyLinkedList.html" class="tsd-signature-type" data-tsd-kind="Class">ExtendedDoublyLinkedList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L102">src/messages-list/mid-level/ListStorage.ts:102</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="validateDesc" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>validate<wbr/>Desc</span><a href="#validateDesc" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -209,7 +245,7 @@
 <h5>vals: <span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/messages-list/mid-level/ListStorage.ts#L244">src/messages-list/mid-level/ListStorage.ts:244</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/messages-list/mid-level/ListStorage.ts#L236">src/messages-list/mid-level/ListStorage.ts:236</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -239,6 +275,7 @@
 <li class="tsd-kind-property tsd-parent-kind-class"><a href="ListStorage.html#cache" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>cache?</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class"><a href="ListStorage.html#comparator" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>comparator</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#name" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>name</a></li>
+<li class="tsd-kind-property tsd-parent-kind-class"><a href="ListStorage.html#readToBottom" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>read<wbr/>To<wbr/>Bottom</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class"><a href="ListStorage.html#segments" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>segments</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#_put" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>_put</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#_save" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>_save</a></li>
@@ -248,6 +285,8 @@
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#log" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>log</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="ListStorage.html#putObjects" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>put<wbr/>Objects</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="ListStorage.html#putObjectsSegments" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>put<wbr/>Objects<wbr/>Segments</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#toComplexSegment" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Complex<wbr/>Segment</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#toSegment" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>to<wbr/>Segment</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="ListStorage.html#validateDesc" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>validate<wbr/>Desc</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>

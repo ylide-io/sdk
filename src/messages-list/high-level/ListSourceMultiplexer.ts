@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { DoublyLinkedListNode } from '@datastructures-js/linked-list';
 import { CriticalSection } from '../../common';
-import { IMessage } from '../../types';
-import { IListSource } from '../types';
+import { YlideMisusageError } from '../../errors/YlideMisusageError';
+import { YlideError, YlideErrorType } from '../../errors';
+
+import type { IMessage } from '../../primitives';
+import type { IListSource } from '../types';
+import type { DoublyLinkedListNode } from '@datastructures-js/linked-list';
 
 export interface ListWrappedSource {
 	source: IListSource;
@@ -225,7 +228,7 @@ export class ListSourceMultiplexer {
 		try {
 			const idx = this._guaranteedSegment.findIndex(m => m.msg.msgId === before.msgId);
 			if (idx === -1) {
-				throw new Error(`Message ${before.msgId} not found in the list`);
+				throw new YlideMisusageError('ListSourceMultiplexer', `Message ${before.msgId} not found in the list`);
 			}
 			const availableNow = this._guaranteed - idx - 1;
 			if (availableNow >= limit) {
@@ -242,7 +245,10 @@ export class ListSourceMultiplexer {
 						return;
 					}
 					if (!s.lastUsedMsg) {
-						throw new Error('lastUsedMsg is null, should be impossible here');
+						throw new YlideError(
+							YlideErrorType.MUST_NEVER_HAPPEN,
+							'lastUsedMsg is null, should be impossible here',
+						);
 					}
 					await s.request(s.lastUsedMsg.getValue(), readSize);
 					s.lastUsedMsg = s.source.guaranteedSegment?.tail() || null;

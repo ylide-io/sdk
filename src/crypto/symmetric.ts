@@ -1,5 +1,7 @@
-import SmartBuffer from '@ylide/smart-buffer';
-import nacl from 'tweetnacl';
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
+import { randomBytes, box as naclbox } from 'tweetnacl';
 
 /**
  * @category Crypto
@@ -10,8 +12,8 @@ import nacl from 'tweetnacl';
  * @returns Encrypted data
  */
 export const symmetricEncrypt = (data: Uint8Array, key: Uint8Array) => {
-	const nonce = nacl.randomBytes(24);
-	const encData = nacl.box.after(data, nonce, key);
+	const nonce = randomBytes(24);
+	const encData = naclbox.after(data, nonce, key);
 	return packSymmetricalyEncryptedData(encData, nonce);
 };
 
@@ -41,9 +43,9 @@ export const packSymmetricalyEncryptedData = (encData: Uint8Array, nonce: Uint8A
 export const symmetricDecrypt = (data: Uint8Array, key: Uint8Array) => {
 	const { nonce, encData } = unpackSymmetricalyEncryptedData(data);
 
-	const decData = nacl.box.open.after(encData, nonce, key);
+	const decData = naclbox.open.after(encData, nonce, key);
 	if (!decData) {
-		throw new Error('Invalid box or key');
+		throw new YlideMisusageError('symmetricDecrypt', 'Invalid box or key');
 	}
 	return decData;
 };

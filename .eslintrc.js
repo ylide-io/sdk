@@ -22,15 +22,35 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended',
 		'plugin:@typescript-eslint/recommended-requiring-type-checking',
 		'prettier',
+		'plugin:import/warnings',
+		'plugin:import/typescript',
 	],
+	settings: {
+		'import/no-unresolved': { commonjs: true, amd: true },
+		'import/resolver': { typescript: true, node: true },
+		'import/order': {
+			groups: ['builtin', 'external', 'parent', 'sibling', 'index'],
+		},
+	},
 	parser: '@typescript-eslint/parser',
 	parserOptions: {
 		project: 'tsconfig.json',
 		sourceType: 'module',
+		emitDecoratorMetadata: false,
 	},
 	plugins: ['eslint-plugin-jsdoc', 'eslint-plugin-prefer-arrow', '@typescript-eslint'],
 	root: true,
 	rules: {
+		'import/order': [
+			'error',
+			{
+				'groups': ['index', 'sibling', 'parent', 'internal', 'external', 'builtin', 'object', 'type'],
+				'newlines-between': 'always',
+			},
+		],
+		'import/export': 'error',
+		'import/no-nodejs-modules': 'error',
+		'import/no-cycle': 'error',
 		'@typescript-eslint/adjacent-overload-signatures': 'error',
 		'@typescript-eslint/array-type': [
 			'error',
@@ -64,6 +84,7 @@ module.exports = {
 			},
 		],
 		'@typescript-eslint/consistent-type-assertions': 'error',
+		'@typescript-eslint/consistent-type-imports': 'error',
 		'@typescript-eslint/dot-notation': 'error',
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/explicit-module-boundary-types': 'off',

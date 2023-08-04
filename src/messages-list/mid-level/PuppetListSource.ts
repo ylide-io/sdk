@@ -1,9 +1,11 @@
 import { AsyncEventEmitter, CriticalSection } from '../../common';
-import { IMessage } from '../../types';
-import { SourceReadingSession } from '../SourceReadingSession';
-import { IBlockchainSourceSubject } from '../types/IBlockchainSourceSubject';
-import { IListSource } from '../types/IListSource';
-import { DoublyLinkedList, DoublyLinkedListNode } from '@datastructures-js/linked-list';
+import { YlideMisusageError } from '../../errors/YlideMisusageError';
+
+import type { IMessage } from '../../primitives';
+import type { SourceReadingSession } from '../SourceReadingSession';
+import type { IBlockchainSourceSubject } from '../types/IBlockchainSourceSubject';
+import type { IListSource } from '../types/IListSource';
+import type { DoublyLinkedList, DoublyLinkedListNode } from '@datastructures-js/linked-list';
 
 export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	private _messages: DoublyLinkedList<IMessage> | undefined;
@@ -78,14 +80,14 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 
 	private async requestRaw(name: string, from: IMessage | null, limit = 10) {
 		if (!this._messages || !this.sourceToFilter.guaranteedSegment) {
-			throw new Error('You cant load messages after inexistent message');
+			throw new YlideMisusageError('PuppetListSource', 'You cant load messages after inexistent message');
 		}
 		let idx = null;
 		let available = 0;
 		if (from) {
 			idx = this._messages.find(m => m.getValue().msgId === from.msgId);
 			if (!idx) {
-				throw new Error('You cant load messages after inexistent message');
+				throw new YlideMisusageError('PuppetListSource', 'You cant load messages after inexistent message');
 			}
 			let curr = idx ? idx.getNext() : null;
 			while (curr) {
@@ -103,7 +105,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 		}
 		const needToReed = limit - available;
 		if (!this._requester) {
-			throw new Error('You cant load messages before connect');
+			throw new YlideMisusageError('PuppetListSource', 'You cant load messages before connect');
 		}
 		if (this.sourceToFilter.readToBottom) {
 			return;
@@ -130,14 +132,14 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 	private async request(name: string, from: IMessage | null, limit = 10) {
 		await this.requestCriticalSection.enter();
 		if (!this._messages || !this.sourceToFilter.guaranteedSegment) {
-			throw new Error('You cant load messages after inexistent message');
+			throw new YlideMisusageError('PuppetListSource', 'You cant load messages after inexistent message');
 		}
 		let idx = null;
 		let available = 0;
 		if (from) {
 			idx = this._messages.find(m => m.getValue().msgId === from.msgId);
 			if (!idx) {
-				throw new Error('You cant load messages after inexistent message');
+				throw new YlideMisusageError('PuppetListSource', 'You cant load messages after inexistent message');
 			}
 			let curr = idx ? idx.getNext() : null;
 			while (curr) {
@@ -184,7 +186,7 @@ export class PuppetListSource extends AsyncEventEmitter implements IListSource {
 				this.newMessagesSubscriptions.delete(subscription);
 				if (this.newMessagesSubscriptions.size === 0) {
 					if (!this._disposer) {
-						throw new Error('You cant dispose before connect');
+						throw new YlideMisusageError('PuppetListSource', 'You cant dispose before connect');
 					}
 					this._disposer();
 				}

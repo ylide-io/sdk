@@ -27,7 +27,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">MessageContainer</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/content/MessageContainer.ts#L34">src/content/MessageContainer.ts:34</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/content/MessageContainer.ts#L38">src/content/MessageContainer.ts:38</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -62,13 +62,13 @@
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>VERSION</span><a href="#VERSION" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">VERSION<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0x06</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/content/MessageContainer.ts#L35">src/content/MessageContainer.ts:35</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/content/MessageContainer.ts#L39">src/content/MessageContainer.ts:39</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="packContainer" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>pack<wbr/>Container</span><a href="#packContainer" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature tsd-anchor-link" id="packContainer.packContainer-1">pack<wbr/>Container<span class="tsd-signature-symbol">(</span>serviceCode<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, isEncoded<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, senderPublicKeys<span class="tsd-signature-symbol">: </span><a href="PublicKey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a><span class="tsd-signature-symbol">[]</span>, messageBlobBytes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><a href="#packContainer.packContainer-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="packContainer.packContainer-1">pack<wbr/>Container<span class="tsd-signature-symbol">(</span>serviceCode<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, isEncoded<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span>, senderPublicKeys<span class="tsd-signature-symbol">: </span><a href="EncryptionPublicKey.html" class="tsd-signature-type" data-tsd-kind="Class">EncryptionPublicKey</a><span class="tsd-signature-symbol">[]</span>, messageBlobBytes<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><a href="#packContainer.packContainer-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Method to prepare outgoing message for publishing to blockchain</p>
 
@@ -84,18 +84,18 @@
 <li>
 <h5>isEncoded: <span class="tsd-signature-type">boolean</span></h5></li>
 <li>
-<h5>senderPublicKeys: <a href="PublicKey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a><span class="tsd-signature-symbol">[]</span></h5></li>
+<h5>senderPublicKeys: <a href="EncryptionPublicKey.html" class="tsd-signature-type" data-tsd-kind="Class">EncryptionPublicKey</a><span class="tsd-signature-symbol">[]</span></h5></li>
 <li>
 <h5>messageBlobBytes: <span class="tsd-signature-type">Uint8Array</span></h5>
 <div class="tsd-comment tsd-typography"><p>Raw bytes of the message blob (usually the result of <code>MessageBlob.encode</code>)</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Uint8Array</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/content/MessageContainer.ts#L46">src/content/MessageContainer.ts:46</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/content/MessageContainer.ts#L50">src/content/MessageContainer.ts:50</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="unpackContainerV5" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>unpack<wbr/>Container<wbr/>V5</span><a href="#unpackContainerV5" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature tsd-anchor-link" id="unpackContainerV5.unpackContainerV5-1">unpack<wbr/>Container<wbr/>V5<span class="tsd-signature-symbol">(</span>buf<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">default</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a><a href="#unpackContainerV5.unpackContainerV5-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="unpackContainerV5.unpackContainerV5-1">unpack<wbr/>Container<wbr/>V5<span class="tsd-signature-symbol">(</span>buf<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SmartBuffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a><a href="#unpackContainerV5.unpackContainerV5-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Method to unpack container of version 5.</p>
 
@@ -105,16 +105,16 @@
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>buf: <span class="tsd-signature-type">default</span></h5>
+<h5>buf: <span class="tsd-signature-type">SmartBuffer</span></h5>
 <div class="tsd-comment tsd-typography"><p>Message content bytes</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/content/MessageContainer.ts#L89">src/content/MessageContainer.ts:89</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/content/MessageContainer.ts#L93">src/content/MessageContainer.ts:93</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="unpackContainerV6" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>unpack<wbr/>Container<wbr/>V6</span><a href="#unpackContainerV6" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature tsd-anchor-link" id="unpackContainerV6.unpackContainerV6-1">unpack<wbr/>Container<wbr/>V6<span class="tsd-signature-symbol">(</span>buf<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">default</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a><a href="#unpackContainerV6.unpackContainerV6-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="unpackContainerV6.unpackContainerV6-1">unpack<wbr/>Container<wbr/>V6<span class="tsd-signature-symbol">(</span>buf<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">SmartBuffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a><a href="#unpackContainerV6.unpackContainerV6-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Method to unpack container of version 6.</p>
 
@@ -124,12 +124,12 @@
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>buf: <span class="tsd-signature-type">default</span></h5>
+<h5>buf: <span class="tsd-signature-type">SmartBuffer</span></h5>
 <div class="tsd-comment tsd-typography"><p>Message content bytes</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/content/MessageContainer.ts#L112">src/content/MessageContainer.ts:112</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/content/MessageContainer.ts#L116">src/content/MessageContainer.ts:116</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="unpackContainter" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>unpack<wbr/>Containter</span><a href="#unpackContainter" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -148,7 +148,7 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/IUnpackedMessageContainer.html" class="tsd-signature-type" data-tsd-kind="Interface">IUnpackedMessageContainer</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/95385a9/src/content/MessageContainer.ts#L71">src/content/MessageContainer.ts:71</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/a9682b3/src/content/MessageContainer.ts#L75">src/content/MessageContainer.ts:75</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">

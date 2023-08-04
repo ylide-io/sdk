@@ -1,4 +1,4 @@
-import { MessageAttachmentType } from './MessageAttachmentType';
+import type { MessageAttachmentType } from './MessageAttachmentType';
 
 export abstract class MessageAttachment {
 	type: MessageAttachmentType;

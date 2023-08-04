@@ -1,8 +1,10 @@
-import { Semver } from '../types';
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
+import type { Semver } from '../primitives';
 
 export const stringToSemver = (str: string): Semver => {
 	if (!/^([0-9]|[1-9][0-9]*)((\.([0-9]|[1-9][0-9])){0,2})$/.test(str)) {
-		throw new Error(`Invalid semver string: ${str}`);
+		throw new YlideMisusageError('Semver', `Invalid semver string: ${str}`);
 	}
 	const [major, minor, patch] = str.split('.');
 	return {

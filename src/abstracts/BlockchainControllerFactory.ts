@@ -1,4 +1,4 @@
-import { AbstractBlockchainController } from './AbstractBlockchainController';
+import type { AbstractBlockchainController } from './AbstractBlockchainController';
 
 export interface BlockchainControllerFactory {
 	blockchain: string;

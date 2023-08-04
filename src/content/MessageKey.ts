@@ -1,4 +1,7 @@
-import SmartBuffer from '@ylide/smart-buffer';
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+import { YlideError, YlideErrorType } from '../errors';
+
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 export class MessageKey {
 	constructor(
@@ -12,7 +15,7 @@ export class MessageKey {
 		buf.writeUint8(0x02); // version
 		buf.writeUint8(this.publicKeyIndex);
 		if (this.decryptingPublicKeySignature === undefined) {
-			throw new Error('Decrypting public key signature is not provided');
+			throw new YlideMisusageError('MessageKey', 'Decrypting public key signature is not provided');
 		}
 		buf.writeUint32(this.decryptingPublicKeySignature);
 		buf.writeBytes16Length(this.encryptedMessageKey);
@@ -32,7 +35,7 @@ export class MessageKey {
 			const encryptedMessageKey = buf.readBytes16Length();
 			return new MessageKey(publicKeyIndex, decryptingPublicKeySignature, encryptedMessageKey);
 		} else {
-			throw new Error('Unsupported key version');
+			throw new YlideError(YlideErrorType.UNSUPPORTED, 'Unsupported key version');
 		}
 	}
 }

@@ -1,3 +1,5 @@
+import { YlideMisusageError } from '../errors/YlideMisusageError';
+
 export const literalCharsMap: { [char: string]: boolean } = {
 	'a': true,
 	'b': true,
@@ -85,7 +87,7 @@ export const decodeSpecialChar = (char: string): string => {
 	} else if (char === '&amp;') {
 		return '&';
 	} else {
-		throw new Error(`Unknown special char to decode: ${char}`);
+		throw new YlideMisusageError('YMF', `Unknown special char to decode: ${char}`);
 	}
 };
 
@@ -99,6 +101,6 @@ export const encodeSpecialChar = (char: string): string => {
 	} else if (char === '&') {
 		return '&amp;';
 	} else {
-		throw new Error(`Unknown special char to encode: ${char}`);
+		throw new YlideMisusageError('YMF', `Unknown special char to encode: ${char}`);
 	}
 };

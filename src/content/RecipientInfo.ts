@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import SmartBuffer from '@ylide/smart-buffer';
+import { SmartBuffer } from '@ylide/smart-buffer';
 
 export interface IRecipientInfo {
 	// resolved address of the recipient that was used to retrieve the key to encrypt the message
