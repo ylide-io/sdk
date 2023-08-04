@@ -17,8 +17,6 @@ const isWalletAvailable = await everscaleWalletFactory.isWalletAvailable();
 Then, let's instantiate `Ylide`, `YlideKeysRegistry` with `BrowserLocalStorage`:
 
 ```ts
-let provider;
-
 const storage = new BrowserLocalStorage();
 const keyRegistry = new YlideKeysRegistry(storage);
 

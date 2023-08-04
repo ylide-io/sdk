@@ -314,10 +314,8 @@ export class IndexerHub {
 	async requestMultiMessages(
 		requests: {
 			blockchain: string;
-			fromBlock: number | null;
-			toBlock: number | null;
-			fromMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
-			toMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+			fromMessageId: null | string;
+			toMessageId: null | string;
 			sender: string | null;
 			recipient: Uint256 | null;
 			feedId: Uint256 | null;
@@ -342,10 +340,8 @@ export class IndexerHub {
 		reject: (reason?: any) => void;
 		request: {
 			blockchain: string;
-			fromBlock: number | null;
-			toBlock: number | null;
-			fromMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
-			toMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+			fromMessageId: null | string;
+			toMessageId: null | string;
 			sender: string | null;
 			recipient: Uint256 | null;
 			feedId: Uint256 | null;
@@ -358,10 +354,8 @@ export class IndexerHub {
 
 	async requestMessages(request: {
 		blockchain: string;
-		fromBlock: number | null;
-		toBlock: number | null;
-		fromMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
-		toMessage: null | { blockNumber: string; transactionIndex: number; logIndex: number };
+		fromMessageId: null | string;
+		toMessageId: null | string;
 		sender: string | null;
 		recipient: Uint256 | null;
 		feedId: Uint256 | null;

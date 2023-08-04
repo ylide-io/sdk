@@ -89,22 +89,8 @@ export class IndexerMessagesSource implements LowLevelMessagesSource {
 	): Promise<IMessage[]> {
 		const msgs = await this.indexerHub.requestMessages({
 			blockchain: this.subject.blockchain,
-			fromBlock: fromMessage ? Number(fromMessage.$$meta.block.number) : null,
-			toBlock: toMessage ? Number(toMessage.$$meta.block.number) : null,
-			fromMessage: fromMessage
-				? {
-						blockNumber: String(fromMessage.$$meta.event.blockNumber),
-						transactionIndex: fromMessage.$$meta.event.transactionIndex,
-						logIndex: fromMessage.$$meta.event.logIndex,
-				  }
-				: null,
-			toMessage: toMessage
-				? {
-						blockNumber: String(toMessage.$$meta.event.blockNumber),
-						transactionIndex: toMessage.$$meta.event.transactionIndex,
-						logIndex: toMessage.$$meta.event.logIndex,
-				  }
-				: null,
+			fromMessageId: fromMessage ? fromMessage.msgId : null,
+			toMessageId: toMessage ? toMessage.msgId : null,
 			sender: this.subject.sender,
 			recipient: this.subject.type === BlockchainSourceType.DIRECT ? this.subject.recipient : null,
 			feedId: this.subject.feedId,
