@@ -99,16 +99,18 @@ export class IndexerMessagesSource implements LowLevelMessagesSource {
 			limit: limit || 10,
 		});
 
-		const toMessageIncluding = false;
-		const fromMessageIncluding = false;
+		return msgs;
 
-		const topBound = toMessage ? msgs.findIndex(r => r.msgId === toMessage.msgId) : -1;
-		const bottomBound = fromMessage ? msgs.findIndex(r => r.msgId === fromMessage.msgId) : -1;
+		// const toMessageIncluding = false;
+		// const fromMessageIncluding = false;
 
-		return msgs.slice(
-			topBound === -1 ? 0 : (toMessageIncluding ? topBound - 1 : topBound) + 1,
-			bottomBound === -1 ? undefined : fromMessageIncluding ? bottomBound + 1 : bottomBound,
-		);
+		// const topBound = toMessage ? msgs.findIndex(r => r.msgId === toMessage.msgId) : -1;
+		// const bottomBound = fromMessage ? msgs.findIndex(r => r.msgId === fromMessage.msgId) : -1;
+
+		// return msgs.slice(
+		// 	topBound === -1 ? 0 : (toMessageIncluding ? topBound - 1 : topBound) + 1,
+		// 	bottomBound === -1 ? undefined : fromMessageIncluding ? bottomBound + 1 : bottomBound,
+		// );
 	}
 
 	async getBefore(entry: IMessage, limit: number): Promise<IMessage[]> {

@@ -73,7 +73,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	get readToBottom() {
-		return this.storage.readToBottom;
+		return this.storage.readToBottom && this.storage.segments.length < 2;
 	}
 
 	get guaranteedSegment(): ExtendedDoublyLinkedList<IMessage> | null {
@@ -105,7 +105,7 @@ export class ListSource extends AsyncEventEmitter implements IListSource {
 	}
 
 	private async loadMore(afterOrBefore: 'after' | 'before', limit = 10) {
-		if (afterOrBefore === 'before' && this.storage.readToBottom) {
+		if (afterOrBefore === 'before' && this.readToBottom) {
 			return;
 		}
 		await this.loadingCriticalSection.enter();
