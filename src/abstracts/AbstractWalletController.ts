@@ -3,6 +3,7 @@ import { EventEmitter } from 'eventemitter3';
 import type { MessageKey, IMessage, YlideKeyVersion, WalletAccount } from '..';
 import type { Uint256 } from '../primitives/Uint256';
 import type { EncryptionPublicKey } from '../primitives/EncryptionPublicKey';
+import type { AbstractFaucetService } from './AbstractFaucetService';
 
 export enum WalletEvent {
 	BLOCKCHAIN_CHANGED = 'blockchain_changed',
@@ -156,4 +157,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		senderPublicKey: EncryptionPublicKey,
 		encryptedKey: Uint8Array,
 	): Promise<Uint8Array>;
+
+	abstract isFaucetAvailable(): boolean;
+	abstract getFaucet(options?: any): Promise<AbstractFaucetService>;
 }

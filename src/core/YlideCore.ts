@@ -12,6 +12,7 @@ import { ListSource } from '../messages-list/mid-level/ListSource';
 import { ServiceCode } from '../primitives/ServiceCode';
 import { DynamicEncryptionRouter } from '../cross-chain/DynamicEncryptionRouter';
 import { YLIDE_MAIN_FEED_ID } from '../utils/constants';
+import { asyncDelay } from '../utils/asyncDelay';
 import { MessageContainer } from '../content/MessageContainer';
 import { MessageKey } from '../content/MessageKey';
 import { YlideError, YlideErrorType } from '../errors/YlideError';
@@ -70,6 +71,19 @@ export class YlideCore {
 
 	static getSentAddress(recipient: Uint256): Uint256 {
 		return uint8ArrayToUint256(sha256(uint256ToUint8Array(recipient)));
+	}
+
+	async waitForPublicKey(blockchain: string, address: string, key: Uint8Array, timeout = 60000) {
+		const start = Date.now();
+		while (Date.now() - start < timeout) {
+			const keys = await this.ylide.core.getAddressKeys(address);
+			const keyInChain = keys.remoteKeys[blockchain];
+			if (keyInChain && keyInChain.publicKey.keyEquals(key)) {
+				return keyInChain;
+			}
+			await asyncDelay(2000);
+		}
+		return null;
 	}
 
 	async getAddressesKeys(addresses: string[]): Promise<
