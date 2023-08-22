@@ -147,7 +147,7 @@ export class ListSourceDrainer {
 		await this.request(name, this._messages[this._messages.length - 1].msg, this._minReadingSize);
 	}
 
-	async connect(subscriptionName: string, newMessagesCallback: () => void) {
+	async connect(newMessagesCallback: () => void, subscriptionName: string = 'YlideMailbox') {
 		const subscription = { name: subscriptionName, callback: newMessagesCallback };
 		this.newMessagesSubscriptions.add(subscription);
 		if (this.newMessagesSubscriptions.size === 1) {

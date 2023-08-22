@@ -39,13 +39,26 @@ import type { Uint256 } from '../primitives/Uint256';
  * ```
  */
 export abstract class AbstractBlockchainController {
+	/**
+	 * Method to get blockchain name
+	 */
 	abstract blockchain(): string;
+
+	/**
+	 * Method to get blockchain group name
+	 *
+	 * @description Blockchain group is a name of the group of blockchains which are compatible with each other
+	 */
 	abstract blockchainGroup(): string;
 
+	/**
+	 * Method to init controller. Must be called once before any other method.
+	 * Automatically called when you instantiate using Ylide signleton.
+	 */
 	abstract init(): Promise<void>;
 
 	/**
-	 * Method to get instance of default name service for this blockchain (if available)
+	 * Method to get instance of the default name service for this blockchain (if not available - returns null)
 	 */
 	abstract defaultNameService(): AbstractNameService | null;
 
@@ -60,7 +73,7 @@ export abstract class AbstractBlockchainController {
 	abstract isAddressValid(address: string): boolean;
 
 	/**
-	 * Method to convert address to 32 bytes array
+	 * Method to convert address to 32 bytes lowercase hex string without prefix (widely used in SDK)
 	 */
 	abstract addressToUint256(address: string): Uint256;
 
@@ -86,77 +99,23 @@ export abstract class AbstractBlockchainController {
 	 */
 	abstract getRecipientReadingRules(recipient: Uint256): Promise<any>;
 
-	// /**
-	//  * Method to retrieve sent messages from this blockchain for a certain recipient
-	//  *
-	//  * @param recipient - Address of the recipient
-	//  * @param fromTimestamp - Start time (not included) for filtering messages history
-	//  * @param toTimestamp - End time (included) for filtering messages history
-	//  */
-	// abstract retrieveMessageHistoryDescByTime(
-	// 	sender: Uint256 | null,
-	// 	recipient: Uint256 | null,
-	// 	fromTimestamp?: number,
-	// 	toTimestamp?: number,
-	// 	limit?: number,
-	// ): Promise<IMessage[]>;
-
+	/**
+	 * Method to get wide list of subjects for which you will get messages from this blockchain
+	 * It is intended to be used via ListMultiplexer, not for manual usage
+	 *
+	 * @param subject Description of a filtering criteria for the messages
+	 */
 	abstract getBlockchainSourceSubjects(subject: ISourceSubject): IBlockchainSourceSubject[];
 
+	/**
+	 * Method to instantiate messages source for a certain filtering criteria
+	 *
+	 * @param subject Description of a filtering criteria for the messages
+	 */
 	abstract ininiateMessagesSource(subject: IBlockchainSourceSubject): LowLevelMessagesSource;
 
-	// /**
-	//  * Method to retrieve sent messages from this blockchain for a certain recipient
-	//  *
-	//  * @param recipient - Address of the recipient
-	//  * @param fromMessage - Start message (not included) for filtering messages history
-	//  * @param toMessage - End message (not included) for filtering messages history
-	//  */
-	// abstract retrieveMessageHistoryDesc(
-	// 	sender: string | null,
-	// 	recipient: Uint256 | null,
-	// 	fromMessage?: IMessage,
-	// 	toMessage?: IMessage,
-	// 	limit?: number,
-	// ): Promise<IMessage[]>;
-
-	// /**
-	//  * Method to retrieve broadcasted messages from this blockchain of a certain sender
-	//  *
-	//  * @param sender - Address of the sender
-	//  * @param fromTimestamp - Start time (not included) for filtering messages history
-	//  * @param toTimestamp - End time (included) for filtering messages history
-	//  */
-	// abstract retrieveBroadcastHistoryDescByTime(
-	// 	sender: string | null,
-	// 	fromTimestamp?: number,
-	// 	toTimestamp?: number,
-	// 	limit?: number,
-	// ): Promise<IMessage[]>;
-
-	// /**
-	//  * Method to retrieve broadcasted messages from this blockchain of a certain sender
-	//  *
-	//  * @param sender - Address of the sender
-	//  * @param fromMessage - Start message (not included) for filtering messages history
-	//  * @param toMessage - End message (not included) for filtering messages history
-	//  */
-	// abstract retrieveBroadcastHistoryDesc(
-	// 	sender: string | null,
-	// 	fromMessage?: IMessage,
-	// 	toMessage?: IMessage,
-	// 	limit?: number,
-	// ): Promise<IMessage[]>;
-
-	// /**
-	//  * Method to retrieve and verify integrity of the encrypted content of a certain message
-	//  *
-	//  * @param msg - Message metadata
-	//  */
-	// abstract retrieveAndVerifyMessageContent(msg: IMessage): Promise<IMessageContent | IMessageCorruptedContent | null>;
-
 	/**
-	 * Method to retrieve and verify the encrypted content of a certain message without deep integrity check
+	 * Method to retrieve the content of a certain message from blockchain
 	 *
 	 * @param msg - Message to retrieve content of
 	 */
@@ -170,14 +129,15 @@ export abstract class AbstractBlockchainController {
 	abstract extractPublicKeyFromAddress(address: string): Promise<RemotePublicKey | null>;
 
 	/**
-	 * Method to get public keys history of the recipient by address.
+	 * Method to get public keys history of the certain address.
 	 *
 	 * @param address - Recipient's wallet address
 	 */
 	abstract extractPublicKeysHistoryByAddress(address: string): Promise<RemotePublicKey[]>;
 
 	/**
-	 * Method to get balance of the address. Currency used is the same which is used to pay for the Ylide tx in this blockchain
+	 * Method to get balance of the address. Currency used is the same which is used to pay for the Ylide tx in this blockchain.
+	 * Usually it is the smallest native currency (e.g. wei in Ethereum)
 	 *
 	 * @param address - Recipient's wallet address
 	 * @return Decimal number in a string format
@@ -185,25 +145,33 @@ export abstract class AbstractBlockchainController {
 	abstract getBalance(address: string): Promise<{ original: string; numeric: number; e18: string }>;
 
 	/**
-	 * Method to get available non-Ylide encryption strategies for address
+	 * Method to get instantiate non-Ylide encryption strategies for the address.
 	 *
 	 * @param address - Recipient's wallet address
 	 */
 	abstract getExtraEncryptionStrategiesFromAddress(address: string): Promise<IExtraEncryptionStrateryEntry[]>;
 
 	/**
-	 * Method to get available non-Ylide encryption strategies for address
+	 * Method to get available non-Ylide encryption strategies for the address.
 	 *
 	 * @param address - Recipient's wallet address
 	 */
 	abstract getSupportedExtraEncryptionStrategies(): string[];
 
+	/**
+	 * Method to combine non-Ylide encryption strategies to be sent to the recipient.
+	 * It is intended to be used via DynamicEncryptionRouter (or even just YlideCore), not for manual usage
+	 *
+	 * @param entries - Entries to process
+	 * @return Bulk to be sent to the recipient
+	 */
 	abstract prepareExtraEncryptionStrategyBulk(
 		entries: IExtraEncryptionStrateryEntry[],
 	): Promise<IExtraEncryptionStrateryBulk>;
 
 	/**
-	 * Method to get available non-Ylide encryption strategies for address
+	 * Method to get execute non-Ylide encryption strategies for address - actually encrypt the message key.
+	 * It is intended to be used via DynamicEncryptionRouter (or even just YlideCore), not for manual usage
 	 *
 	 * @param address - Recipient's wallet address
 	 */
@@ -214,5 +182,14 @@ export abstract class AbstractBlockchainController {
 		messageKey: Uint8Array,
 	): Promise<MessageKey[]>;
 
+	/**
+	 * Method to compare messages by time. Sometimes two messages could have the same time,
+	 * so we need to sort them using some internal properties (e.g. blockNumber/logicalTime/etc).
+	 *
+	 * @param a - First message to compare
+	 * @param b - Second message to compare
+	 * @return -1 if a < b, 0 if a == b, 1 if a > b
+	 * @description This method is used to sort messages in the list
+	 */
 	abstract compareMessagesTime(a: IMessage, b: IMessage): number;
 }

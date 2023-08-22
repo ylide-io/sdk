@@ -1,7 +1,9 @@
 import { YlideMisusageError } from '../errors/YlideMisusageError';
+import { YlideError, YlideErrorType } from '../errors';
 
+import type { AbstractBlockchainController } from '../abstracts/AbstractBlockchainController';
+import type { AbstractWalletController } from '../abstracts/AbstractWalletController';
 import type { Ylide } from '../Ylide';
-import type { AbstractBlockchainController, AbstractWalletController } from '..';
 import type { BlockchainMap, BlockchainWalletMap } from '../primitives';
 
 export class YlideControllers {
@@ -27,16 +29,32 @@ export class YlideControllers {
 		return ctrl;
 	}
 
-	async addWallet(blockchainGroup: string, wallet: string, options?: any) {
-		if (this.walletsMap[blockchainGroup] && this.walletsMap[blockchainGroup][wallet]) {
+	async addWallet(wallet: string, options?: any, blockchainGroup?: string) {
+		const refs = this.ylide.walletsList.filter(
+			w => w.wallet === wallet && (!blockchainGroup || w.blockchainGroup === blockchainGroup),
+		);
+		if (refs.length > 1) {
+			throw new YlideMisusageError(
+				'YlideControllers',
+				'You should provide blockchainGroup as a last param if you have two wallets with the same name',
+			);
+		}
+		if (refs.length === 0) {
+			throw new YlideError(
+				YlideErrorType.NOT_FOUND,
+				`Wallet ${wallet} is not found in the list of available wallets`,
+			);
+		}
+		const ref = refs[0];
+		if (this.walletsMap[ref.blockchainGroup] && this.walletsMap[ref.blockchainGroup][wallet]) {
 			throw new YlideMisusageError(
 				'YlideControllers',
 				'You should have only one wallet type per blockchain per instance',
 			);
 		}
-		const walletController = await this.ylide.instantiateWallet(blockchainGroup, wallet, options);
-		this.walletsMap[blockchainGroup] = {
-			...(this.walletsMap[blockchainGroup] || {}),
+		const walletController = await this.ylide.instantiateWallet(ref.blockchainGroup, wallet, options);
+		this.walletsMap[ref.blockchainGroup] = {
+			...(this.walletsMap[ref.blockchainGroup] || {}),
 			[wallet]: walletController,
 		};
 		this.wallets.push(walletController);

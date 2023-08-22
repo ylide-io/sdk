@@ -144,6 +144,10 @@ export class IndexerHub {
 			}
 		}
 		await this.cs.enter();
+		if (this.endpoint) {
+			this.cs.leave();
+			return await this.retryingOperation(callback, fallback);
+		}
 		try {
 			const _endpoints = endpoints.slice();
 			while (_endpoints.length) {

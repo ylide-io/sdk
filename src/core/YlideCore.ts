@@ -1,3 +1,4 @@
+import { MessageContentV5 } from '../content/MessageContentV5';
 import { MessageBlob } from '../content/MessageBlob';
 import { MessageSecureContext } from '../content/MessageSecureContext';
 import { IndexerHub } from '../indexer/IndexerHub';
@@ -17,12 +18,13 @@ import { MessageContainer } from '../content/MessageContainer';
 import { MessageKey } from '../content/MessageKey';
 import { YlideError, YlideErrorType } from '../errors/YlideError';
 import { YlideMisusageError } from '../errors/YlideMisusageError';
+import { RecipientInfo } from '../content/RecipientInfo';
 
 import type { YlidePrivateKey, YlidePrivateKeyHandlers } from '../keystore';
 import type { WalletAccount } from '../primitives/WalletAccount';
 import type { IUnpackedMessageContainer } from '../content/MessageContainer';
 import type { Uint256 } from '../primitives/Uint256';
-import type { YlideKeyRegistry } from '../keystore/YlideKeysRegistry';
+import type { YlideKeysRegistry } from '../keystore/YlideKeysRegistry';
 import type { IMessage, IMessageContent, IMessageCorruptedContent } from '../primitives/IMessage';
 import type { IListSource } from '../messages-list/types/IListSource';
 import type { SourceReadingSession } from '../messages-list/SourceReadingSession';
@@ -33,7 +35,6 @@ import type { AbstractWalletController } from '../abstracts/AbstractWalletContro
 import type { YlideControllers } from './YlideControllers';
 import type { MessageContentV3 } from '../content/MessageContentV3';
 import type { MessageContentV4 } from '../content/MessageContentV4';
-import type { MessageContentV5 } from './../content/MessageContentV5';
 import type { MessageContent } from '../content/MessageContent';
 import type { Ylide } from '../Ylide';
 
@@ -62,7 +63,7 @@ export class YlideCore {
 	constructor(
 		public readonly ylide: Ylide,
 		public readonly controllers: YlideControllers,
-		public readonly keyRegistry: YlideKeyRegistry,
+		public readonly keysRegistry: YlideKeysRegistry,
 		private readonly indexerBlockchains: string[] = [],
 		useWebSocketPulling?: boolean,
 	) {
@@ -230,10 +231,12 @@ export class YlideCore {
 		freshestKey: RemotePublicKey | null;
 		remoteKeys: Record<string, RemotePublicKey | null>;
 	}> {
-		const blockchains = this.ylide.blockchainsList.map(({ factory }) => ({
-			factory,
-			controller: this.controllers.blockchainsMap[factory.blockchain],
-		}));
+		const blockchains = this.ylide.blockchainsList
+			.filter(({ factory }) => !!this.controllers.blockchainsMap[factory.blockchain])
+			.map(({ factory }) => ({
+				factory,
+				controller: this.controllers.blockchainsMap[factory.blockchain],
+			}));
 
 		const toReadFromBlockchain = blockchains.filter(b => !this.indexerBlockchains.includes(b.factory.blockchain));
 		const toReadFromIndexer = blockchains.filter(b => this.indexerBlockchains.includes(b.factory.blockchain));
@@ -458,6 +461,23 @@ export class YlideCore {
 		return sources;
 	}
 
+	async sendSimpleMessage(wallet: AbstractWalletController, to: string, content: string) {
+		let sender = await wallet.getAuthenticatedAccount();
+		if (!sender) {
+			sender = await wallet.requestAuthentication();
+			if (!sender) {
+				throw new YlideMisusageError('YlideCore', 'Authentication failed');
+			}
+		}
+
+		return await this.sendMessage({
+			wallet,
+			sender,
+			content: MessageContentV5.simple(content),
+			recipients: [to],
+		});
+	}
+
 	async sendMessage(
 		{
 			wallet,
@@ -473,6 +493,9 @@ export class YlideCore {
 	) {
 		if (!secureContext) {
 			secureContext = MessageSecureContext.create();
+		}
+		if (content instanceof MessageContentV5 && content.sendingAgentName === 'Ylide SDK Simple') {
+			content.recipientInfos = recipients.map(r => new RecipientInfo({ address: r, blockchain: '' }));
 		}
 		const encryptedMessageBlob = MessageBlob.encodeAndPackAndEncrypt(secureContext, content);
 		const actualRecipients = recipients.map(r => {
@@ -598,7 +621,7 @@ export class YlideCore {
 			const keySignature = msgKey.decryptingPublicKeySignature;
 			const keysToCheck: YlidePrivateKey[] = [];
 			if (keySignature) {
-				const key = this.keyRegistry.getLocalPrivateKeyForPublicKeySignature(
+				const key = this.keysRegistry.getLocalPrivateKeyForPublicKeySignature(
 					receipientKeyAddress,
 					keySignature,
 				);
@@ -606,7 +629,7 @@ export class YlideCore {
 					keysToCheck.push(key);
 				}
 			} else {
-				keysToCheck.push(...this.keyRegistry.getLocalPrivateKeys(receipientKeyAddress));
+				keysToCheck.push(...this.keysRegistry.getLocalPrivateKeys(receipientKeyAddress));
 			}
 			if (!keysToCheck.length) {
 				throw new YlideError(YlideErrorType.DECRYPTION_KEY_UNAVAILABLE, 'Unable to find decryption key', {

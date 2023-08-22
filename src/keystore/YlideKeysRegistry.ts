@@ -5,6 +5,7 @@ import { RemotePublicKey } from './RemotePublicKey';
 import { PublicKey, PublicKeyType } from '../primitives';
 import { YlideError, YlideErrorType } from '../errors';
 import { YlideMisusageError } from '../errors/YlideMisusageError';
+import { BrowserLocalStorage } from '../storage';
 
 import { box as naclbox } from 'tweetnacl';
 
@@ -12,12 +13,18 @@ import type { AbstractStorage } from '../storage/AbstractStorage';
 import type { YlidePrivateKeyHandlers } from './getPrivateKey';
 import type { YlideKeyVersion } from '../primitives';
 
-export class YlideKeyRegistry {
+export class YlideKeysRegistry {
 	private localPrivateKeys: Map<string, YlidePrivateKey[]> = new Map();
 	private remotePublicKeys: Map<string, RemotePublicKey[]> = new Map();
 
-	constructor(readonly storage: AbstractStorage, private readonly pfx = 'YLD6_') {
-		// super();
+	private storage: AbstractStorage;
+
+	constructor(storage?: AbstractStorage, private readonly pfx = 'YLD6_') {
+		if (!storage) {
+			storage = new BrowserLocalStorage();
+		}
+
+		this.storage = storage;
 	}
 
 	private prefixedStorageKey(str: string) {
@@ -227,7 +234,7 @@ export class YlideKeyRegistry {
 	) {
 		if (availabilityState === PrivateKeyAvailabilityState.ENCRYPTED && !handlers.onYlidePasswordRequest) {
 			throw new YlideMisusageError(
-				'YlideKeyRegistry',
+				'YlideKeysRegistry',
 				'Ylide password request handler is not set, but it is required for the encryption of YlideKey',
 			);
 		}

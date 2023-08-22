@@ -26,7 +26,7 @@ export interface SendBroadcastResult {
  * @description It's an abstract class designated to define an interface to send messages through blockchain and publish public keys
  * @example Example of how to define your own ancestor:
  * ```ts
- * import { Ylide, AbstractWalletController } from '@ylide/sdk';
+ * import { AbstractWalletController } from '@ylide/sdk';
  *
  * class EverscaleWalletController extends AbstractWalletController {
  *     readonly registryContract: RegistryContract;
@@ -38,11 +38,11 @@ export interface SendBroadcastResult {
  *     }
  *
  *     async attachPublicKey(publicKey: Uint8Array) {
- *     	const me = await this.getAuthenticatedAccount();
- *     	if (!me) {
- *     		throw new Error('Not authorized');
- *     	}
- *     	await this.blockchainController.registryContract.attachPublicKey(me.address, publicKey);
+ *     	  const me = await this.getAuthenticatedAccount();
+ *     	  if (!me) {
+ *     		  throw new Error('Not authorized');
+ *     	  }
+ *     	  await this.blockchainController.registryContract.attachPublicKey(me.address, publicKey);
  *     }
  *
  *     // Other implementations ...
@@ -73,13 +73,34 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		return super.on(event, fn, context);
 	}
 
+	/**
+	 * Method to get blockchain group name
+	 *
+	 * @description Blockchain group is a name of the group of blockchains which are compatible with each other (e.g. "evm")
+	 */
 	abstract blockchainGroup(): string;
+
+	/**
+	 * Method to get wallet name (e.g. "metamask")
+	 */
 	abstract wallet(): string;
 
+	/**
+	 * Method to init controller. Must be called once before any other method.
+	 * Automatically called when you instantiate using Ylide signleton.
+	 */
 	abstract init(): Promise<void>;
 
+	/**
+	 * Method to get whether wallet natively supports multiple accounts connection or not
+	 * If not - you can still emulate multiaccounts by connection/disconnecting accounts automatically
+	 *
+	 */
 	abstract isMultipleAccountsSupported(): boolean;
 
+	/**
+	 * Method to get name of the currently selected blockchain in this wallet
+	 */
 	abstract getCurrentBlockchain(): Promise<string>;
 
 	/**
@@ -98,19 +119,21 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	abstract disconnectAccount(account: WalletAccount): Promise<void>;
 
 	/**
-	 * Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString (usually containing Ylide password)
+	 * Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString
 	 *
 	 * @param account Account for which you request signature
-	 * @param magicString - string which consists of some fixed part and dynamic part like Ylide password
+	 * @param magicString - string which you get from YlideKeysRegistry
 	 */
 	abstract signMagicString(account: WalletAccount, magicString: string): Promise<Uint8Array>;
 
 	/**
-	 * Method to publish message using Ylide Protocol.
+	 * Method to publish encrypted direct message using Ylide Protocol.
 	 *
-	 * @param me Account from which publish should occur
+	 * @param from Account from which publish should occur
+	 * @param feedId - mailing feedId to publish to (usually YLIDE_MAIN_FEED_ID)
 	 * @param contentData - raw bytes content to publish
 	 * @param recipients - array of recipients (address-public key pairs)
+	 * @param options - additional options for this wallet (e.g. "network" for EVM-wallets)
 	 */
 	abstract sendMail(
 		from: WalletAccount,
@@ -120,6 +143,14 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		options?: any,
 	): Promise<SendMailResult>;
 
+	/**
+	 * Method to publish non-encrypted broadcasted message using Ylide Protocol.
+	 *
+	 * @param from Account from which publish should occur
+	 * @param feedId - broadcasting feedId to publish to
+	 * @param contentData - raw bytes content to publish
+	 * @param options - additional options for this wallet (e.g. "network" for EVM-wallets)
+	 */
 	abstract sendBroadcast(
 		from: WalletAccount,
 		feedId: Uint256,
@@ -128,10 +159,13 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	): Promise<SendBroadcastResult>;
 
 	/**
-	 * Method to connect user's public key with his address
+	 * Method to register user's public key, so other users can discover it and send him messages.
 	 *
 	 * @param account Account for which connection should occur
 	 * @param publicKey - public key to attach to user's address
+	 * @param keyVersion - version of the key (e.g. YlideKeyVersion.KEY_V3)
+	 * @param registrar - registrar code (e.g. 1 for Ylide Social Hub)
+	 * @param options - additional options for this wallet (e.g. "network" for EVM-wallets)
 	 */
 	abstract attachPublicKey(
 		account: WalletAccount,
@@ -142,7 +176,7 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	): Promise<void>;
 
 	/**
-	 * Method to convert address to 32 bytes array
+	 * Method to convert address to 32 bytes lowercase hex string (widely used in SDK)
 	 */
 	abstract addressToUint256(address: string): Uint256;
 
@@ -150,7 +184,8 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 	 * Method to decrypt message key using native wallet encryption system
 	 *
 	 * @param recipientAccount Account of the recipient
-	 * @param publicKey - public key to attach to user's address
+	 * @param senderPublicKey - Public key of the sender (needed to calculate shared secret key)
+	 * @param encryptedKey - Encrypted message key bytes
 	 */
 	abstract decryptMessageKey(
 		recipientAccount: WalletAccount,
@@ -158,6 +193,15 @@ export abstract class AbstractWalletController extends EventEmitter<WalletEvent>
 		encryptedKey: Uint8Array,
 	): Promise<Uint8Array>;
 
+	/**
+	 * Method to get whether Ylide faucet is generally available for this wallet or not
+	 */
 	abstract isFaucetAvailable(): boolean;
+
+	/**
+	 * Method to get Ylide faucet service for this wallet
+	 *
+	 * @param options - additional options for this wallet (e.g. "faucetType" for EVM-wallets)
+	 */
 	abstract getFaucet(options?: any): Promise<AbstractFaucetService>;
 }

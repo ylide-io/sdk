@@ -1,9 +1,11 @@
 import { YlideControllers } from './core/YlideControllers';
 import { YlideCore } from './core/YlideCore';
 import { YlideError, YlideErrorType } from './errors';
+import { YlideKeysRegistry } from './keystore';
+import { YlideMailbox } from './core/YlideMailbox';
+import { YlideAuth } from './core/YlideAuth';
 
-import type { WalletControllerFactory, BlockchainControllerFactory } from './abstracts';
-import type { YlideKeyRegistry } from './keystore';
+import type { WalletControllerFactory, BlockchainControllerFactory, ConnectorScope } from './abstracts';
 import type { BlockchainWalletMap, BlockchainMap } from './primitives';
 
 /**
@@ -11,16 +13,15 @@ import type { BlockchainWalletMap, BlockchainMap } from './primitives';
  * @example
  * ```ts
  * import { Ylide } from '@ylide/sdk';
- * import { everscaleBlockchainFactory, everscaleWalletFactory } from '@ylide/everscale';
+ * import { tvm } from '@ylide/everscale';
  *
- * const ylide = new Ylide();
+ * const keysRegistry = new YlideKeysRegistry();
+ * const ylide = new Ylide(keysRegistry);
+ * ylide.add(tvm);
  *
- * ylide.registerBlockchain(everscaleBlockchainFactory);
- * ylide.registerWallet(everscaleWalletFactory);
+ * const wallet = await ylide.instantiateWallet('everscale', 'everwallet');
  *
- * const wallet = await ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
- *
- * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
+ * const account = await wallet.getAuthenticatedAccount();
  * ```
  */
 export class Ylide {
@@ -31,12 +32,51 @@ export class Ylide {
 
 	public readonly controllers: YlideControllers;
 	public readonly core: YlideCore;
+	public readonly mailbox: YlideMailbox;
+	public readonly auth: YlideAuth;
 
-	constructor(public readonly keyRegistry: YlideKeyRegistry, indexerBlockchains: string[] = []) {
+	public readonly keysRegistry: YlideKeysRegistry;
+
+	/**
+	 * @param keysRegistry Reference to YlideKeysRegistry instance
+	 * @param indexerBlockchains Array of blockchains that should be firstly read from Indexer. Omit if you want to use defaults
+	 */
+	constructor(keysRegistry?: YlideKeysRegistry, indexerBlockchains?: string[]) {
+		if (!keysRegistry) {
+			keysRegistry = new YlideKeysRegistry();
+		}
+		this.keysRegistry = keysRegistry;
+
+		if (indexerBlockchains === undefined) {
+			indexerBlockchains = [
+				'everscale',
+				'venom-testnet',
+				'ETHEREUM',
+				'AVALANCHE',
+				'ARBITRUM',
+				'BNBCHAIN',
+				'OPTIMISM',
+				'POLYGON',
+				'FANTOM',
+				'KLAYTN',
+				'GNOSIS',
+				'AURORA',
+				'CELO',
+				'CRONOS',
+				'MOONBEAM',
+				'MOONRIVER',
+				'METIS',
+			];
+		}
 		this.controllers = new YlideControllers(this);
-		this.core = new YlideCore(this, this.controllers, keyRegistry, indexerBlockchains);
+		this.core = new YlideCore(this, this.controllers, keysRegistry, indexerBlockchains);
+		this.mailbox = new YlideMailbox(this);
+		this.auth = new YlideAuth(this);
 	}
 
+	/**
+	 * @description Getter of blockchain to blockchain group map. Like "ETHEREUM" -> "evm", "GNOSIS" => "evm"
+	 */
 	get blockchainToGroupMap() {
 		return this._blockchainToGroupMap;
 	}
@@ -62,12 +102,6 @@ export class Ylide {
 		return this._isVerbose;
 	}
 
-	private verboseLog(...args: any[]) {
-		if (this._isVerbose) {
-			console.log('[Y-SDK]', ...args);
-		}
-	}
-
 	private verboseLogTick(...args: any[]) {
 		if (this._isVerbose) {
 			console.log('[Y-SDK]', ...args);
@@ -82,14 +116,11 @@ export class Ylide {
 	}
 
 	/**
-	 * Use this method to register all available blockchain wallets to Ylide.
+	 * Use this method to register certain crypto-wallet connector in Ylide.
 	 *
 	 * @example
 	 * ```ts
-	 * import { Ylide } from '@ylide/sdk';
 	 * import { everscaleWalletFactory } from '@ylide/everscale';
-	 *
-	 * const ylide = new Ylide();
 	 *
 	 * ylide.registerWallet(everscaleWalletFactory);
 	 * ```
@@ -103,14 +134,11 @@ export class Ylide {
 	}
 
 	/**
-	 * Use this method to register all available blockchain blockchains to Ylide.
+	 * Use this method to register certain blockchain connector in Ylide.
 	 *
 	 * @example
 	 * ```ts
-	 * import { Ylide } from '@ylide/sdk';
 	 * import { everscaleBlockchainFactory } from '@ylide/everscale';
-	 *
-	 * const ylide = new Ylide();
 	 *
 	 * ylide.registerBlockchain(everscaleBlockchainFactory);
 	 * ```
@@ -122,11 +150,25 @@ export class Ylide {
 	}
 
 	/**
-	 * Method to check availability of a certain blockchain for reading messages
+	 * Method to add all available crypto-wallets and blockchains of the certain connector in Ylide.
+	 *
+	 * @param scope Connector scope got from the corresponding library, e.g. evm/tvm
+	 */
+	add(scope: ConnectorScope) {
+		for (const blockchainFactory of scope.blockchainFactories) {
+			this.registerBlockchainFactory(blockchainFactory);
+		}
+		for (const walletFactory of scope.walletFactories) {
+			this.registerWalletFactory(walletFactory);
+		}
+	}
+
+	/**
+	 * Method to check availability of a certain blockchain connector
 	 *
 	 * @example
 	 * ```ts
-	 * ylide.isBlockchainRegistered('everscale'); // return true if `Ylide.registerBlockchain` was called with this blockchain controller factory before
+	 * ylide.isBlockchainRegistered('everscale'); // return true if `ylide.registerBlockchain` was called with this blockchain controller factory before
 	 * ```
 	 * @param blockchain Name of blockchain you want to check
 	 */
@@ -153,11 +195,14 @@ export class Ylide {
 	 * @param blockchain Name of blockchain
 	 */
 	getBlockchainControllerFactory(blockchain: string) {
+		if (!this._blockchainFactories[blockchain]) {
+			throw new YlideError(YlideErrorType.NOT_FOUND, `Blockchain ${blockchain} not found`);
+		}
 		return this._blockchainFactories[blockchain];
 	}
 
 	/**
-	 * Method to get wallet controller factory for a certain blockchain and wallet type
+	 * Method to get wallet controller factory for a certain blockchain group and wallet type
 	 *
 	 * @param blockchainGroup Name of the blockchain group
 	 * @param wallet Name of in-browser wallet
@@ -176,7 +221,7 @@ export class Ylide {
 	}
 
 	/**
-	 * Method to get registered wallet controllers
+	 * Getter for the registered wallet controllers
 	 *
 	 * @example
 	 * ```ts
@@ -185,11 +230,11 @@ export class Ylide {
 	 */
 	get walletsList() {
 		return Object.keys(this._walletFactories)
-			.map(blockchain =>
-				Object.keys(this._walletFactories[blockchain]).map(wallet => ({
-					blockchain,
+			.map(blockchainGroup =>
+				Object.keys(this._walletFactories[blockchainGroup]).map(wallet => ({
+					blockchainGroup,
 					wallet,
-					factory: this._walletFactories[blockchain][wallet],
+					factory: this._walletFactories[blockchainGroup][wallet],
 				})),
 			)
 			.flat();
@@ -225,7 +270,7 @@ export class Ylide {
 
 		for (const sender of list) {
 			try {
-				const done = this.verboseLogTick(`Checking availability of ${sender.blockchain} ${sender.wallet}`);
+				const done = this.verboseLogTick(`Checking availability of ${sender.blockchainGroup} ${sender.wallet}`);
 				const isAvailable = await sender.factory.isWalletAvailable();
 				done();
 				if (isAvailable) {
@@ -252,13 +297,13 @@ export class Ylide {
 	}
 
 	/**
-	 * Method to instantiate both wallet and blockchain controllers with the same options
+	 * Method to instantiate wallet controller
 	 *
 	 * @example
 	 * ```ts
-	 * const wallet = await ylide.instantiateWallet('everscale', 'everwallet', { dev: false });
+	 * const wallet = await ylide.instantiateWallet('everscale', 'everwallet');
 	 *
-	 * const isMyAddressValid = wallet.blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
+	 * const account = await wallet.getAuthenticatedAccount();
 	 * ```
 	 */
 	async instantiateWallet(blockchainGroup: string, wallet: string, options?: any) {
@@ -289,7 +334,7 @@ export class Ylide {
 	 *
 	 * @example
 	 * ```ts
-	 * const blockchainController = await ylide.instantiateBlockchain('everscale', { dev: false });
+	 * const blockchainController = await ylide.instantiateBlockchain('everscale');
 	 *
 	 * const isMyAddressValid = blockchainController.isAddressValid('0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279');
 	 * ```
@@ -305,5 +350,18 @@ export class Ylide {
 		await blockchainController.init();
 		doneBlockchainControllerInit();
 		return blockchainController;
+	}
+
+	async init() {
+		await this.keysRegistry.init();
+
+		const blockchains = await this.getAvailableBlockchains();
+		for (const blockchain of blockchains) {
+			await this.controllers.addBlockchain(blockchain.blockchain);
+		}
+		const wallets = await this.getAvailableWallets();
+		for (const wallet of wallets) {
+			await this.controllers.addWallet(wallet.wallet);
+		}
 	}
 }
