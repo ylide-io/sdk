@@ -20,7 +20,7 @@
 <h3>Description</h3><p>It&#39;s an abstract class designated to define an interface to send messages through blockchain and publish public keys</p>
 
 <h3>Example</h3><p>Example of how to define your own ancestor:</p>
-<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">Ylide</span><span class="hl-0">, </span><span class="hl-3">AbstractWalletController</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/sdk&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">class</span><span class="hl-0"> </span><span class="hl-5">EverscaleWalletController</span><span class="hl-0"> </span><span class="hl-4">extends</span><span class="hl-0"> </span><span class="hl-5">AbstractWalletController</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-4">readonly</span><span class="hl-0"> </span><span class="hl-3">registryContract</span><span class="hl-0">: </span><span class="hl-5">RegistryContract</span><span class="hl-0">;</span><br/><br/><span class="hl-0">    </span><span class="hl-4">constructor</span><span class="hl-0">(</span><span class="hl-3">options</span><span class="hl-0">: { </span><span class="hl-3">dev</span><span class="hl-0">?: </span><span class="hl-5">boolean</span><span class="hl-0"> } = {}) {</span><br/><span class="hl-0">        </span><span class="hl-4">super</span><span class="hl-0">(</span><span class="hl-3">options</span><span class="hl-0">);</span><br/><br/><span class="hl-0">        </span><span class="hl-6">// ...</span><br/><span class="hl-0">    }</span><br/><br/><span class="hl-0">    </span><span class="hl-4">async</span><span class="hl-0"> </span><span class="hl-7">attachPublicKey</span><span class="hl-0">(</span><span class="hl-3">publicKey</span><span class="hl-0">: </span><span class="hl-5">Uint8Array</span><span class="hl-0">) {</span><br/><span class="hl-0">        </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">me</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-4">this</span><span class="hl-0">.</span><span class="hl-7">getAuthenticatedAccount</span><span class="hl-0">();</span><br/><span class="hl-0">        </span><span class="hl-2">if</span><span class="hl-0"> (!</span><span class="hl-3">me</span><span class="hl-0">) {</span><br/><span class="hl-0">            </span><span class="hl-2">throw</span><span class="hl-0"> </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">Error</span><span class="hl-0">(</span><span class="hl-1">&#39;Not authorized&#39;</span><span class="hl-0">);</span><br/><span class="hl-0">        }</span><br/><span class="hl-0">        </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-4">this</span><span class="hl-0">.</span><span class="hl-3">blockchainController</span><span class="hl-0">.</span><span class="hl-3">registryContract</span><span class="hl-0">.</span><span class="hl-7">attachPublicKey</span><span class="hl-0">(</span><span class="hl-3">me</span><span class="hl-0">.</span><span class="hl-3">address</span><span class="hl-0">, </span><span class="hl-3">publicKey</span><span class="hl-0">);</span><br/><span class="hl-0">    }</span><br/><br/><span class="hl-0">    </span><span class="hl-6">// Other implementations ...</span><br/><span class="hl-0">}</span>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">AbstractWalletController</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/sdk&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">class</span><span class="hl-0"> </span><span class="hl-5">EverscaleWalletController</span><span class="hl-0"> </span><span class="hl-4">extends</span><span class="hl-0"> </span><span class="hl-5">AbstractWalletController</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-4">readonly</span><span class="hl-0"> </span><span class="hl-3">registryContract</span><span class="hl-0">: </span><span class="hl-5">RegistryContract</span><span class="hl-0">;</span><br/><br/><span class="hl-0">    </span><span class="hl-4">constructor</span><span class="hl-0">(</span><span class="hl-3">options</span><span class="hl-0">: { </span><span class="hl-3">dev</span><span class="hl-0">?: </span><span class="hl-5">boolean</span><span class="hl-0"> } = {}) {</span><br/><span class="hl-0">        </span><span class="hl-4">super</span><span class="hl-0">(</span><span class="hl-3">options</span><span class="hl-0">);</span><br/><br/><span class="hl-0">        </span><span class="hl-6">// ...</span><br/><span class="hl-0">    }</span><br/><br/><span class="hl-0">    </span><span class="hl-4">async</span><span class="hl-0"> </span><span class="hl-7">attachPublicKey</span><span class="hl-0">(</span><span class="hl-3">publicKey</span><span class="hl-0">: </span><span class="hl-5">Uint8Array</span><span class="hl-0">) {</span><br/><span class="hl-0">          </span><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">me</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-4">this</span><span class="hl-0">.</span><span class="hl-7">getAuthenticatedAccount</span><span class="hl-0">();</span><br/><span class="hl-0">          </span><span class="hl-2">if</span><span class="hl-0"> (!</span><span class="hl-3">me</span><span class="hl-0">) {</span><br/><span class="hl-0">              </span><span class="hl-2">throw</span><span class="hl-0"> </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">Error</span><span class="hl-0">(</span><span class="hl-1">&#39;Not authorized&#39;</span><span class="hl-0">);</span><br/><span class="hl-0">          }</span><br/><span class="hl-0">          </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-4">this</span><span class="hl-0">.</span><span class="hl-3">blockchainController</span><span class="hl-0">.</span><span class="hl-3">registryContract</span><span class="hl-0">.</span><span class="hl-7">attachPublicKey</span><span class="hl-0">(</span><span class="hl-3">me</span><span class="hl-0">.</span><span class="hl-3">address</span><span class="hl-0">, </span><span class="hl-3">publicKey</span><span class="hl-0">);</span><br/><span class="hl-0">    }</span><br/><br/><span class="hl-0">    </span><span class="hl-6">// Other implementations ...</span><br/><span class="hl-0">}</span>
 </code></pre>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -30,7 +30,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">AbstractWalletController</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L51">src/abstracts/AbstractWalletController.ts:51</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L52">src/abstracts/AbstractWalletController.ts:52</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -57,7 +57,9 @@
 <a href="AbstractWalletController.html#eventNames" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>event<wbr/>Names</span></a>
 <a href="AbstractWalletController.html#getAuthenticatedAccount" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Authenticated<wbr/>Account</span></a>
 <a href="AbstractWalletController.html#getCurrentBlockchain" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Current<wbr/>Blockchain</span></a>
+<a href="AbstractWalletController.html#getFaucet" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Faucet</span></a>
 <a href="AbstractWalletController.html#init" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>init</span></a>
+<a href="AbstractWalletController.html#isFaucetAvailable" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>is<wbr/>Faucet<wbr/>Available</span></a>
 <a href="AbstractWalletController.html#isMultipleAccountsSupported" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>is<wbr/>Multiple<wbr/>Accounts<wbr/>Supported</span></a>
 <a href="AbstractWalletController.html#listenerCount" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>listener<wbr/>Count</span></a>
 <a href="AbstractWalletController.html#listeners" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>listeners</span></a>
@@ -88,14 +90,14 @@
 <h4 class="tsd-returns-title">Returns <a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a></h4><aside class="tsd-sources">
 <p>Overrides EventEmitter&lt;WalletEvent&gt;.constructor</p>
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L54">src/abstracts/AbstractWalletController.ts:54</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L55">src/abstracts/AbstractWalletController.ts:55</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="onSwitchAccountRequest" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>on<wbr/>Switch<wbr/>Account<wbr/>Request</span><a href="#onSwitchAccountRequest" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">on<wbr/>Switch<wbr/>Account<wbr/>Request<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="../types/SwitchAccountCallback.html" class="tsd-signature-type" data-tsd-kind="Type alias">SwitchAccountCallback</a><span class="tsd-signature-symbol"> = null</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L52">src/abstracts/AbstractWalletController.ts:52</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L53">src/abstracts/AbstractWalletController.ts:53</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="prefixed" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>prefixed</span><a href="#prefixed" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">prefixed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
@@ -143,7 +145,7 @@
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="addressToUint256.addressToUint256-1">address<wbr/>To<wbr/>Uint256<span class="tsd-signature-symbol">(</span>address<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a><a href="#addressToUint256.addressToUint256-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to convert address to 32 bytes array</p>
+<div class="tsd-comment tsd-typography"><p>Method to convert address to 32 bytes lowercase hex string (widely used in SDK)</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -152,13 +154,13 @@
 <h5>address: <span class="tsd-signature-type">string</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L146">src/abstracts/AbstractWalletController.ts:146</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L181">src/abstracts/AbstractWalletController.ts:181</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="attachPublicKey" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>attach<wbr/>Public<wbr/>Key</span><a href="#attachPublicKey" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="attachPublicKey.attachPublicKey-1">attach<wbr/>Public<wbr/>Key<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, publicKey<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span>, keyVersion<span class="tsd-signature-symbol">: </span><a href="../enums/YlideKeyVersion.html" class="tsd-signature-type" data-tsd-kind="Enumeration">YlideKeyVersion</a>, registrar<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#attachPublicKey.attachPublicKey-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to connect user&#39;s public key with his address</p>
+<div class="tsd-comment tsd-typography"><p>Method to register user&#39;s public key, so other users can discover it and send him messages.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -172,22 +174,32 @@
 <div class="tsd-comment tsd-typography"><p>public key to attach to user&#39;s address</p>
 </div></li>
 <li>
-<h5>keyVersion: <a href="../enums/YlideKeyVersion.html" class="tsd-signature-type" data-tsd-kind="Enumeration">YlideKeyVersion</a></h5></li>
+<h5>keyVersion: <a href="../enums/YlideKeyVersion.html" class="tsd-signature-type" data-tsd-kind="Enumeration">YlideKeyVersion</a></h5>
+<div class="tsd-comment tsd-typography"><p>version of the key (e.g. YlideKeyVersion.KEY_V3)</p>
+</div></li>
 <li>
-<h5>registrar: <span class="tsd-signature-type">number</span></h5></li>
+<h5>registrar: <span class="tsd-signature-type">number</span></h5>
+<div class="tsd-comment tsd-typography"><p>registrar code (e.g. 1 for Ylide Social Hub)</p>
+</div></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5></li></ul></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5>
+<div class="tsd-comment tsd-typography"><p>additional options for this wallet (e.g. &quot;network&quot; for EVM-wallets)</p>
+</div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L135">src/abstracts/AbstractWalletController.ts:135</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L170">src/abstracts/AbstractWalletController.ts:170</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="blockchainGroup" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>blockchain<wbr/>Group</span><a href="#blockchainGroup" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="blockchainGroup.blockchainGroup-1">blockchain<wbr/>Group<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><a href="#blockchainGroup.blockchainGroup-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to get blockchain group name</p>
+
+<h3>Description</h3><p>Blockchain group is a name of the group of blockchains which are compatible with each other (e.g. &quot;evm&quot;)</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L75">src/abstracts/AbstractWalletController.ts:75</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L81">src/abstracts/AbstractWalletController.ts:81</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="decryptMessageKey" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>decrypt<wbr/>Message<wbr/>Key</span><a href="#decryptMessageKey" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -203,12 +215,16 @@
 <div class="tsd-comment tsd-typography"><p>Account of the recipient</p>
 </div></li>
 <li>
-<h5>senderPublicKey: <a href="EncryptionPublicKey.html" class="tsd-signature-type" data-tsd-kind="Class">EncryptionPublicKey</a></h5></li>
+<h5>senderPublicKey: <a href="EncryptionPublicKey.html" class="tsd-signature-type" data-tsd-kind="Class">EncryptionPublicKey</a></h5>
+<div class="tsd-comment tsd-typography"><p>Public key of the sender (needed to calculate shared secret key)</p>
+</div></li>
 <li>
-<h5>encryptedKey: <span class="tsd-signature-type">Uint8Array</span></h5></li></ul></div>
+<h5>encryptedKey: <span class="tsd-signature-type">Uint8Array</span></h5>
+<div class="tsd-comment tsd-typography"><p>Encrypted message key bytes</p>
+</div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L154">src/abstracts/AbstractWalletController.ts:154</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L190">src/abstracts/AbstractWalletController.ts:190</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="disconnectAccount" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>disconnect<wbr/>Account</span><a href="#disconnectAccount" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -223,7 +239,7 @@
 <h5>account: <a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L97">src/abstracts/AbstractWalletController.ts:97</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L119">src/abstracts/AbstractWalletController.ts:119</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="emit" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>emit</span><a href="#emit" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -268,31 +284,66 @@ listeners.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L87">src/abstracts/AbstractWalletController.ts:87</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L109">src/abstracts/AbstractWalletController.ts:109</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getCurrentBlockchain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>get<wbr/>Current<wbr/>Blockchain</span><a href="#getCurrentBlockchain" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="getCurrentBlockchain.getCurrentBlockchain-1">get<wbr/>Current<wbr/>Blockchain<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><a href="#getCurrentBlockchain.getCurrentBlockchain-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to get name of the currently selected blockchain in this wallet</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L82">src/abstracts/AbstractWalletController.ts:82</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L104">src/abstracts/AbstractWalletController.ts:104</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getFaucet" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>get<wbr/>Faucet</span><a href="#getFaucet" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="getFaucet.getFaucet-1">get<wbr/>Faucet<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AbstractFaucetService.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractFaucetService</a><span class="tsd-signature-symbol">&gt;</span><a href="#getFaucet.getFaucet-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to get Ylide faucet service for this wallet</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5>
+<div class="tsd-comment tsd-typography"><p>additional options for this wallet (e.g. &quot;faucetType&quot; for EVM-wallets)</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AbstractFaucetService.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractFaucetService</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L206">src/abstracts/AbstractWalletController.ts:206</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="init" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>init</span><a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="init.init-1">init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#init.init-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to init controller. Must be called once before any other method.
+Automatically called when you instantiate using Ylide signleton.</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L78">src/abstracts/AbstractWalletController.ts:78</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L92">src/abstracts/AbstractWalletController.ts:92</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="isFaucetAvailable" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>is<wbr/>Faucet<wbr/>Available</span><a href="#isFaucetAvailable" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="isFaucetAvailable.isFaucetAvailable-1">is<wbr/>Faucet<wbr/>Available<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isFaucetAvailable.isFaucetAvailable-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to get whether Ylide faucet is generally available for this wallet or not</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L199">src/abstracts/AbstractWalletController.ts:199</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="isMultipleAccountsSupported" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>is<wbr/>Multiple<wbr/>Accounts<wbr/>Supported</span><a href="#isMultipleAccountsSupported" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="isMultipleAccountsSupported.isMultipleAccountsSupported-1">is<wbr/>Multiple<wbr/>Accounts<wbr/>Supported<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isMultipleAccountsSupported.isMultipleAccountsSupported-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to get whether wallet natively supports multiple accounts connection or not
+If not - you can still emulate multiaccounts by connection/disconnecting accounts automatically</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L80">src/abstracts/AbstractWalletController.ts:80</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L99">src/abstracts/AbstractWalletController.ts:99</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="listenerCount" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>listener<wbr/>Count</span><a href="#listenerCount" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -394,7 +445,7 @@ listeners.</p>
 <h4 class="tsd-returns-title">Returns <a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a></h4><aside class="tsd-sources">
 <p>Overrides EventEmitter.on</p>
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L64">src/abstracts/AbstractWalletController.ts:64</a></li></ul></aside></li>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L65">src/abstracts/AbstractWalletController.ts:65</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="on.on-2">on<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><a href="../enums/WalletEvent.html#ACCOUNT_CHANGED" class="tsd-signature-type" data-tsd-kind="Enumeration Member">ACCOUNT_CHANGED</a><span class="tsd-signature-symbol"> | </span><a href="../enums/WalletEvent.html#LOGIN" class="tsd-signature-type" data-tsd-kind="Enumeration Member">LOGIN</a>, fn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>newAccount<span class="tsd-signature-symbol">: </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span>, context<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a><a href="#on.on-2" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
@@ -420,7 +471,7 @@ listeners.</p>
 <h4 class="tsd-returns-title">Returns <a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a></h4><aside class="tsd-sources">
 <p>Overrides EventEmitter.on</p>
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L65">src/abstracts/AbstractWalletController.ts:65</a></li></ul></aside></li>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L66">src/abstracts/AbstractWalletController.ts:66</a></li></ul></aside></li>
 <li class="tsd-signature tsd-anchor-link" id="on.on-3">on<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><a href="../enums/WalletEvent.html#LOGOUT" class="tsd-signature-type" data-tsd-kind="Enumeration Member">LOGOUT</a>, fn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span>, context<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a><a href="#on.on-3" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
@@ -441,7 +492,7 @@ listeners.</p>
 <h4 class="tsd-returns-title">Returns <a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a></h4><aside class="tsd-sources">
 <p>Overrides EventEmitter.on</p>
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L70">src/abstracts/AbstractWalletController.ts:70</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L71">src/abstracts/AbstractWalletController.ts:71</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="once" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>once</span><a href="#once" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -541,40 +592,54 @@ listeners.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L92">src/abstracts/AbstractWalletController.ts:92</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L114">src/abstracts/AbstractWalletController.ts:114</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="sendBroadcast" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Broadcast</span><a href="#sendBroadcast" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="sendBroadcast.sendBroadcast-1">send<wbr/>Broadcast<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, feedId<span class="tsd-signature-symbol">: </span><a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a>, contentData<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/SendBroadcastResult.html" class="tsd-signature-type" data-tsd-kind="Interface">SendBroadcastResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#sendBroadcast.sendBroadcast-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5>from: <a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
-<li>
-<h5>feedId: <a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a></h5></li>
-<li>
-<h5>contentData: <span class="tsd-signature-type">Uint8Array</span></h5></li>
-<li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/SendBroadcastResult.html" class="tsd-signature-type" data-tsd-kind="Interface">SendBroadcastResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L122">src/abstracts/AbstractWalletController.ts:122</a></li></ul></aside></li></ul></section>
-<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="sendMail" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Mail</span><a href="#sendMail" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-<li class="tsd-signature tsd-anchor-link" id="sendMail.sendMail-1">send<wbr/>Mail<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, feedId<span class="tsd-signature-symbol">: </span><a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a>, contentData<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span>, recipients<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span>address<span class="tsd-signature-symbol">: </span><a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a><span class="tsd-signature-symbol">; </span><br/><span>    </span>messageKey<span class="tsd-signature-symbol">: </span><a href="MessageKey.html" class="tsd-signature-type" data-tsd-kind="Class">MessageKey</a><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/SendMailResult.html" class="tsd-signature-type" data-tsd-kind="Interface">SendMailResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#sendMail.sendMail-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
-<li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to publish message using Ylide Protocol.</p>
+<div class="tsd-comment tsd-typography"><p>Method to publish non-encrypted broadcasted message using Ylide Protocol.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>from: <a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
+<h5>from: <a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
+<div class="tsd-comment tsd-typography"><p>Account from which publish should occur</p>
+</div></li>
 <li>
-<h5>feedId: <a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a></h5></li>
+<h5>feedId: <a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a></h5>
+<div class="tsd-comment tsd-typography"><p>broadcasting feedId to publish to</p>
+</div></li>
+<li>
+<h5>contentData: <span class="tsd-signature-type">Uint8Array</span></h5>
+<div class="tsd-comment tsd-typography"><p>raw bytes content to publish</p>
+</div></li>
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5>
+<div class="tsd-comment tsd-typography"><p>additional options for this wallet (e.g. &quot;network&quot; for EVM-wallets)</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/SendBroadcastResult.html" class="tsd-signature-type" data-tsd-kind="Interface">SendBroadcastResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L154">src/abstracts/AbstractWalletController.ts:154</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="sendMail" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>send<wbr/>Mail</span><a href="#sendMail" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="sendMail.sendMail-1">send<wbr/>Mail<span class="tsd-signature-symbol">(</span>from<span class="tsd-signature-symbol">: </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, feedId<span class="tsd-signature-symbol">: </span><a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a>, contentData<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span>, recipients<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span>address<span class="tsd-signature-symbol">: </span><a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a><span class="tsd-signature-symbol">; </span><br/><span>    </span>messageKey<span class="tsd-signature-symbol">: </span><a href="MessageKey.html" class="tsd-signature-type" data-tsd-kind="Class">MessageKey</a><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/SendMailResult.html" class="tsd-signature-type" data-tsd-kind="Interface">SendMailResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#sendMail.sendMail-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to publish encrypted direct message using Ylide Protocol.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>from: <a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5>
+<div class="tsd-comment tsd-typography"><p>Account from which publish should occur</p>
+</div></li>
+<li>
+<h5>feedId: <a href="../types/Uint256.html" class="tsd-signature-type" data-tsd-kind="Type alias">Uint256</a></h5>
+<div class="tsd-comment tsd-typography"><p>mailing feedId to publish to (usually YLIDE_MAIN_FEED_ID)</p>
+</div></li>
 <li>
 <h5>contentData: <span class="tsd-signature-type">Uint8Array</span></h5>
 <div class="tsd-comment tsd-typography"><p>raw bytes content to publish</p>
@@ -584,16 +649,18 @@ listeners.</p>
 <div class="tsd-comment tsd-typography"><p>array of recipients (address-public key pairs)</p>
 </div></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5></li></ul></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5>
+<div class="tsd-comment tsd-typography"><p>additional options for this wallet (e.g. &quot;network&quot; for EVM-wallets)</p>
+</div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/SendMailResult.html" class="tsd-signature-type" data-tsd-kind="Interface">SendMailResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L114">src/abstracts/AbstractWalletController.ts:114</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L138">src/abstracts/AbstractWalletController.ts:138</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="signMagicString" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>sign<wbr/>Magic<wbr/>String</span><a href="#signMagicString" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="signMagicString.signMagicString-1">sign<wbr/>Magic<wbr/>String<span class="tsd-signature-symbol">(</span>account<span class="tsd-signature-symbol">: </span><a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span>, magicString<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span><a href="#signMagicString.signMagicString-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString (usually containing Ylide password)</p>
+<div class="tsd-comment tsd-typography"><p>Method used to create Ylide keypair: it gets signature from the wallet for a certain magicString</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -604,11 +671,11 @@ listeners.</p>
 </div></li>
 <li>
 <h5>magicString: <span class="tsd-signature-type">string</span></h5>
-<div class="tsd-comment tsd-typography"><p>string which consists of some fixed part and dynamic part like Ylide password</p>
+<div class="tsd-comment tsd-typography"><p>string which you get from YlideKeysRegistry</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L105">src/abstracts/AbstractWalletController.ts:105</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L127">src/abstracts/AbstractWalletController.ts:127</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected"><a id="switchAccountRequest" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>switch<wbr/>Account<wbr/>Request</span><a href="#switchAccountRequest" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected">
@@ -623,15 +690,17 @@ listeners.</p>
 <h5>needAccount: <a href="WalletAccount.html" class="tsd-signature-type" data-tsd-kind="Class">WalletAccount</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L58">src/abstracts/AbstractWalletController.ts:58</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L59">src/abstracts/AbstractWalletController.ts:59</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="wallet" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagAbstract">Abstract</code> <span>wallet</span><a href="#wallet" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="wallet.wallet-1">wallet<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><a href="#wallet.wallet-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to get wallet name (e.g. &quot;metamask&quot;)</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/abstracts/AbstractWalletController.ts#L76">src/abstracts/AbstractWalletController.ts:76</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/abstracts/AbstractWalletController.ts#L86">src/abstracts/AbstractWalletController.ts:86</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -670,7 +739,9 @@ listeners.</p>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="AbstractWalletController.html#eventNames" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>event<wbr/>Names</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AbstractWalletController.html#getAuthenticatedAccount" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Authenticated<wbr/>Account</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AbstractWalletController.html#getCurrentBlockchain" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Current<wbr/>Blockchain</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="AbstractWalletController.html#getFaucet" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Faucet</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AbstractWalletController.html#init" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>init</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="AbstractWalletController.html#isFaucetAvailable" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>is<wbr/>Faucet<wbr/>Available</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AbstractWalletController.html#isMultipleAccountsSupported" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>is<wbr/>Multiple<wbr/>Accounts<wbr/>Supported</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="AbstractWalletController.html#listenerCount" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>listener<wbr/>Count</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="AbstractWalletController.html#listeners" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>listeners</a></li>

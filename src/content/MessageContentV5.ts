@@ -69,6 +69,19 @@ export class MessageContentV5 extends MessageContent implements IMessageContentV
 		this.recipientInfos = data.recipientInfos;
 	}
 
+	static simple(subject: string, content?: string) {
+		return new MessageContentV5({
+			sendingAgentName: 'Ylide SDK Simple',
+			sendingAgentVersion: { major: 0, minor: 0, patch: 1 },
+			subject: content === undefined ? '' : subject,
+			content: YMF.fromPlainText(content === undefined ? subject : content),
+			attachments: [],
+			extraBytes: new Uint8Array(0),
+			extraJson: {},
+			recipientInfos: [],
+		});
+	}
+
 	static isValid(bytes: Uint8Array) {
 		const buf = new SmartBuffer(bytes);
 		const version = buf.readUint8();

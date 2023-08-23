@@ -18,15 +18,15 @@ Then, let's instantiate `Ylide`, `YlideKeysRegistry` with `BrowserLocalStorage`:
 
 ```ts
 const storage = new BrowserLocalStorage();
-const keyRegistry = new YlideKeysRegistry(storage);
+const keysRegistry = new YlideKeysRegistry(storage);
 
-await keyRegistry.init();
+await keysRegistry.init();
 ```
 
 So, our next step is to initialize Ylide, blockchain and wallet controllers:
 
 ```ts
-const ylide = new Ylide(keyRegistry);
+const ylide = new Ylide(keysRegistry);
 
 ylide.registerBlockchainFactory(everscaleBlockchainFactory);
 ylide.registerWalletFactory(everscaleWalletFactory);
@@ -46,7 +46,7 @@ const account = await wallet.requestAuthentication();
 Now, we are ready for the creation of our first communication key:
 
 ```ts
-const key = await keyRegistry.instantiateNewPrivateKey(
+const key = await keysRegistry.instantiateNewPrivateKey(
 	wallet.blockchainGroup(),
 	account.address,
 	YlideKeyVersion.KEY_V3,
@@ -61,7 +61,7 @@ Now, key is ready. Let's add it to the registry (registry is automatically saved
 
 ```ts
 // Save the key in the storage again
-await keyRegistry.addLocalPrivateKey(key);
+await keysRegistry.addLocalPrivateKey(key);
 ```
 
 Key is ready and available for usage.

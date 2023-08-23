@@ -19,7 +19,7 @@
 <div class="tsd-comment tsd-typography">
 <h3>Description</h3><p>It&#39;s a singleton entry point to all interactions with Ylide SDK</p>
 
-<h3>Example</h3><pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">Ylide</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/sdk&#39;</span><span class="hl-0">;</span><br/><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">everscaleBlockchainFactory</span><span class="hl-0">, </span><span class="hl-3">everscaleWalletFactory</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/everscale&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">ylide</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">Ylide</span><span class="hl-0">();</span><br/><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">registerBlockchain</span><span class="hl-0">(</span><span class="hl-3">everscaleBlockchainFactory</span><span class="hl-0">);</span><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">registerWallet</span><span class="hl-0">(</span><span class="hl-3">everscaleWalletFactory</span><span class="hl-0">);</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">wallet</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">instantiateWallet</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">, </span><span class="hl-1">&#39;everwallet&#39;</span><span class="hl-0">, { </span><span class="hl-3">dev:</span><span class="hl-0"> </span><span class="hl-4">false</span><span class="hl-0"> });</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">isMyAddressValid</span><span class="hl-0"> = </span><span class="hl-3">wallet</span><span class="hl-0">.</span><span class="hl-3">blockchainController</span><span class="hl-0">.</span><span class="hl-7">isAddressValid</span><span class="hl-0">(</span><span class="hl-1">&#39;0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279&#39;</span><span class="hl-0">);</span>
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">Ylide</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/sdk&#39;</span><span class="hl-0">;</span><br/><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">tvm</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/everscale&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">keysRegistry</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">YlideKeysRegistry</span><span class="hl-0">();</span><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">ylide</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">Ylide</span><span class="hl-0">(</span><span class="hl-3">keysRegistry</span><span class="hl-0">);</span><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">add</span><span class="hl-0">(</span><span class="hl-3">tvm</span><span class="hl-0">);</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">wallet</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">instantiateWallet</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">, </span><span class="hl-1">&#39;everwallet&#39;</span><span class="hl-0">);</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">account</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">wallet</span><span class="hl-0">.</span><span class="hl-7">getAuthenticatedAccount</span><span class="hl-0">();</span>
 </code></pre>
 </div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -27,7 +27,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">Ylide</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L26">src/Ylide.ts:26</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L27">src/Ylide.ts:27</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -43,9 +43,11 @@
 <a href="Ylide.html#_blockchainToGroupMap" class="tsd-index-link tsd-kind-property tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>_blockchain<wbr/>To<wbr/>Group<wbr/>Map</span></a>
 <a href="Ylide.html#_isVerbose" class="tsd-index-link tsd-kind-property tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>_is<wbr/>Verbose</span></a>
 <a href="Ylide.html#_walletFactories" class="tsd-index-link tsd-kind-property tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>_wallet<wbr/>Factories</span></a>
+<a href="Ylide.html#auth" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>auth</span></a>
 <a href="Ylide.html#controllers" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>controllers</span></a>
 <a href="Ylide.html#core" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>core</span></a>
-<a href="Ylide.html#keyRegistry" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>key<wbr/>Registry</span></a>
+<a href="Ylide.html#keysRegistry" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>keys<wbr/>Registry</span></a>
+<a href="Ylide.html#mailbox" class="tsd-index-link tsd-kind-property tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>mailbox</span></a>
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Accessors</h3>
@@ -56,10 +58,12 @@
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Methods</h3>
-<div class="tsd-index-list"><a href="Ylide.html#getAvailableBlockchains" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4DB8" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-2048-path"></rect><path d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z" fill="var(--color-text)" id="icon-2048-text"></path></svg><span>get<wbr/>Available<wbr/>Blockchains</span></a>
+<div class="tsd-index-list"><a href="Ylide.html#add" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4DB8" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-2048-path"></rect><path d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z" fill="var(--color-text)" id="icon-2048-text"></path></svg><span>add</span></a>
+<a href="Ylide.html#getAvailableBlockchains" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Available<wbr/>Blockchains</span></a>
 <a href="Ylide.html#getAvailableWallets" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Available<wbr/>Wallets</span></a>
 <a href="Ylide.html#getBlockchainControllerFactory" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Blockchain<wbr/>Controller<wbr/>Factory</span></a>
 <a href="Ylide.html#getWalletControllerFactory" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Wallet<wbr/>Controller<wbr/>Factory</span></a>
+<a href="Ylide.html#init" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>init</span></a>
 <a href="Ylide.html#instantiateBlockchain" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>instantiate<wbr/>Blockchain</span></a>
 <a href="Ylide.html#instantiateWallet" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>instantiate<wbr/>Wallet</span></a>
 <a href="Ylide.html#isBlockchainRegistered" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>is<wbr/>Blockchain<wbr/>Registered</span></a>
@@ -68,7 +72,6 @@
 <a href="Ylide.html#registerWalletFactory" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>register<wbr/>Wallet<wbr/>Factory</span></a>
 <a href="Ylide.html#silent" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>silent</span></a>
 <a href="Ylide.html#verbose" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>verbose</span></a>
-<a href="Ylide.html#verboseLog" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>verbose<wbr/>Log</span></a>
 <a href="Ylide.html#verboseLogTick" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-private"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>verbose<wbr/>Log<wbr/>Tick</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -76,55 +79,69 @@
 <section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class"><a id="constructor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-<li class="tsd-signature tsd-anchor-link" id="constructor.new_Ylide">new <wbr/>Ylide<span class="tsd-signature-symbol">(</span>keyRegistry<span class="tsd-signature-symbol">: </span><a href="YlideKeyRegistry.html" class="tsd-signature-type" data-tsd-kind="Class">YlideKeyRegistry</a>, indexerBlockchains<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Ylide.html" class="tsd-signature-type" data-tsd-kind="Class">Ylide</a><a href="#constructor.new_Ylide" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="constructor.new_Ylide">new <wbr/>Ylide<span class="tsd-signature-symbol">(</span>keysRegistry<span class="tsd-signature-symbol">?: </span><a href="YlideKeysRegistry.html" class="tsd-signature-type" data-tsd-kind="Class">YlideKeysRegistry</a>, indexerBlockchains<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Ylide.html" class="tsd-signature-type" data-tsd-kind="Class">Ylide</a><a href="#constructor.new_Ylide" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>keyRegistry: <a href="YlideKeyRegistry.html" class="tsd-signature-type" data-tsd-kind="Class">YlideKeyRegistry</a></h5></li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> keysRegistry: <a href="YlideKeysRegistry.html" class="tsd-signature-type" data-tsd-kind="Class">YlideKeysRegistry</a></h5>
+<div class="tsd-comment tsd-typography"><p>Reference to YlideKeysRegistry instance</p>
+</div></li>
 <li>
-<h5>indexerBlockchains: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></h5></li></ul></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> indexerBlockchains: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"><p>Array of blockchains that should be firstly read from Indexer. Omit if you want to use defaults</p>
+</div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Ylide.html" class="tsd-signature-type" data-tsd-kind="Class">Ylide</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L35">src/Ylide.ts:35</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L44">src/Ylide.ts:44</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_blockchainFactories" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_blockchain<wbr/>Factories</span><a href="#_blockchainFactories" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_blockchain<wbr/>Factories<span class="tsd-signature-symbol">:</span> <a href="../types/BlockchainMap.html" class="tsd-signature-type" data-tsd-kind="Type alias">BlockchainMap</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/BlockchainControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">BlockchainControllerFactory</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = {}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L29">src/Ylide.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L30">src/Ylide.ts:30</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_blockchainToGroupMap" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_blockchain<wbr/>To<wbr/>Group<wbr/>Map</span><a href="#_blockchainToGroupMap" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_blockchain<wbr/>To<wbr/>Group<wbr/>Map<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = {}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L30">src/Ylide.ts:30</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L31">src/Ylide.ts:31</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_isVerbose" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_is<wbr/>Verbose</span><a href="#_isVerbose" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_is<wbr/>Verbose<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L27">src/Ylide.ts:27</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L28">src/Ylide.ts:28</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private"><a id="_walletFactories" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>_wallet<wbr/>Factories</span><a href="#_walletFactories" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">_wallet<wbr/>Factories<span class="tsd-signature-symbol">:</span> <a href="../types/BlockchainWalletMap.html" class="tsd-signature-type" data-tsd-kind="Type alias">BlockchainWalletMap</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = {}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L28">src/Ylide.ts:28</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L29">src/Ylide.ts:29</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="auth" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>auth</span><a href="#auth" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">auth<span class="tsd-signature-symbol">:</span> <a href="YlideAuth.html" class="tsd-signature-type" data-tsd-kind="Class">YlideAuth</a></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L36">src/Ylide.ts:36</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="controllers" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>controllers</span><a href="#controllers" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">controllers<span class="tsd-signature-symbol">:</span> <a href="YlideControllers.html" class="tsd-signature-type" data-tsd-kind="Class">YlideControllers</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L32">src/Ylide.ts:32</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L33">src/Ylide.ts:33</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="core" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>core</span><a href="#core" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">core<span class="tsd-signature-symbol">:</span> <a href="YlideCore.html" class="tsd-signature-type" data-tsd-kind="Class">YlideCore</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L33">src/Ylide.ts:33</a></li></ul></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="keyRegistry" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>key<wbr/>Registry</span><a href="#keyRegistry" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">key<wbr/>Registry<span class="tsd-signature-symbol">:</span> <a href="YlideKeyRegistry.html" class="tsd-signature-type" data-tsd-kind="Class">YlideKeyRegistry</a></div><aside class="tsd-sources">
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L34">src/Ylide.ts:34</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="keysRegistry" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>keys<wbr/>Registry</span><a href="#keysRegistry" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">keys<wbr/>Registry<span class="tsd-signature-symbol">:</span> <a href="YlideKeysRegistry.html" class="tsd-signature-type" data-tsd-kind="Class">YlideKeysRegistry</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L35">src/Ylide.ts:35</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L38">src/Ylide.ts:38</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="mailbox" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>mailbox</span><a href="#mailbox" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<div class="tsd-signature">mailbox<span class="tsd-signature-symbol">:</span> <a href="YlideMailbox.html" class="tsd-signature-type" data-tsd-kind="Class">YlideMailbox</a></div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L35">src/Ylide.ts:35</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="blockchainToGroupMap" class="tsd-anchor"></a>
@@ -132,9 +149,12 @@
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
 <li class="tsd-signature" id="blockchainToGroupMap.blockchainToGroupMap-1"><span class="tsd-signature-symbol">get</span> blockchainToGroupMap<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography">
+<h3>Description</h3><p>Getter of blockchain to blockchain group map. Like &quot;ETHEREUM&quot; -&gt; &quot;evm&quot;, &quot;GNOSIS&quot; =&gt; &quot;evm&quot;</p>
+</div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L40">src/Ylide.ts:40</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L80">src/Ylide.ts:80</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="blockchainsList" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>blockchains<wbr/>List</span><a href="#blockchainsList" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -147,7 +167,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span><br/><span>    </span>blockchain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/BlockchainControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">BlockchainControllerFactory</a><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L206">src/Ylide.ts:206</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L251">src/Ylide.ts:251</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="isVerbose" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Verbose</span><a href="#isVerbose" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
@@ -158,22 +178,39 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L61">src/Ylide.ts:61</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L101">src/Ylide.ts:101</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class"><a id="walletsList" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>wallets<wbr/>List</span><a href="#walletsList" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class">
-<li class="tsd-signature" id="walletsList.walletsList-1"><span class="tsd-signature-symbol">get</span> walletsList<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span>blockchain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">; </span><br/><span>    </span>wallet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></li>
+<li class="tsd-signature" id="walletsList.walletsList-1"><span class="tsd-signature-symbol">get</span> walletsList<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span><br/><span>    </span>blockchainGroup<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">; </span><br/><span>    </span>wallet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to get registered wallet controllers</p>
+<div class="tsd-comment tsd-typography"><p>Getter for the registered wallet controllers</p>
 
 <h3>Example</h3><pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">evmWallets</span><span class="hl-0"> = </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-3">walletsList</span><span class="hl-0">.</span><span class="hl-7">filter</span><span class="hl-0">(</span><span class="hl-3">t</span><span class="hl-0"> </span><span class="hl-4">=&gt;</span><span class="hl-0"> </span><span class="hl-3">t</span><span class="hl-0">.</span><span class="hl-3">blockchainGroup</span><span class="hl-0"> === </span><span class="hl-1">&#39;evm&#39;</span><span class="hl-0">);</span>
 </code></pre>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span><br/><span>    </span>blockchain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">; </span><br/><span>    </span>wallet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span><br/><span>    </span>blockchainGroup<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span>    </span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">; </span><br/><span>    </span>wallet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span><br/><span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">[]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L186">src/Ylide.ts:186</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L231">src/Ylide.ts:231</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="add" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>add</span><a href="#add" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="add.add-1">add<span class="tsd-signature-symbol">(</span>scope<span class="tsd-signature-symbol">: </span><a href="../interfaces/ConnectorScope.html" class="tsd-signature-type" data-tsd-kind="Interface">ConnectorScope</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#add.add-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Method to add all available crypto-wallets and blockchains of the certain connector in Ylide.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>scope: <a href="../interfaces/ConnectorScope.html" class="tsd-signature-type" data-tsd-kind="Interface">ConnectorScope</a></h5>
+<div class="tsd-comment tsd-typography"><p>Connector scope got from the corresponding library, e.g. evm/tvm</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L157">src/Ylide.ts:157</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getAvailableBlockchains" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Available<wbr/>Blockchains</span><a href="#getAvailableBlockchains" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -186,7 +223,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/BlockchainControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">BlockchainControllerFactory</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L250">src/Ylide.ts:250</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L295">src/Ylide.ts:295</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getAvailableWallets" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Available<wbr/>Wallets</span><a href="#getAvailableWallets" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -199,7 +236,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L221">src/Ylide.ts:221</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L266">src/Ylide.ts:266</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getBlockchainControllerFactory" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Blockchain<wbr/>Controller<wbr/>Factory</span><a href="#getBlockchainControllerFactory" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -216,13 +253,13 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/BlockchainControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">BlockchainControllerFactory</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L155">src/Ylide.ts:155</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L197">src/Ylide.ts:197</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getWalletControllerFactory" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Wallet<wbr/>Controller<wbr/>Factory</span><a href="#getWalletControllerFactory" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="getWalletControllerFactory.getWalletControllerFactory-1">get<wbr/>Wallet<wbr/>Controller<wbr/>Factory<span class="tsd-signature-symbol">(</span>blockchainGroup<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, wallet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><a href="#getWalletControllerFactory.getWalletControllerFactory-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to get wallet controller factory for a certain blockchain and wallet type</p>
+<div class="tsd-comment tsd-typography"><p>Method to get wallet controller factory for a certain blockchain group and wallet type</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -237,7 +274,15 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L165">src/Ylide.ts:165</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L210">src/Ylide.ts:210</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="init" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>init</span><a href="#init" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="init.init-1">init<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#init.init-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L355">src/Ylide.ts:355</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="instantiateBlockchain" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>instantiate<wbr/>Blockchain</span><a href="#instantiateBlockchain" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -245,7 +290,7 @@
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Method to instantiate blockchain controller</p>
 
-<h3>Example</h3><pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">blockchainController</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">instantiateBlockchain</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">, { </span><span class="hl-3">dev:</span><span class="hl-0"> </span><span class="hl-4">false</span><span class="hl-0"> });</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">isMyAddressValid</span><span class="hl-0"> = </span><span class="hl-3">blockchainController</span><span class="hl-0">.</span><span class="hl-7">isAddressValid</span><span class="hl-0">(</span><span class="hl-1">&#39;0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279&#39;</span><span class="hl-0">);</span>
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">blockchainController</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">instantiateBlockchain</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">);</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">isMyAddressValid</span><span class="hl-0"> = </span><span class="hl-3">blockchainController</span><span class="hl-0">.</span><span class="hl-7">isAddressValid</span><span class="hl-0">(</span><span class="hl-1">&#39;0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279&#39;</span><span class="hl-0">);</span>
 </code></pre>
 </div>
 <div class="tsd-parameters">
@@ -257,15 +302,15 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AbstractBlockchainController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractBlockchainController</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L297">src/Ylide.ts:297</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L342">src/Ylide.ts:342</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="instantiateWallet" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>instantiate<wbr/>Wallet</span><a href="#instantiateWallet" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="instantiateWallet.instantiateWallet-1">instantiate<wbr/>Wallet<span class="tsd-signature-symbol">(</span>blockchainGroup<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, wallet<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a><span class="tsd-signature-symbol">&gt;</span><a href="#instantiateWallet.instantiateWallet-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to instantiate both wallet and blockchain controllers with the same options</p>
+<div class="tsd-comment tsd-typography"><p>Method to instantiate wallet controller</p>
 
-<h3>Example</h3><pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">wallet</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">instantiateWallet</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">, </span><span class="hl-1">&#39;everwallet&#39;</span><span class="hl-0">, { </span><span class="hl-3">dev:</span><span class="hl-0"> </span><span class="hl-4">false</span><span class="hl-0"> });</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">isMyAddressValid</span><span class="hl-0"> = </span><span class="hl-3">wallet</span><span class="hl-0">.</span><span class="hl-3">blockchainController</span><span class="hl-0">.</span><span class="hl-7">isAddressValid</span><span class="hl-0">(</span><span class="hl-1">&#39;0:81f452f5aec2263ab10116f7108a20209d5051081bb3caed34f139f976a0e279&#39;</span><span class="hl-0">);</span>
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">wallet</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">instantiateWallet</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">, </span><span class="hl-1">&#39;everwallet&#39;</span><span class="hl-0">);</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">account</span><span class="hl-0"> = </span><span class="hl-2">await</span><span class="hl-0"> </span><span class="hl-3">wallet</span><span class="hl-0">.</span><span class="hl-7">getAuthenticatedAccount</span><span class="hl-0">();</span>
 </code></pre>
 </div>
 <div class="tsd-parameters">
@@ -279,15 +324,15 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">any</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AbstractWalletController.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractWalletController</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L264">src/Ylide.ts:264</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L309">src/Ylide.ts:309</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="isBlockchainRegistered" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Blockchain<wbr/>Registered</span><a href="#isBlockchainRegistered" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="isBlockchainRegistered.isBlockchainRegistered-1">is<wbr/>Blockchain<wbr/>Registered<span class="tsd-signature-symbol">(</span>blockchain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isBlockchainRegistered.isBlockchainRegistered-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Method to check availability of a certain blockchain for reading messages</p>
+<div class="tsd-comment tsd-typography"><p>Method to check availability of a certain blockchain connector</p>
 
-<h3>Example</h3><pre><code class="language-ts"><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">isBlockchainRegistered</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">); </span><span class="hl-6">// return true if `Ylide.registerBlockchain` was called with this blockchain controller factory before</span>
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">isBlockchainRegistered</span><span class="hl-0">(</span><span class="hl-1">&#39;everscale&#39;</span><span class="hl-0">); </span><span class="hl-6">// return true if `ylide.registerBlockchain` was called with this blockchain controller factory before</span>
 </code></pre>
 </div>
 <div class="tsd-parameters">
@@ -299,7 +344,7 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L133">src/Ylide.ts:133</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L175">src/Ylide.ts:175</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="isWalletRegistered" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Wallet<wbr/>Registered</span><a href="#isWalletRegistered" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -321,15 +366,15 @@
 <h5>wallet: <span class="tsd-signature-type">string</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L146">src/Ylide.ts:146</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L188">src/Ylide.ts:188</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="registerBlockchainFactory" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>register<wbr/>Blockchain<wbr/>Factory</span><a href="#registerBlockchainFactory" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="registerBlockchainFactory.registerBlockchainFactory-1">register<wbr/>Blockchain<wbr/>Factory<span class="tsd-signature-symbol">(</span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/BlockchainControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">BlockchainControllerFactory</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#registerBlockchainFactory.registerBlockchainFactory-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Use this method to register all available blockchain blockchains to Ylide.</p>
+<div class="tsd-comment tsd-typography"><p>Use this method to register certain blockchain connector in Ylide.</p>
 
-<h3>Example</h3><pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">Ylide</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/sdk&#39;</span><span class="hl-0">;</span><br/><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">everscaleBlockchainFactory</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/everscale&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">ylide</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">Ylide</span><span class="hl-0">();</span><br/><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">registerBlockchain</span><span class="hl-0">(</span><span class="hl-3">everscaleBlockchainFactory</span><span class="hl-0">);</span>
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">everscaleBlockchainFactory</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/everscale&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">registerBlockchain</span><span class="hl-0">(</span><span class="hl-3">everscaleBlockchainFactory</span><span class="hl-0">);</span>
 </code></pre>
 </div>
 <div class="tsd-parameters">
@@ -341,15 +386,15 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L119">src/Ylide.ts:119</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L147">src/Ylide.ts:147</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="registerWalletFactory" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>register<wbr/>Wallet<wbr/>Factory</span><a href="#registerWalletFactory" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 <li class="tsd-signature tsd-anchor-link" id="registerWalletFactory.registerWalletFactory-1">register<wbr/>Wallet<wbr/>Factory<span class="tsd-signature-symbol">(</span>factory<span class="tsd-signature-symbol">: </span><a href="../interfaces/WalletControllerFactory.html" class="tsd-signature-type" data-tsd-kind="Interface">WalletControllerFactory</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#registerWalletFactory.registerWalletFactory-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Use this method to register all available blockchain wallets to Ylide.</p>
+<div class="tsd-comment tsd-typography"><p>Use this method to register certain crypto-wallet connector in Ylide.</p>
 
-<h3>Example</h3><pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">Ylide</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/sdk&#39;</span><span class="hl-0">;</span><br/><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">everscaleWalletFactory</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/everscale&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-4">const</span><span class="hl-0"> </span><span class="hl-8">ylide</span><span class="hl-0"> = </span><span class="hl-4">new</span><span class="hl-0"> </span><span class="hl-7">Ylide</span><span class="hl-0">();</span><br/><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">registerWallet</span><span class="hl-0">(</span><span class="hl-3">everscaleWalletFactory</span><span class="hl-0">);</span>
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> { </span><span class="hl-3">everscaleWalletFactory</span><span class="hl-0"> } </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;@ylide/everscale&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-3">ylide</span><span class="hl-0">.</span><span class="hl-7">registerWallet</span><span class="hl-0">(</span><span class="hl-3">everscaleWalletFactory</span><span class="hl-0">);</span>
 </code></pre>
 </div>
 <div class="tsd-parameters">
@@ -361,7 +406,7 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L98">src/Ylide.ts:98</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L129">src/Ylide.ts:129</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="silent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>silent</span><a href="#silent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -372,7 +417,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L54">src/Ylide.ts:54</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L94">src/Ylide.ts:94</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="verbose" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>verbose</span><a href="#verbose" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -383,20 +428,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L47">src/Ylide.ts:47</a></li></ul></aside></li></ul></section>
-<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="verboseLog" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>verbose<wbr/>Log</span><a href="#verboseLog" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-<li class="tsd-signature tsd-anchor-link" id="verboseLog.verboseLog-1">verbose<wbr/>Log<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">...</span>args<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#verboseLog.verboseLog-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
-<li class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span>args: <span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
-<ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L65">src/Ylide.ts:65</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L87">src/Ylide.ts:87</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private"><a id="verboseLogTick" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>verbose<wbr/>Log<wbr/>Tick</span><a href="#verboseLogTick" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -415,7 +447,7 @@
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/3f7910f/src/Ylide.ts#L71">src/Ylide.ts:71</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/ylide-io/sdk/blob/8dd68fb/src/Ylide.ts#L105">src/Ylide.ts:105</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -446,17 +478,21 @@
 <li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="Ylide.html#_blockchainToGroupMap" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>_blockchain<wbr/>To<wbr/>Group<wbr/>Map</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="Ylide.html#_isVerbose" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>_is<wbr/>Verbose</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="Ylide.html#_walletFactories" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>_wallet<wbr/>Factories</a></li>
+<li class="tsd-kind-property tsd-parent-kind-class"><a href="Ylide.html#auth" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>auth</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class"><a href="Ylide.html#controllers" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>controllers</a></li>
 <li class="tsd-kind-property tsd-parent-kind-class"><a href="Ylide.html#core" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>core</a></li>
-<li class="tsd-kind-property tsd-parent-kind-class"><a href="Ylide.html#keyRegistry" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>key<wbr/>Registry</a></li>
+<li class="tsd-kind-property tsd-parent-kind-class"><a href="Ylide.html#keysRegistry" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>keys<wbr/>Registry</a></li>
+<li class="tsd-kind-property tsd-parent-kind-class"><a href="Ylide.html#mailbox" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>mailbox</a></li>
 <li class="tsd-kind-accessor tsd-parent-kind-class"><a href="Ylide.html#blockchainToGroupMap" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-262144-path"></use><use href="#icon-262144-text"></use></svg>blockchain<wbr/>To<wbr/>Group<wbr/>Map</a></li>
 <li class="tsd-kind-accessor tsd-parent-kind-class"><a href="Ylide.html#blockchainsList" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-262144-path"></use><use href="#icon-262144-text"></use></svg>blockchains<wbr/>List</a></li>
 <li class="tsd-kind-accessor tsd-parent-kind-class"><a href="Ylide.html#isVerbose" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-262144-path"></use><use href="#icon-262144-text"></use></svg>is<wbr/>Verbose</a></li>
 <li class="tsd-kind-accessor tsd-parent-kind-class"><a href="Ylide.html#walletsList" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-262144-path"></use><use href="#icon-262144-text"></use></svg>wallets<wbr/>List</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#add" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>add</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#getAvailableBlockchains" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Available<wbr/>Blockchains</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#getAvailableWallets" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Available<wbr/>Wallets</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#getBlockchainControllerFactory" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Blockchain<wbr/>Controller<wbr/>Factory</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#getWalletControllerFactory" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Wallet<wbr/>Controller<wbr/>Factory</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#init" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>init</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#instantiateBlockchain" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>instantiate<wbr/>Blockchain</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#instantiateWallet" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>instantiate<wbr/>Wallet</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#isBlockchainRegistered" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>is<wbr/>Blockchain<wbr/>Registered</a></li>
@@ -465,7 +501,6 @@
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#registerWalletFactory" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>register<wbr/>Wallet<wbr/>Factory</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#silent" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>silent</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="Ylide.html#verbose" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>verbose</a></li>
-<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="Ylide.html#verboseLog" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>verbose<wbr/>Log</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="Ylide.html#verboseLogTick" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>verbose<wbr/>Log<wbr/>Tick</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
