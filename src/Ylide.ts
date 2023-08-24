@@ -67,6 +67,8 @@ export class Ylide {
 				'MOONRIVER',
 				'METIS',
 				'ZETA',
+				'BASE',
+				'LINEA',
 			];
 		}
 		this.controllers = new YlideControllers(this);
