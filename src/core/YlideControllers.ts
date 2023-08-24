@@ -60,4 +60,28 @@ export class YlideControllers {
 		this.wallets.push(walletController);
 		return walletController;
 	}
+
+	getBlockchain(blockchain: string): AbstractBlockchainController | undefined {
+		return this.blockchainsMap[blockchain];
+	}
+
+	getWallet(wallet: string, blockchainGroup?: string): AbstractWalletController | undefined {
+		if (!blockchainGroup) {
+			const refs = this.ylide.walletsList.filter(w => w.wallet === wallet);
+			if (refs.length > 1) {
+				throw new YlideMisusageError(
+					'YlideControllers',
+					'You should provide blockchainGroup as a last param if you have two wallets with the same name',
+				);
+			}
+			if (refs.length === 0) {
+				throw new YlideError(
+					YlideErrorType.NOT_FOUND,
+					`Wallet ${wallet} is not found in the list of available wallets`,
+				);
+			}
+			blockchainGroup = refs[0].blockchainGroup;
+		}
+		return this.walletsMap[blockchainGroup]?.[wallet];
+	}
 }
